@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VisualStudioProject ProjectCreator="Intel Fortran" Keyword="Console Application" Version="11.0" ProjectIdGuid="{796EC2FC-16AB-4B9D-99C5-4A6156C8C2B4}">
+	<Platforms>
+		<Platform Name="Win32"/></Platforms>
+	<Configurations>
+		<Configuration Name="Debug|Win32">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" Interfaces="true" WarnInterfaces="true" Traceback="true" BoundsCheck="true" RuntimeLibrary="rtMultiThreadedDebug"/>
+				<Tool Name="VFLinkerTool" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" GenerateDebugInformation="true" SubSystem="subSystemConsole"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool"/>
+				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration>
+		<Configuration Name="Release|Win32">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true"/>
+				<Tool Name="VFLinkerTool" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" SubSystem="subSystemConsole"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool"/>
+				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration></Configurations>
+	<Files>
+		<Filter Name="Header Files" Filter="fi;fd"/>
+		<Filter Name="Resource Files" Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"/>
+		<Filter Name="Source Files" Filter="f90;for;f;fpp;ftn;def;odl;idl">
+		<Filter Name="MUtilsLib">
+		<File RelativePath="..\..\src\MUtilsLib.f90"/>
+		<File RelativePath="..\..\src\MUtilsLib_fileIO.f90"/>
+		<File RelativePath="..\..\src\MUtilsLib_MessageLog.f90"/>
+		<File RelativePath="..\..\src\MUtilsLib_miniDMSL.F90"/>
+		<File RelativePath="..\..\src\MUtilsLib_ProbLim.f90"/>
+		<File RelativePath="..\..\src\MUtilsLib_SettingsFiles.F90"/>
+		<File RelativePath="..\..\src\MUtilsLib_StringFuncs.f90"/>
+		<File RelativePath="..\..\src\MUtilsLib_System.f90"/>
+		<File RelativePath="..\..\src\MUtilsLib_VarFuncs.f90"/>
+		<File RelativePath="..\..\src\MUtilisLib_consoleSampleSubroutine.f90"/></Filter>
+		<File RelativePath="..\..\samples\TEST_MessageLog.f90"/></Filter></Files>
+	<Globals/></VisualStudioProject>
