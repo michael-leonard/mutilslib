@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{6989167D-11E4-40FE-8C1A-2192A86A7E90}") = "TEST_MessageLog", "TEST_MessageLog\TEST_MessageLog.vfproj", "{796EC2FC-16AB-4B9D-99C5-4A6156C8C2B4}"
+EndProject
+Project("{6989167D-11E4-40FE-8C1A-2192A86A7E90}") = "TEST_MessageLog_DMSL", "TEST_MessageLog_DMSL\TEST_MessageLog_DMSL.vfproj", "{F89603A9-019E-49AB-A908-8D1ACDF21076}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{796EC2FC-16AB-4B9D-99C5-4A6156C8C2B4}.Debug|Win32.ActiveCfg = Debug|Win32
+		{796EC2FC-16AB-4B9D-99C5-4A6156C8C2B4}.Debug|Win32.Build.0 = Debug|Win32
+		{796EC2FC-16AB-4B9D-99C5-4A6156C8C2B4}.Release|Win32.ActiveCfg = Release|Win32
+		{796EC2FC-16AB-4B9D-99C5-4A6156C8C2B4}.Release|Win32.Build.0 = Release|Win32
+		{F89603A9-019E-49AB-A908-8D1ACDF21076}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F89603A9-019E-49AB-A908-8D1ACDF21076}.Debug|Win32.Build.0 = Debug|Win32
+		{F89603A9-019E-49AB-A908-8D1ACDF21076}.Release|Win32.ActiveCfg = Release|Win32
+		{F89603A9-019E-49AB-A908-8D1ACDF21076}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

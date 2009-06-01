@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VisualStudioProject ProjectCreator="Intel Fortran" Keyword="Console Application" Version="11.0" ProjectIdGuid="{F89603A9-019E-49AB-A908-8D1ACDF21076}">
+	<Platforms>
+		<Platform Name="Win32"/></Platforms>
+	<Configurations>
+		<Configuration Name="Debug|Win32">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" Interfaces="true" WarnInterfaces="true" Traceback="true" BoundsCheck="true" RuntimeLibrary="rtMultiThreadedDebug"/>
+				<Tool Name="VFLinkerTool" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" GenerateDebugInformation="true" SubSystem="subSystemConsole"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool"/>
+				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration>
+		<Configuration Name="Release|Win32">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true"/>
+				<Tool Name="VFLinkerTool" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" SubSystem="subSystemConsole"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool"/>
+				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration></Configurations>
+	<Files>
+		<Filter Name="Header Files" Filter="fi;fd"/>
+		<Filter Name="Resource Files" Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"/>
+		<Filter Name="Source Files" Filter="f90;for;f;fpp;ftn;def;odl;idl">
+		<Filter Name="DMSL">
+		<Filter Name="arrview_link">
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\arrview_link\DUMMY_av_cvf_dmsl_kit.f90"/>
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\arrview_link\DUMMY_av_ivf_dmsl_kit.f90"/></Filter>
+		<Filter Name="aux">
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\numLibraries\amuz_dmsl_kit.f90"/></Filter>
+		<Filter Name="basicNumerix">
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\numLibraries\filepaths_dmsl_kit.f90"/>
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\numLibraries\kinds_dmsl_kit.f90"/>
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\numLibraries\linalg_dmsl_kit.f90"/>
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\numLibraries\numerix_dmsl_kit.f90"/>
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\numLibraries\sobseq_dmsl_mod.f90"/>
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\numLibraries\types_dmsl_kit.f90"/>
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\numLibraries\uniran1_dmsl_mod.f90"/>
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\numLibraries\utilities_dmsl_kit.f90"/></Filter>
+		<Filter Name="comLine">
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\comLine\comline_dmsl_kit.f90"/>
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\comLine\df2kcli_dmsl_kit[ivf].f90"/></Filter>
+		<Filter Name="engApps">
+		<Filter Name="chemApps">
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\engApps\chemApps\chem_dmsl_kit.f90"/></Filter>
+		<Filter Name="ecoApps">
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\engApps\ecoApps\ecology_dmsl_kit.f90"/></Filter>
+		<Filter Name="hydroApps">
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\engApps\hydroApps\abc_dmsl_kit.f90"/>
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\engApps\hydroApps\cpsm_dmsl_kit.f90"/>
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\engApps\hydroApps\ezb_dmsl_kit.f90"/>
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\engApps\hydroApps\gr4j_dmsl_kit.f90"/>
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\engApps\hydroApps\hbv_dmsl_kit.f90"/>
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\engApps\hydroApps\hydroutilities_dmsl_kit.f90"/>
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\engApps\hydroApps\mopex_dmsl_mod.f90"/>
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\engApps\hydroApps\pbl_dmsl_kit.f90"/>
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\engApps\hydroApps\sfb_dmsl_kit.f90"/>
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\engApps\hydroApps\topmodel_dmsl_kit.f90"/>
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\engApps\hydroApps\vic_dmsl_kit.f90"/></Filter>
+		<Filter Name="porflowApps">
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\engApps\porflowApps\plumeShape_dmsl_kit.f90"/>
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\engApps\porflowApps\pornet_dmsl_kit.f90"/>
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\engApps\porflowApps\richards_dmsl_mod.f90"/>
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\engApps\porflowApps\upcone_dmsl_kit.f90"/></Filter>
+		<Filter Name="spamApps">
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\engApps\spamApps\spam_dmsl_kit.f90"/>
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\engApps\spamApps\spamLib_dmsl_kit.f90"/>
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\engApps\spamApps\spamNP_dmsl_kit.f90"/></Filter></Filter>
+		<Filter Name="graphicsSupport">
+		<Filter Name="xft">
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\graphicSupport\xft\xft_dmsl_mod.f90"/></Filter>
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\graphicSupport\ioTools_dmsl_mod.f90"/>
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\graphicSupport\visualData_dmsl_kit.f90"/></Filter>
+		<Filter Name="imsl_link">
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\imsl_link\dummy_imsl_dmsl_kit.f90"/>
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\imsl_link\link_imsl_dmsl_kit.f90"/>
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\imsl_link\optimiser_imsl_kit.f90"/></Filter>
+		<Filter Name="mixedLang">
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\mixedLang\cppMix_dmsl_kit.f90"/></Filter>
+		<Filter Name="numLibraries">
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\numLibraries\bayesFactors_dmsl_kit.f90"/>
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\numLibraries\fastmcd_dmsl_kit.f90"/>
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\numLibraries\impes_dmsl_kit.f90"/>
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\numLibraries\mcmc_dmsl_kit.f90"/>
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\numLibraries\metropolis_dmsl_mod.f90"/>
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\numLibraries\montecarlo_dmsl_kit.f90"/>
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\numLibraries\optimiser_dmsl_kit.f90"/>
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\numLibraries\scesearch_dmsl_mod.f90"/>
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\numLibraries\tge_dmsl_kit.f90"/></Filter>
+		<Filter Name="numLibrariesExt">
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\numLibrariesExt\lbfgs_zhu_eng_mod.f90"/></Filter>
+		<Filter Name="Rfortran_link">
+		<File RelativePath="..\..\..\DMSL\DMSL_SRC\RFortran_link\dummy_RFortran_dmsl_kit.f90"/></Filter></Filter>
+		<Filter Name="MUtilsLib">
+		<File RelativePath="..\..\src\MLUtilsLib_consoleSampleSubroutine_withDMSL.f90"/>
+		<File RelativePath="..\..\src\MUtilisLib_consoleSampleSubroutine.f90"/>
+		<File RelativePath="..\..\src\MUtilsLib.f90"/>
+		<File RelativePath="..\..\src\MUtilsLib_fileIO.f90"/>
+		<File RelativePath="..\..\src\MUtilsLib_MessageLog.f90"/>
+		<File RelativePath="..\..\src\MUtilsLib_ProbLim.f90"/>
+		<File RelativePath="..\..\src\MUtilsLib_SettingsFiles.F90"/>
+		<File RelativePath="..\..\src\MUtilsLib_StringFuncs.f90"/>
+		<File RelativePath="..\..\src\MUtilsLib_System.f90"/>
+		<File RelativePath="..\..\src\MUtilsLib_VarFuncs.f90"/></Filter>
+		<File RelativePath="..\..\samples\TEST_MessageLog.f90"/></Filter></Files>
+	<Globals/></VisualStudioProject>
