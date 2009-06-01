@@ -97,9 +97,9 @@
 		<Filter Name="Rfortran_link">
 		<File RelativePath="..\..\..\DMSL\DMSL_SRC\RFortran_link\dummy_RFortran_dmsl_kit.f90"/></Filter></Filter>
 		<Filter Name="MUtilsLib">
-		<File RelativePath="..\..\src\MLUtilsLib_consoleSampleSubroutine_withDMSL.f90"/>
-		<File RelativePath="..\..\src\MUtilisLib_consoleSampleSubroutine.f90"/>
 		<File RelativePath="..\..\src\MUtilsLib.f90"/>
+		<File RelativePath="..\..\src\MUtilsLib_consoleSampleSubroutine.f90"/>
+		<File RelativePath="..\..\src\MUtilsLib_consoleSampleSubroutine_withDMSL.f90"/>
 		<File RelativePath="..\..\src\MUtilsLib_fileIO.f90"/>
 		<File RelativePath="..\..\src\MUtilsLib_MessageLog.f90"/>
 		<File RelativePath="..\..\src\MUtilsLib_ProbLim.f90"/>
