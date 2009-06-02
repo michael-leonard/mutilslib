@@ -1,0 +1,27 @@
+#summary Frequently asked questions
+
+== How can I fix a compiler error "Can't find dfport"?==
+
+If you are linking Fortran to MATLAB to produce .m files, you are required to add the following directory to: 
+
+`Project Properties | Fortran | Additional Include Directories |` _{{{[MATLABInstallDir]}}}_`\extern\lib\win32\microsoft`
+
+In IVF11.0.074 this causes the compiler to *not* be able to find the module dfport in file dfport.f90 located in the directory:
+
+ _{{{[IFortInstallDir]}}}_`fortran\include`
+
+Removing the directory for MATLAB resolves this problem
+
+
+
+
+
+
+
+
+
+
+
+
+
+
