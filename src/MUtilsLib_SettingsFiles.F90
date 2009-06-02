@@ -1,4 +1,4 @@
-module mul_SettingsFiles
+module MUtilsLib_SettingsFiles
 !~**********************************************************************
 !~* Purpose: General Procedures for Settings Files
 !~**********************************************************************
@@ -43,8 +43,8 @@ function findKeyWord(filename,unit,keyword) result(ok)
 !#* Programmer: Mark Thyer, University of Newcastle
 !#**********************************************************************
 use kinds_dmsl_kit ! numeric kind definitions from DMSL
-use mul_Messagelog
-use mul_StringFuncs, only : operator(//)
+use MUtilsLib_Messagelog
+use MUtilsLib_StringFuncs, only : operator(//)
 implicit none
 
 ! Dummies - Inputs
@@ -83,8 +83,8 @@ function ReadSetting_str(filename,unit,keyword,val) result(ok)
 !#* Programmer: Mark Thyer, University of Newcastle
 !#**********************************************************************
 use kinds_dmsl_kit ! numeric kind definitions from DMSL
-use mul_Messagelog
-use mul_StringFuncs, only : operator(//)
+use MUtilsLib_Messagelog
+use MUtilsLib_StringFuncs, only : operator(//)
 implicit none
 
 ! Dummies - Inputs
@@ -130,8 +130,8 @@ function ReadSetting_i4(filename,unit,keyword,val) result(ok)
 !#* Programmer: Mark Thyer, University of Newcastle
 !#**********************************************************************
 use kinds_dmsl_kit ! numeric kind definitions from DMSL
-use mul_Messagelog
-use mul_StringFuncs, only : operator(//),int
+use MUtilsLib_Messagelog
+use MUtilsLib_StringFuncs, only : operator(//),int
 implicit none
 
 ! Dummies - Inputs
@@ -177,8 +177,8 @@ function ReadSetting_r8(filename,unit,keyword,val) result(ok)
 !#* Programmer: Mark Thyer, University of Newcastle
 !#**********************************************************************
 use kinds_dmsl_kit ! numeric kind definitions from DMSL
-use mul_Messagelog
-use mul_StringFuncs, only : operator(//),real
+use MUtilsLib_Messagelog
+use MUtilsLib_StringFuncs, only : operator(//),real
 implicit none
 
 ! Dummies - Inputs
@@ -217,4 +217,4 @@ end do
 
 end function ReadSetting_r8
 
-end module mul_SettingsFiles
+end module MUtilsLib_SettingsFiles

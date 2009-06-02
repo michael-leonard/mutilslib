@@ -1,10 +1,10 @@
 !<license>
-module mul_System
+module MUtilsLib_System
     ! Generic system (windows) utilities
     ! Any subroutine that uses if/dfport module
     ! No other modules should have calls to the dos interface
     use kinds_dmsl_kit
-    use mul_MessageLog
+    use MUtilsLib_MessageLog
     implicit none
     
     private ! Keep hidden
@@ -149,7 +149,7 @@ module mul_System
      ! Author:
      ! Originally Written by Michael Leonard as Generate_RscriptList
      ! Generalised to Generate_FileList by Mark Thyer, May 2009
-     use mul_messagelog
+     use MUtilsLib_messagelog
      use dfport,only: system
      implicit none
      ! Dummies - Inputs
@@ -332,11 +332,11 @@ module mul_System
 
     end subroutine
 
- end module mul_System
+ end module MUtilsLib_System
 !*****************************************************************************
 ! For backwards compatibility
 module utils_system
-use mul_System
+use MUtilsLib_System
 end module utils_system
 !*****************************************************************************
 

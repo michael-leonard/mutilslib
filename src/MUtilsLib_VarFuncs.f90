@@ -1,5 +1,5 @@
 !<license>
-module mul_varFuncs
+module MUtilsLib_varFuncs
 
 use kinds_dmsl_kit
 implicit none
@@ -15,8 +15,8 @@ end interface
 contains
 !*****************************************************************************
 function checkPresent_str(var,valueIfNotPresent) result (checkPresent)
-    use mul_MessageLog
-    use mul_StringFuncs, only: operator(//)
+    use MUtilsLib_MessageLog
+    use MUtilsLib_StringFuncs, only: operator(//)
     implicit none
 
     character(*), intent(in), optional :: var
@@ -64,10 +64,10 @@ function checkPresent_bool(var,valueIfNotPresent) result (checkPresent)
 end function checkPresent_bool
 !*****************************************************************************
 
-end module mul_varfuncs
+end module MUtilsLib_varfuncs
 !*****************************************************************************
 ! For backwards compatibility
 module varfuncs
-use mul_varfuncs
+use MUtilsLib_varfuncs
 end module varfuncs
 !*******************************

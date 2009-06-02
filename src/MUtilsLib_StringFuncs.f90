@@ -1,5 +1,5 @@
 !<license>
-module mul_stringfuncs
+module MUtilsLib_stringfuncs
   ! Provides an overloaded interface for the // operator to mix numbers or logicals with strings
   ! Whereas // uses several defaults, str() function provides control over the number converstion
   ! The .pad. operator is for all those times you want to concatenate but have a space (or comma or something) between
@@ -1079,12 +1079,12 @@ function changeChar(strIn,charIn,CharOut) result (strOut)
 END function ChangeChar
 !_____________________________________________________________________________________________
 
-end module mul_stringfuncs
+end module MUtilsLib_stringfuncs
 !-------------------------------------------------------------------------
 !*****************************************************************************
 ! For backwards compatibility
 module stringfuncs
-use mul_stringfuncs, only :str,    &              ! this is just to make it easier to build up string expressions for passing numbers into R
+use MUtilsLib_stringfuncs, only :str,    &              ! this is just to make it easier to build up string expressions for passing numbers into R
             operator(//), &        ! overloaded to allow concatenation of strings
             operator(.pad.), &     ! same as above but allows one padding space between concatenation
             c,            &        ! converts arrays to strings

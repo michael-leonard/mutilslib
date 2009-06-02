@@ -1,5 +1,5 @@
 !<license>
-module mul_fileIO
+module MUtilsLib_fileIO
 use kinds_dmsl_kit
 implicit none
 contains
@@ -43,12 +43,12 @@ function findEOF(filepath,err,msg) result(nLines)
 
 end function findEOF
 
-end module mul_fileIO
+end module MUtilsLib_fileIO
 !**************************
 ! For backwards compatibility
 module fileio
 
-use mul_fileIO
+use MUtilsLib_fileIO
 
 end module fileio
 

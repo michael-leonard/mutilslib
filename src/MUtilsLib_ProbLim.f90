@@ -1,5 +1,5 @@
 !<license>
-MODULE mul_Problim
+MODULE MUtilsLib_Problim
 !************************************************************************************************
 !  MODULE: Probability Limits
 !  PURPOSE:  Calc Probability limits from a set of unsorted data (point or array)
@@ -419,11 +419,11 @@ SUBROUTINE hpsort(n,ra)
       goto 10
 
       END SUBROUTINE hpsort
-end module mul_Problim
+end module mutilslib_Problim
 !*********************************************************************************************
 ! For backwards compatibility
 module problimMOd
 
-use mul_Problim
+use MUtilsLib_Problim
 
 end module problimMOd

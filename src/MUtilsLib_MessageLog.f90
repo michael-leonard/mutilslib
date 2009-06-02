@@ -1,5 +1,5 @@
 !<license>
-module mul_messagelog
+module MUtilsLib_messagelog
 ! message_log - an error/message logging interface
 ! description:  logs (error/warning/other) messages during runtime and can flush the msg_log to the screen, to a file or both
 !
@@ -288,7 +288,7 @@ module mul_messagelog
 !************************************************************************************************
     subroutine get_messages(allmessages,lastmessage)
       ! reads the msg_log file and returns the lastmessage or allmessages depending which is present
-      use mul_fileIO, only : findEOF
+      use MUtilsLib_fileIO, only : findEOF
       implicit none
       ! Outputs      
       character(len = msg_tag_len), allocatable, dimension(:),intent(out),optional ::  allmessages ! Descriptive text of tags and messages
@@ -367,11 +367,11 @@ module mul_messagelog
        comchar = ch
      end subroutine
 !************************************************************************************************
-end module mul_messagelog
+end module MUtilsLib_messagelog
 !************************************************************************************************
 module message_log
 ! For backwards compaitbility
-use mul_messagelog
+use MUtilsLib_messagelog
 end module message_log
 !************************************************************************************************
 MODULE errorMOD
