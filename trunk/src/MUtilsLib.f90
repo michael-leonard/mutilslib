@@ -1,15 +1,15 @@
 !<license etc>
-module mul
-  !! mul Library Master Module
+module MUtilsLib
+  !! MUtilsLib Library Master Module
   !!
   !! Description:
-  !! Master module for all mul functionality
-    use mul_FileIO
-    use mul_MessageLog
-    use mul_ProbLim
-    use mul_StringFuncs
-    use mul_SettingsFiles
-    use mul_System
-    use mul_VarFuncs
+  !! Master module for all MUtilsLib functionality
+    use MUtilsLib_FileIO
+    use MUtilsLib_MessageLog
+    use MUtilsLib_ProbLim
+    use MUtilsLib_StringFuncs
+    use MUtilsLib_SettingsFiles
+    use MUtilsLib_System
+    use MUtilsLib_VarFuncs
             
-end module mul
+end module MUtilsLib

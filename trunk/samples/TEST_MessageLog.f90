@@ -2,7 +2,7 @@
     ! Example to test messageslog
     
     
-    use mul_messagelog
+    use MUtilsLib_messagelog
 
     Implicit none
     ! Locals
