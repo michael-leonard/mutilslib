@@ -1,6 +1,6 @@
 #summary Frequently asked questions
 
-== Where can't the compiler find "dfport"?==
+== Why can't the compiler find "dfport"?==
 
 If you are linking Fortran to MATLAB to produce .m files, you are required to add the following directory to: 
 
@@ -13,8 +13,6 @@ In IVF11.0.074 this results in the compiler *not* being able to find the module 
 Removing the directory for MATLAB is a quick-fix to this problem, but does not solve the reason for the conflict. 
 
 It has been noted as an issue for investigation in the future
-
-
 
 
 
