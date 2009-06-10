@@ -36,7 +36,7 @@ module MUtilsLib_messagelog
   implicit none
   
   private ! All components are private unless declared otherwise
-  integer, parameter, public   ::  tag_len  = len_stdStr   ! tag length
+  integer, parameter, public   ::  tag_len  = len_stdStrB   ! tag length
   integer, parameter, public   ::  msg_len = len_vLongStr   ! some messages can contain strings of deep file directories, therefore recommended min = 255
   integer, parameter, public   ::  msg_tag_len = msg_len+tag_len
   character(len=1)  :: comchar = " "    ! a comment character

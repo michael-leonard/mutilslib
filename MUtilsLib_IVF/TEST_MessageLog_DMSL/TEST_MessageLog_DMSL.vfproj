@@ -27,6 +27,17 @@
 		<Filter Name="Header Files" Filter="fi;fd"/>
 		<Filter Name="Resource Files" Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"/>
 		<Filter Name="Source Files" Filter="f90;for;f;fpp;ftn;def;odl;idl">
+		<Filter Name="MUtilsLib">
+		<File RelativePath="..\..\src\MUtilsLib.f90"/>
+		<File RelativePath="..\..\src\MUtilsLib_consoleSampleSubroutine.f90"/>
+		<File RelativePath="..\..\src\MUtilsLib_consoleSampleSubroutine_withDMSL.f90"/>
+		<File RelativePath="..\..\src\MUtilsLib_fileIO.f90"/>
+		<File RelativePath="..\..\src\MUtilsLib_MessageLog.f90"/>
+		<File RelativePath="..\..\src\MUtilsLib_ProbLim.f90"/>
+		<File RelativePath="..\..\src\MUtilsLib_SettingsFiles.F90"/>
+		<File RelativePath="..\..\src\MUtilsLib_StringFuncs.f90"/>
+		<File RelativePath="..\..\src\MUtilsLib_System.f90"/>
+		<File RelativePath="..\..\src\MUtilsLib_VarFuncs.f90"/></Filter>
 		<Filter Name="DMSL">
 		<Filter Name="arrview_link">
 		<File RelativePath="..\..\..\DMSL\DMSL_SRC\arrview_link\DUMMY_av_cvf_dmsl_kit.f90"/>
@@ -96,16 +107,5 @@
 		<File RelativePath="..\..\..\DMSL\DMSL_SRC\numLibrariesExt\lbfgs_zhu_eng_mod.f90"/></Filter>
 		<Filter Name="Rfortran_link">
 		<File RelativePath="..\..\..\DMSL\DMSL_SRC\RFortran_link\dummy_RFortran_dmsl_kit.f90"/></Filter></Filter>
-		<Filter Name="MUtilsLib">
-		<File RelativePath="..\..\src\MUtilsLib.f90"/>
-		<File RelativePath="..\..\src\MUtilsLib_consoleSampleSubroutine.f90"/>
-		<File RelativePath="..\..\src\MUtilsLib_consoleSampleSubroutine_withDMSL.f90"/>
-		<File RelativePath="..\..\src\MUtilsLib_fileIO.f90"/>
-		<File RelativePath="..\..\src\MUtilsLib_MessageLog.f90"/>
-		<File RelativePath="..\..\src\MUtilsLib_ProbLim.f90"/>
-		<File RelativePath="..\..\src\MUtilsLib_SettingsFiles.F90"/>
-		<File RelativePath="..\..\src\MUtilsLib_StringFuncs.f90"/>
-		<File RelativePath="..\..\src\MUtilsLib_System.f90"/>
-		<File RelativePath="..\..\src\MUtilsLib_VarFuncs.f90"/></Filter>
 		<File RelativePath="..\..\samples\TEST_MessageLog.f90"/></Filter></Files>
 	<Globals/></VisualStudioProject>
