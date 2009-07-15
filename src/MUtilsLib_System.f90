@@ -1,4 +1,3 @@
-!<license>
 module MUtilsLib_System
     ! Generic system (windows) utilities
     ! Any subroutine that uses if/dfport module
@@ -15,6 +14,7 @@ module MUtilsLib_System
               findcurrentdir, &   ! determines the location of the current working directory
               processExist, &     ! Determine if a given process exists
               Generate_FileList,& ! Generates a list of files with a given extension in a given path 
+              Generate_SystemList,& ! Generates a list from the system of either files or directories
               OSCall              ! OS Command line interface utility with immediate return or wait specified in milliseconds 
               
   contains
@@ -150,7 +150,6 @@ module MUtilsLib_System
      ! Originally Written by Michael Leonard as Generate_RscriptList
      ! Generalised to Generate_FileList by Mark Thyer, May 2009
      use MUtilsLib_messagelog
-     use dfport,only: system
      implicit none
      ! Dummies - Inputs
      character(len=*) :: path ! the path to the files are located
@@ -163,10 +162,42 @@ module MUtilsLib_System
      integer(mik) :: ok
 
      !Locals          
+     ok=0
+     ok=Generate_SystemList(path=path,ext=ext,list=filelist,listtype="FILE") 
+     
+    end function Generate_FileList
+!*************************************************************************************************************   
+    function Generate_SystemList(path, ext, list,listtype) result (ok)
+     ! Generates a list of files with a given extension in a given path 
+     ! uses command prompt + dos syntax
+     ! writes dos output to a temp file and then deletes
+     ! requisite dos functions: dir
+     ! Author:
+     ! Originally Written by Michael Leonard as Generate_RscriptList
+     ! Generalised to Generate_FileList by Mark Thyer, May 2009
+     use MUtilsLib_messagelog
+     use dfport,only: system
+     implicit none
+     ! Dummies - Inputs
+     character(len=*) :: path ! the path to the files are located
+     character(len=*) :: listtype ! the type of list needed, options include
+                             ! "FILE"    - list of files
+                             ! "DIRECTORY" - list of directories
+     character(len=*),optional :: ext ! the extension of the files that need to be returned, 
+                             ! for files with one letter extentions (e.g, *.r), 
+                             ! it is important to use a space, e.g. ext="*.r " to distinguish from .r** extensions
+                             
+                             
+     ! Dummies - Outputs
+     character(len=len_vLongStr),pointer :: list(:) ! the output list
+     ! Function Results
+     integer(mik) :: ok
+
+     !Locals          
      integer(mik) :: err ! iostat error when reached the end of the file
-     character(len = len_vLongStr) :: temp ! used for readin in the list of scripts
-     integer(mik) :: count ! the number of files
-     integer(mik) :: i
+     character(len = len_vLongStr) :: temp,errmsg ! used to read in in list 
+     integer(mik) :: count ! the length of list
+          integer(mik) :: i
      character :: slash
      
      ok=0
@@ -175,9 +206,17 @@ module MUtilsLib_System
      slash="\"
      if(path(i:i)=="/".or.path(i:i)=="\") slash=" "
 
-     ! generate the list of files in the directory
-     ok=system('dir /B/L "' // trim(path) // trim(slash) //'*.*" >FileList.txt') ! use *.* to avoid an error message to the console when there are no .r files
-     open(unit = 9538,file="FileList.txt")
+     ! generate the list in the directory
+     select case(listtype)
+     case("DIRECTORY")
+      ok=system('dir /A:D /B  "' // trim(path) // trim(slash) //'" >List.txt') 
+      errmsg="Unable to locate any directories in path: "//trim(path)
+     CASE("FILE")
+      ok=system('dir /B/L "' // trim(path) // trim(slash) //'*.*" >List.txt') ! use *.* to avoid an error message to the console when there are no .r files
+      errmsg="Unable to locate files with extension "//trim(ext)//" in path: "//trim(path)
+     END SELECT     
+     
+     open(unit = 9538,file="list.txt")
      ! count the number of scripts
      count = 0
      do
@@ -187,13 +226,13 @@ module MUtilsLib_System
      end do
      
      if (count==0) then ! Make sure there are some files with that extension in path
-      call message($warn,"Unable to locate files with extension "//trim(ext)//" in path: "//trim(path))
+      call message($warn,errmsg)
       ok=1
       close(9538,status="delete")
       return
      end if
      
-     allocate(filelist(count))
+     allocate(list(count))
      rewind(9538)
      count = 0
      do
@@ -201,11 +240,11 @@ module MUtilsLib_System
        if(err/=0) exit
        if(index(temp,trim(ext))/=0) then ! the space is important to distinguish from .r** extensions
          count = count + 1
-         filelist(count) = trim(temp)
+         list(count) = trim(temp)
        end if
      end do
      close(9538,status="delete")
-   end function Generate_FileList
+   end function Generate_SystemList
  !*************************************************************************************************************   
     ! Copyright (C) 2001 by Fortran Library
     !
