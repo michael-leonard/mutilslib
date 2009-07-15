@@ -23,20 +23,72 @@ implicit none
 Private
 
 
-public :: ReadSetting
+public :: ReadSetting,OpenSettingsFile
 
 interface ReadSetting
-   module procedure ReadSetting_str
-   module procedure ReadSetting_i4
-   module procedure ReadSetting_r8
+   module procedure ReadSetting_0d_str
+   module procedure ReadSetting_0d_i_mik
+   module procedure ReadSetting_0d_r_mrk
+   module procedure ReadSetting_1d_str
+   module procedure ReadSetting_1d_r_mrk
+   module procedure ReadSetting_2d_r_mrk
 end interface
-      
-   
 
-Contains
-
+contains
 !#**********************************************************************
-function findKeyWord(filename,unit,keyword) result(ok)
+function openSettingsFile(file,unit,checkVersion) result (ok)
+!#**********************************************************************
+!#* Purpose: Opens a Settings File and checks version number is consistent
+!#**********************************************************************
+!#* Programmer: Mark Thyer, University of Newcastle
+!#**********************************************************************
+use kinds_dmsl_kit ! numeric kind definitions from DMSL
+use MutilsLib_System, only : findCurrentDir
+use MutilsLib_StringFuncs, only : relPathtoAbsPath,operator(//)
+use MutilsLib_MessageLog, only : message,$error
+implicit none
+
+! Dummies - Inputs
+integer(mik), intent(in) ::  unit                        ! Unit no for settings file
+character(len=len_vLongStr), intent(inout) ::  file      ! Settings file with path - can be relative or absolute file paths, on exit it is the absolute filepath
+character(len=*), intent(in) :: checkVersion             ! Used to check whether setttings file has the same version number - ensures compatibaility
+! Function - Outputs
+integer(mik) :: ok                                       ! Error Flag (0 = No Errors, >0 Error condition)
+! Locals
+integer(mik) :: status                                   ! 
+character(len=len_vLongStr) :: version                   !
+ok=0  
+File=relPathtoAbsPath(file,findCurrentDir())
+do 
+  open(unit=unit,file=trim(File),iostat=status,status="OLD")
+  select case(status)
+  case(0) ! ok
+     exit
+  case(29) ! File not Found
+     call message($error,"Settings File: "//trim(File)//" not found ")
+     ok=status
+     return
+  case default
+     call message($error,"Error No:"//ok//" when opening settings file: "//trim(File))
+     ok=status
+     return
+  end select
+end do
+
+ok=readSetting(file=trim(file),unit=unit,keyword="[Version]",val=version)
+
+if (ok/=0) then
+  call message($error,"Unable to read [Version] of settings file: "//trim(File)); return
+end if
+
+if (trim(version)/=trim(checkVersion)) then
+  call message($error,"Incompatible version of settings file: "//trim(File)//", looking for version:"//trim(checkVersion)//" found version:"//trim(version))
+  ok=1; return
+end if
+
+end function openSettingsFile
+!#**********************************************************************
+function findKeyWord(file,unit,keyword,nrow,ncol,rewindIn) result(ok)
 !#**********************************************************************
 !#* Purpose: Find Key Word in Settings File
 !#**********************************************************************
@@ -45,38 +97,76 @@ function findKeyWord(filename,unit,keyword) result(ok)
 use kinds_dmsl_kit ! numeric kind definitions from DMSL
 use MUtilsLib_Messagelog
 use MUtilsLib_StringFuncs, only : operator(//)
+use MUtilsLib_VarFuncs, only: checkPresent
 implicit none
 
 ! Dummies - Inputs
-character(len=*), intent(in) :: filename                ! Keyword
+character(len=*), intent(in) :: file                ! Keyword
 integer(mik), intent(in) :: unit                        ! Unit of file
 character(len=*), intent(in) :: keyword                 ! Keyword
+logical(mlk), intent(in), optional :: RewindIn          ! Rewind the file 
+! Dummies - Outputs
+integer(mik), intent(out), optional :: nrow,ncol
 ! Function - Outputs
 integer(mik) :: ok                                       ! Error Flag (0 = No Errors, >0 Error condition)
 ! Locals
 integer(mik) :: status                                    ! 
-character(len=len_trim(keyword)) :: readLine                       ! 
+character(len=len_trim(keyword)) :: readLine              ! 
+logical(mlk) :: RewindLc
+
+! Initialise
+RewindLc=checkPresent(RewindIn,.true.) ! Default option is to rewind the file
 ok=0
-REWIND(UNIT=unit)
+
+If (rewindLc) REWIND(UNIT=unit)
+
 do
   read(unit,*,iostat=status) readLine
   select case(status)
   case(0)
     if (readLine(1:1)=="!") cycle ! Skip comments
-    if (trim(readline)==trim(keyword)) exit
+    if (trim(readline)==trim(keyword)) then
+      if (.not.present(nrow) .and. .not.present(ncol)) then ! Only looking for a scalar 
+        exit
+      else 
+        backspace(unit=unit) ! Looking for vector, go back read in 
+        if (present(nrow) .and. .not.present(ncol)) then
+          read(unit,'(a,",",i12)',iostat=status) readLine,nrow
+          if (status/=0) then
+            call message($ERROR,"IO Error No: "//status//" and unable to read nrow for keyword:"//trim(keyword)//" in settings file:"//trim(file))
+            ok=status;return
+          end if
+          return
+        else if (.not.present(nrow) .and. present(ncol)) then
+          read(unit,'(a,",",i12)',iostat=status) readLine,ncol
+          if (status/=0) then
+            call message($ERROR,"IO Error No: "//status//" and unable to read ncol for keyword:"//trim(keyword)//" in settings file:"//trim(file))
+            ok=status;return
+          end if
+          return
+        else
+         read(unit,'(a,",",2i12)',iostat=status) readLine,nrow,ncol
+         if (status/=0) then
+            call message($ERROR,"IO Error No: "//status//" and unable to read nrow and ncol for keyword:"//trim(keyword)//" in settings file:"//trim(file))
+            ok=status;return
+          end if
+          return
+        end if
+      end if
+    end if  
   case(-1) 
-    call message($ERROR,"Reached end of file before finding keyword:"//trim(keyword)//" in settings file:"//trim(filename))
+    call message($ERROR,"Reached end of file before finding keyword:"//trim(keyword)//" in settings file:"//trim(file))
     ok=status
     return
   case default
-    call message($ERROR,"Error No of "//status//" while searching for keyword:"//trim(keyword)//" in settings file:"//trim(filename))
+    call message($ERROR,"Error No of "//status//" while searching for keyword:"//trim(keyword)//" in settings file:"//trim(file))
     ok=status
     return
   end select
 end do  
 end function findKeyWord
 !#**********************************************************************
-function ReadSetting_str(filename,unit,keyword,val) result(ok)
+function ReadSetting_0d_str(file,unit,keyword,val,rewindIn) result(ok)
 !#**********************************************************************
 !#* Purpose: Read Settings for Str Value
 !#**********************************************************************
@@ -88,9 +178,10 @@ use MUtilsLib_StringFuncs, only : operator(//)
 implicit none
 
 ! Dummies - Inputs
-character(len=*), intent(in) :: filename                ! Keyword
+character(len=*), intent(in) :: file                ! file
 integer(mik), intent(in) :: unit                        ! Unit of file
 character(len=*), intent(in) :: keyword                 ! Keyword
+logical(mlk), intent(in), optional :: RewindIn          ! Rewind file
 ! Dummies - Outputs
 character(len=*), intent(out) :: val              ! Value of Keyword
 ! Function - Outputs
@@ -100,7 +191,11 @@ integer(mik) :: status                                    !
 character(len=len_vLongStr) :: readLine                       ! 
 ok=0
 ! Search file for keyword
-ok=findkeyword(filename,unit,keyword)
+ok=findkeyword(file,unit,keyword,rewindIn=rewindIn)
+if (ok/=0) then
+  call message($ERROR,"Error finding keyword:"//trim(keyword)//" in settings file:"//trim(file)); return
+end if
+
 ! Once found keyword then read value
 do
   read(unit,*,iostat=status) readLine
@@ -110,20 +205,20 @@ do
     val=TRIM(readLine)
     exit
   case(-1) 
-    call message($ERROR,"Reached end of file before finding value of keyword:"//trim(keyword)//" in settings file:"//trim(filename))
+    call message($ERROR,"Reached end of file before finding value of keyword:"//trim(keyword)//" in settings file:"//trim(file))
     ok=status
     return
   case default
-    call message($ERROR,"Error No of "//status//" while searching for value of keyword:"//trim(keyword)//" in settings file:"//trim(filename))
+    call message($ERROR,"Error No of "//status//" while searching for value of keyword:"//trim(keyword)//" in settings file:"//trim(file))
     ok=status
    return
   end select
 end do  
 
 
-end function ReadSetting_str
+end function ReadSetting_0d_str
 !#**********************************************************************
-function ReadSetting_i4(filename,unit,keyword,val) result(ok)
+function ReadSetting_0d_i_mik(file,unit,keyword,val,rewindIn) result(ok)
 !#**********************************************************************
 !#* Purpose: Read Settings for Integer(4) value
 !#**********************************************************************
@@ -135,11 +230,12 @@ use MUtilsLib_StringFuncs, only : operator(//),int
 implicit none
 
 ! Dummies - Inputs
-character(len=*), intent(in) :: filename                ! Keyword
+character(len=*), intent(in) :: file                ! file
 integer(mik), intent(in) :: unit                        ! Unit of file
 character(len=*), intent(in) :: keyword                 ! Keyword
+logical(mlk), intent(in), optional :: RewindIn          ! Rewind file
 ! Dummies - Outputs
-integer(4), intent(out) :: val              ! Value of Keyword
+integer(mik), intent(out) :: val              ! Value of Keyword
 ! Function - Outputs
 integer(mik) :: ok                                       ! Error Flag (0 = No Errors, >0 Error condition)
 ! Locals
@@ -147,7 +243,7 @@ integer(mik) :: status                                    !
 character(len=len_vLongStr) :: readLine                       ! 
 ok=0
 ! Search file for keyword
-ok=findkeyword(filename,unit,keyword)
+ok=findkeyword(file,unit,keyword,RewindIn=RewindIn)
 ! Once found keyword then read value
 do
   read(unit,*,iostat=status) readLine
@@ -157,20 +253,20 @@ do
     val=int(readLine)
     exit
   case(-1) 
-    call message($ERROR,"Reached end of file before finding value of keyword:"//trim(keyword)//" in settings file:"//trim(filename))
+    call message($ERROR,"Reached end of file before finding value of keyword:"//trim(keyword)//" in settings file:"//trim(file))
     ok=status
     return
   case default
-    call message($ERROR,"Error No of "//status//" while searching for value of keyword:"//trim(keyword)//" in settings file:"//trim(filename))
+    call message($ERROR,"Error No of "//status//" while searching for value of keyword:"//trim(keyword)//" in settings file:"//trim(file))
     ok=status
    return
   end select
 end do  
 
 
-end function ReadSetting_i4
+end function ReadSetting_0d_i_mik
 !#**********************************************************************
-function ReadSetting_r8(filename,unit,keyword,val) result(ok)
+  function ReadSetting_0d_r_mrk(file,unit,keyword,val,rewindIn) result(ok)
 !#**********************************************************************
 !#* Purpose: Read Settings for real(8) values
 !#**********************************************************************
@@ -182,11 +278,13 @@ use MUtilsLib_StringFuncs, only : operator(//),real
 implicit none
 
 ! Dummies - Inputs
-character(len=*), intent(in) :: filename                ! Keyword
+character(len=*), intent(in) :: file                ! file
 integer(mik), intent(in) :: unit                        ! Unit of file
 character(len=*), intent(in) :: keyword                 ! Keyword
+logical(mlk), intent(in),optional :: RewindIn                    ! Rewind file?
+
 ! Dummies - Outputs
-real(8), intent(out) :: val              ! Value of Keyword
+real(mrk), intent(out) :: val              ! Value of Keyword
 ! Function - Outputs
 integer(mik) :: ok                                       ! Error Flag (0 = No Errors, >0 Error condition)
 ! Locals
@@ -194,7 +292,10 @@ integer(mik) :: status                                    !
 character(len=len_vLongStr) :: readLine                       ! 
 ok=0
 ! Search file for keyword
-ok=findkeyword(filename,unit,keyword)
+ok=findkeyword(file,unit,keyword,rewindIn=rewindIn)
+if (ok/=0) then
+  call message($ERROR,"Error finding keyword:"//trim(keyword)//" in settings file:"//trim(file)); return
+end if
 ! Once found keyword then read value
 do
   read(unit,*,iostat=status) readLine
@@ -204,17 +305,189 @@ do
     val=real(readLine)
     exit
   case(-1) 
-    call message($ERROR,"Reached end of file before finding value of keyword:"//trim(keyword)//" in settings file:"//trim(filename))
+    call message($ERROR,"Reached end of file before finding value of keyword:"//trim(keyword)//" in settings file:"//trim(file))
     ok=status
     return
   case default
-    call message($ERROR,"Error No of "//status//" while searching for value of keyword:"//trim(keyword)//" in settings file:"//trim(filename))
+    call message($ERROR,"Error No of "//status//" while searching for value of keyword:"//trim(keyword)//" in settings file:"//trim(file))
     ok=status
    return
   end select
 end do  
 
 
-end function ReadSetting_r8
+end function ReadSetting_0d_r_mrk
+!#**********************************************************************
+function ReadSetting_1d_str(file,unit,keyword,val,rewindIn) result(ok)
+!#**********************************************************************
+!#* Purpose: Read Settings for Str Value
+!#**********************************************************************
+!#* Programmer: Mark Thyer, University of Newcastle
+!#**********************************************************************
+use kinds_dmsl_kit ! numeric kind definitions from DMSL
+use MUtilsLib_Messagelog
+use MUtilsLib_StringFuncs, only : operator(//)
+implicit none
 
+! Dummies - Inputs
+character(len=*), intent(in) :: file                ! file
+integer(mik), intent(in) :: unit                        ! Unit of file
+character(len=*), intent(in) :: keyword                 ! Keyword
+logical(mlk), intent(in), optional :: RewindIn          ! Rewind file
+! Dummies - Outputs
+character(len=*), allocatable, intent(out) :: val(:)    ! Value of Keyword
+! Function - Outputs
+integer(mik) :: ok                                       ! Error Flag (0 = No Errors, >0 Error condition)
+! Locals
+integer(mik) :: status,ncol                              ! 
+character(len=len_vLongStr) :: readLine                  ! 
+ok=0
+! Search file for keyword
+ok=findkeyword(file,unit,keyword,rewindIn=rewindIn,ncol=ncol)
+if (ok/=0) then
+  call message($ERROR,"Error finding keyword and/or reading ncol for keyword:"//trim(keyword)//" in settings file:"//trim(file)); return
+end if
+
+! Once found keyword then read value
+if (allocated(val)) deallocate(val); allocate(val(ncol))
+do
+  read(unit,*,iostat=status) readLine
+  select case(status)
+  case(0)
+    if (readLine(1:1)=="!") cycle ! Skip comments
+    backspace(unit)
+    read(unit,"(<ncol>g)",iostat=status) val
+    if (status/=0) then
+      call message($ERROR,"IO Error No: "//status//" and unable to read value of keyword: "//trim(keyword)//" in settings file:"//trim(file)); ok=status;return
+    end if
+    exit
+  case(-1) 
+    call message($ERROR,"Reached end of file before finding value of keyword:"//trim(keyword)//" in settings file:"//trim(file))
+    ok=status
+    return
+  case default
+    call message($ERROR,"Error No of "//status//" while searching for value of keyword:"//trim(keyword)//" in settings file:"//trim(file))
+    ok=status
+   return
+  end select
+end do  
+
+
+end function ReadSetting_1d_str
+!#**********************************************************************
+function ReadSetting_1d_r_mrk(file,unit,keyword,val,rewindIn) result(ok)
+!#**********************************************************************
+!#* Purpose: Read Settings for real(8) values
+!#**********************************************************************
+!#* Programmer: Mark Thyer, University of Newcastle
+!#**********************************************************************
+use kinds_dmsl_kit ! numeric kind definitions from DMSL
+use MUtilsLib_Messagelog
+use MUtilsLib_StringFuncs, only : operator(//),real
+implicit none
+
+! Dummies - Inputs
+character(len=*), intent(in) :: file                ! Keyword
+integer(mik), intent(in) :: unit                        ! Unit of file
+character(len=*), intent(in) :: keyword                 ! Keyword
+logical(mlk), intent(in),optional :: RewindIn                    ! Rewind file?
+! Dummies - Outputs
+real(mrk), intent(out),allocatable :: val(:)              ! Value of Keyword
+! Function - Outputs
+integer(mik) :: ok                                       ! Error Flag (0 = No Errors, >0 Error condition)
+! Locals
+integer(mik) :: status,ncol                                   ! 
+character(len=len_vLongStr) :: readLine                       ! 
+ok=0
+! Search file for keyword
+ok=findkeyword(file,unit,keyword,ncol=ncol,rewindIn=rewindIn)
+if (ok/=0) then
+  call message($ERROR,"Error finding keyword and/or reading ncol for keyword:"//trim(keyword)//" in settings file:"//trim(file)); return
+end if
+If(allocated(val)) deallocate(val)
+allocate(val(ncol))
+! Once found keyword then read value
+do
+  read(unit,*,iostat=status) readLine
+  select case(status)
+  case(0)
+    if (readLine(1:1)=="!") cycle ! Skip comments
+    backspace(unit)
+    read(unit,"(<ncol>f)",iostat=status) val
+    if (status/=0) then
+      call message($ERROR,"IO Error No: "//status//" and unable to read value of keyword: "//trim(keyword)//" in settings file:"//trim(file)); ok=status;return
+    end if
+    exit
+  case(-1) 
+    call message($ERROR,"Reached end of file before finding value of keyword:"//trim(keyword)//" in settings file:"//trim(file)); ok=status;return
+  case default
+    call message($ERROR,"Error No of "//status//" while searching for value of keyword:"//trim(keyword)//" in settings file:"//trim(file)); ok=status;return
+  end select
+end do  
+
+
+end function ReadSetting_1d_r_mrk
+!#**********************************************************************
+function ReadSetting_2d_r_mrk(file,unit,keyword,val,rewindIn) result(ok)
+!#**********************************************************************
+!#* Purpose: Read Settings for real(8) values
+!#**********************************************************************
+!#* Programmer: Mark Thyer, University of Newcastle
+!#**********************************************************************
+use kinds_dmsl_kit ! numeric kind definitions from DMSL
+use MUtilsLib_Messagelog
+use MUtilsLib_StringFuncs, only : operator(//),real
+implicit none
+
+! Dummies - Inputs
+character(len=*), intent(in) :: file                ! Keyword
+integer(mik), intent(in) :: unit                        ! Unit of file
+character(len=*), intent(in) :: keyword                 ! Keyword
+logical(mlk), intent(in),optional :: RewindIn                    ! Rewind file?
+! Dummies - Outputs
+real(mrk), intent(out),allocatable :: val(:,:)              ! Value of Keyword
+! Function - Outputs
+integer(mik) :: ok                                       ! Error Flag (0 = No Errors, >0 Error condition)
+! Locals
+integer(mik) :: status,nrow,ncol,i                             ! 
+character(len=len_vLongStr) :: readLine                       ! 
+ok=0
+! Search file for keyword
+ok=findkeyword(file,unit,keyword,nrow=nrow,ncol=ncol,rewindIn=rewindIn)
+if (ok/=0) then
+  call message($ERROR,"Error finding keyword and/or reading ncol/nrow for keyword:"//trim(keyword)//" in settings file:"//trim(file)); return
+end if
+
+If(allocated(val)) deallocate(val)
+allocate(val(nrow,ncol))
+! Once found keyword then read value
+do
+  read(unit,*,iostat=status) readLine
+  select case(status)
+  case(0)
+    if (readLine(1:1)=="!") cycle ! Skip comments
+    ! Once finished comments then start reading array
+    backspace(unit)
+    do i=1,nrow
+      read(unit,"(<ncol>f12.0)",iostat=status) val(i,:)
+      if (status/=0) then
+        call message($ERROR,"IO Error No: "//status//" and unable to read nrow:"//i//" value of keyword: "//trim(keyword)//" in settings file:"//trim(file)); ok=status;return
+      end if
+    end do
+    ! Once finished reading array then exit
+    exit
+  case(-1) 
+    call message($ERROR,"Reached end of file before finding value of keyword:"//trim(keyword)//" in settings file:"//trim(file))
+    ok=status
+    return
+  case default
+    call message($ERROR,"Error No of "//status//" while searching for value of keyword:"//trim(keyword)//" in settings file:"//trim(file))
+    ok=status
+   return
+  end select
+end do  
+
+
+end function ReadSetting_2d_r_mrk
+!#**********************************************************************
 end module MUtilsLib_SettingsFiles
