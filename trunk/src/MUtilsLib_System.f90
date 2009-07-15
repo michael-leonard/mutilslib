@@ -232,6 +232,7 @@ module MUtilsLib_System
       return
      end if
      
+     ! retrieve file list
      allocate(list(count))
      rewind(9538)
      count = 0
