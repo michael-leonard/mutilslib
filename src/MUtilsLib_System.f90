@@ -280,7 +280,7 @@ module MUtilsLib_System
     subroutine OSCall(iWaitMS,Command,Args,iRet)
 
       ! use iflib
-       use dfwin, only: T_STARTUPINFO,T_PROCESS_INFORMATION,NULL,STARTF_USESHOWWINDOW,SW_HIDE,NULL_CHARACTER,NULL_SECURITY_ATTRIBUTES,CREATEPROCESS,WAITFORSINGLEOBJECT
+       use dfwin, only: T_STARTUPINFO,T_PROCESS_INFORMATION,NULL,STARTF_USESHOWWINDOW,SW_HIDE,NULL_CHARACTER,NULL_SECURITY_ATTRIBUTES,CREATEPROCESS,WAITFORSINGLEOBJECT,CLOSEHANDLE
        !USE DFWINTY !!use ifwin, only:
        
        implicit none
@@ -327,32 +327,29 @@ module MUtilsLib_System
     !
 !  This version will not work with IVF10.1.3440.2008 if compiler option (/check:pointer) is set
 !    via Project Properties|Fortran|Run-time|Check for null pointers and allocatable array references
-!   iCRC = CreateProcess(NULL_CHARACTER, &
-!              cmdLine, &
-!              null_Security_Attributes, &
-!              null_Security_Attributes, &
-!              .false., &
-!              Null, &
-!              Null, &
-!              Null_Character, &
-!              StartInfo, &
-!              ProcInfo)
-!        
-
-! This version may not work with CVF6.6a
-
-       iCRC = CreateProcess(null, &
+   iCRC = CreateProcess(NULL_CHARACTER, &
               cmdLine, &
-              null, &
-              null, &
+              null_Security_Attributes, &
+              null_Security_Attributes, &
               .false., &
               Null, &
               Null, &
-              Null, &
+              Null_Character, &
               StartInfo, &
               ProcInfo)
 
-
+!! This version may not work with CVF6.6a
+!
+!       iCRC = CreateProcess(null, &
+!              cmdLine, &
+!              null, &
+!              null, &
+!              .false., &
+!              Null, &
+!              Null, &
+!              Null, &
+!              StartInfo, &
+!              ProcInfo)
 
     !
     ! Check return code from CreateProcess
@@ -367,7 +364,7 @@ module MUtilsLib_System
        if (iWaitMS .ne. 0) then
           iRet = WaitForSingleObject(ProcInfo%hProcess,iWaitMS) !Wait for completion
        end if
-
+     
        return
 
     end subroutine

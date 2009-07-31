@@ -339,7 +339,8 @@ character(len=*), allocatable, intent(out) :: val(:)    ! Value of Keyword
 ! Function - Outputs
 integer(mik) :: ok                                       ! Error Flag (0 = No Errors, >0 Error condition)
 ! Locals
-integer(mik) :: status,ncol                              ! 
+integer(mik) :: status,ncol
+integer(mik), allocatable :: len_val(:)                  ! 
 character(len=len_vLongStr) :: readLine                  ! 
 ok=0
 ! Search file for keyword
@@ -349,7 +350,8 @@ if (ok/=0) then
 end if
 
 ! Once found keyword then read value
-if (allocated(val)) deallocate(val); allocate(val(ncol))
+if (allocated(val)) deallocate(val); allocate(val(ncol),len_val(ncol))
+val=undefCH
 do
   read(unit,*,iostat=status) readLine
   select case(status)
@@ -359,6 +361,10 @@ do
     read(unit,"(<ncol>g)",iostat=status) val
     if (status/=0) then
       call message($ERROR,"IO Error No: "//status//" and unable to read value of keyword: "//trim(keyword)//" in settings file:"//trim(file)); ok=status;return
+    end if
+    len_val=len_trim(val)
+    if(any(val==undefCH) .or. any(len_trim(val)==0)) then
+      call message($ERROR,"Size mismatch reading in values for:"//trim(keyword)//" in settings file:"//trim(file)); ok=-1;return
     end if
     exit
   case(-1) 
@@ -406,6 +412,7 @@ if (ok/=0) then
 end if
 If(allocated(val)) deallocate(val)
 allocate(val(ncol))
+val=undefRN
 ! Once found keyword then read value
 do
   read(unit,*,iostat=status) readLine
@@ -416,6 +423,9 @@ do
     read(unit,"(<ncol>f)",iostat=status) val
     if (status/=0) then
       call message($ERROR,"IO Error No: "//status//" and unable to read value of keyword: "//trim(keyword)//" in settings file:"//trim(file)); ok=status;return
+    end if
+    if(any(val==undefRN)) then
+      call message($ERROR,"Size mismatch reading in values for:"//trim(keyword)//" in settings file:"//trim(file)); ok=status;return
     end if
     exit
   case(-1) 
