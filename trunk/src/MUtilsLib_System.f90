@@ -222,7 +222,7 @@ module MUtilsLib_System
      do
        read(9538,*,iostat=err) temp
        if(err/=0) exit
-       if(index(temp,trim(ext))/=0) count = count + 1 
+       if(index(temp,ext)/=0) count = count + 1 
      end do
      
      if (count==0) then ! Make sure there are some files with that extension in path
@@ -239,7 +239,7 @@ module MUtilsLib_System
      do
        read(9538,*,iostat=err) temp
        if(err/=0) exit
-       if(index(temp,trim(ext))/=0) then ! the space is important to distinguish from .r** extensions
+       if(index(temp,ext)/=0) then ! the space is important to distinguish from .r** extensions
          count = count + 1
          list(count) = trim(temp)
        end if
@@ -327,29 +327,29 @@ module MUtilsLib_System
     !
 !  This version will not work with IVF10.1.3440.2008 if compiler option (/check:pointer) is set
 !    via Project Properties|Fortran|Run-time|Check for null pointers and allocatable array references
-   iCRC = CreateProcess(NULL_CHARACTER, &
-              cmdLine, &
-              null_Security_Attributes, &
-              null_Security_Attributes, &
-              .false., &
-              Null, &
-              Null, &
-              Null_Character, &
-              StartInfo, &
-              ProcInfo)
-
-!! This version may not work with CVF6.6a
-!
-!       iCRC = CreateProcess(null, &
+!   iCRC = CreateProcess(NULL_CHARACTER, &
 !              cmdLine, &
-!              null, &
-!              null, &
+!              null_Security_Attributes, &
+!              null_Security_Attributes, &
 !              .false., &
 !              Null, &
 !              Null, &
-!              Null, &
+!              Null_Character, &
 !              StartInfo, &
 !              ProcInfo)
+
+!! This version may not work with CVF6.6a, but works with IVF Project Properties|Fortran|Run-time|Check for null pointers and allocatable array references set
+!
+       iCRC = CreateProcess(null, &
+              cmdLine, &
+              null, &
+              null, &
+              .false., &
+              Null, &
+              Null, &
+              Null, &
+              StartInfo, &
+              ProcInfo)
 
     !
     ! Check return code from CreateProcess
