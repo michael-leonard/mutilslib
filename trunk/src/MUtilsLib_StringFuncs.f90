@@ -30,8 +30,13 @@ module MUtilsLib_stringfuncs
             removeChar, &          ! Remove Character from string
             relPathtoAbsPath, &    ! Convert a string with a relative path to an absolute path use for Rsetwd command
             stripBlanks,&          ! simple string function to remove blank spaces
-            changeChar             ! string function to changes a character in string to another (useful for changing spaces to underscores)
+            changeChar,&           ! string function to change a character in string to another (useful for changing spaces to underscores)
+            index                  ! finds the index of a character vector that corresponds to a string input                
 
+  interface index
+    module procedure index_1D
+  end interface 
+    
   ! This routine is a generic utility for making it easier to interface using strings between and others Fortran
   interface int
     module procedure i4_str
@@ -1078,6 +1083,33 @@ function changeChar(strIn,charIn,CharOut) result (strOut)
 
 END function ChangeChar
 !_____________________________________________________________________________________________
+function index_1D(strVec,str)
+    
+    use kinds_dmsl_kit
+
+    IMPLICIT NONE
+
+    ! Dummy Arguments
+    CHARACTER(LEN=*), INTENT(IN) :: strVec(:),Str
+        
+    ! Local Variables
+    INTEGER(mik) :: i,testVec(size(strVec)),test(1),n
+    
+    ! Function Definition
+    integer(mik) :: index_1D
+    n=SIZE(strVec)
+        
+    If (all(StrVec/=Str)) then
+        index_1D=0
+        return
+    end if
+    
+    testVec=(/(i,i=1,n)/)
+    test=PACK(testVec,StrVec==Str)
+    
+    index_1D=test(1)      
+
+end function index_1D
 
 end module MUtilsLib_stringfuncs
 !-------------------------------------------------------------------------
