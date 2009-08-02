@@ -133,7 +133,7 @@ module MUtilsLib_messagelog
         if (msg_log%unit /=6) then
           if (msg_log%append) then ! keep the existing msg_log file (if there is one)
             open(unit = msg_log%unit, file = trim(msg_log%file), status = 'unknown', position = 'append')
-          else ! Rfortran a new msg_log file
+          else ! A new msg_log file
             open(unit = msg_log%unit, file = trim(msg_log%file), status = 'replace')
           end if
           if (msg_log%close) close(msg_log%unit) ! close the log file
