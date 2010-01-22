@@ -9,8 +9,9 @@ module MUtilsLib_messagelog
 ! interfaces of each routine in order to determine how to use
 
 !  INIT_LOG(unit,close,append,active,echo,file,auto_flush) ! set custom parameters for the msg_log file (otherwise use default)
-!  message(message)           ! add message to the msg_log object, defaults to ERROR tag, select tag from predefined list using tagtype
-!  message(msg_type,message)  ! add tag and message to the msg_log object, select tag from predefined list using tagtype
+!  message(message,msg_id,db_id)    ! add message to the msg_log object, defaults to ERROR tag, select tag from predefined list using tagtype, 
+!  message(msg_type,message,msg,db_id)  ! add tag and message to the msg_log object, select tag from predefined list using tagtype
+!           see 'Mesage Database Functionality' below for info on msg_id and db_id
 !  flush_messages()           ! write the entire msg_log to file (unit =6, specifies screen)
 !  get_messages()             ! reads the msg_log file and returns last message or entire msg_log
 !  WARNING()                  ! logical function to check whether any warnings have occurred
@@ -32,6 +33,24 @@ module MUtilsLib_messagelog
 !	(6) The msg_log class has several different options for outputting the data and for tracking errors and
 !     warnings. The warning() and error() routines can be used to provide error handling and check 
 !     if a subroutine executed okay.
+!
+! Message Database Functionality
+!  - Users can supply a msg_id (and db_id) to the message subroutine and that is used to locate message 
+!    in msg_db (given by db_id) which is appended to the message 
+!
+! Notes:
+! (1) msg_db is read-in using init_msg_db which is called from init_log - need to supply db_id and msg_file to init_log
+! (2) msg_file needs to be in csv format, where first line is header and there are 4 columns (integer and 3 character), as follows
+!       ID,short description,long description,remedy
+!       1,"short db message id 1","long db message id 1","remedy id 1"
+!       2,"short db message id 2","long db message id 2","remedy id 2"
+!       -3,"short db message id -3","long db message id -3","remedy id -3" 
+!    see samples\TestMsg_db.csv for more details
+!    Tips: A simple trick to get Excel to put quotes around text is to put a comma in the cell
+! 
+!  (3) Multiplie message data-bases are supported, just need to call init_log again (with append=.true.) to ensure messages are added to the same log file
+! 
+
   use kinds_dmsl_kit
   implicit none
   
@@ -85,9 +104,24 @@ module MUtilsLib_messagelog
                                                        "Debug:       ", &
                                                        "             ", &
                                                        "Fatal Error: " /)
-
+                                                       
+  type msg_db_msg_type                                  ! Type for messages in message database
+    integer(mik):: id                                   ! id for messages in message database                    
+    character(len=len_stdStrD) :: shortDesc             ! message short description 
+    character(len=len_vLongStr) :: longDesc             ! message long description
+    character(len=len_vLongStr) :: remedy               ! possible remedies if message is for an error
+  end type msg_db_msg_type
+        
+  type msg_db_type                                      ! Type for message database
+    character(len=len_stdStrD) :: id                    ! id message database
+    integer(mik) ::n_msg                                ! number of message in message database
+    type(msg_db_msg_type),allocatable :: msg(:)         ! message in message database
+  end type
+  
+  type (msg_db_type), allocatable :: msg_db(:)          ! Message database(s)    
+    
   type(obj_msg_log)  :: msg_log                           ! a private system message log
-
+  
   ! public interface
   public :: init_log, message, flush_messages, warning, error,get_messages
 
@@ -98,7 +132,7 @@ module MUtilsLib_messagelog
 !************************************************************************************************
   contains
 !************************************************************************************************
-    subroutine init_log(unit,close,append,active,echo,file, ignore_warn, ignore_error,auto_flush,debug)
+    subroutine init_log(unit,close,append,active,echo,file, ignore_warn, ignore_error,auto_flush,debug,db_id,msg_file)
       ! description:  Set the parameters for the log file. Not necessary to be called if you are happy with defaults.
       implicit none
       integer, intent(IN), optional  ::   unit          ! file ID unit, screen = 6, file = other
@@ -111,6 +145,9 @@ module MUtilsLib_messagelog
       logical, intent(IN), optional  ::   auto_flush    ! Whether the log should be automatically flushed each time
       logical, intent(IN), optional  ::   debug         ! Whether debug comments should be ignored
       character(len = *), intent(IN), optional :: file ! file name if log is written to file
+      character(len = *), intent(IN), optional :: db_id ! ID of the message database
+      character(len = *), intent(IN), optional :: msg_file ! file name of the msg file for message database
+      integer :: ok
 
       ! Transfer input variables into log object
       if (present(unit))   msg_log%unit   = unit
@@ -139,33 +176,51 @@ module MUtilsLib_messagelog
           if (msg_log%close) close(msg_log%unit) ! close the log file
         end if
       end if
+      
+      if (present(db_id) .and. present(msg_file)) then
+        ok=init_msg_db(db_id=db_id,msg_file=msg_file)
+        if (ok/=0) call message($error,"Unable to initalise msg_db for "//db_id//" with file "//msg_file)
+      end if  
 
     end subroutine init_log
 !************************************************************************************************
-    subroutine add_log_no_tag(message)
+    subroutine add_log_no_tag(message,msg_id,db_id)
       ! A wrapper to simplify recording error messages -default tag is $error
       implicit none
       character(len = *), intent(IN) ::  message  ! Any descriptive message
+      character(len = *), intent(IN),optional ::  db_id
+      integer(mik),intent(in), optional :: msg_id
       
-      call add_log_msg_tag($error,message)
+      call add_log_msg_tag($error,message,msg_id,db_id)
 
     end subroutine
 !************************************************************************************************
-    subroutine add_log_msg_tag(msg_type,message)
+    subroutine add_log_msg_tag(msg_type,message,msg_id,db_id)
      ! Adds a single message to the msg_log object
      ! All arguments non-optional
 
       implicit none
       integer, intent(IN)  ::  msg_type         ! Index of type of tag
       character(len = *), intent(IN) ::  message  ! Any descriptive message
+      character(len = *), intent(IN),optional ::  db_id ! id of the message db
+      integer(mik),intent(in), optional :: msg_id ! message id
+      
+      character(len=len_vLongStr):: messageLc
+      
       character(len = tag_len), pointer, dimension(:) ::   Tcopy =>null() ! Temporary storage
       character(len = msg_len), pointer, dimension(:) ::  Ncopy =>null() ! Temporary storage
       integer  ::   s ! size of message array
 
+      if (present(db_id) .and. present(msg_id)) then
+        messageLc="["//db_id//"] "//trim(message)//" ("//trim(get_msg_from_db(msg_id,db_id))//")"
+      else
+        messageLc=TRIM(message)
+      end if
+      
       s = 0
       if(associated(msg_log%message)) s = size(msg_log%message)
       if(s/=0) then
-        if((trim(msg_log%message(s))==trim(message)).AND.(trim(tag(msg_type))==trim(msg_log%tag(s)))) then
+        if((trim(msg_log%message(s))==trim(messageLc)).AND.(trim(tag(msg_type))==trim(msg_log%tag(s)))) then
           ! Avoid multiple identical concurrent entries
           ! I.e. The most recent entry was identical to the one being added, so there is no need to add it in
           ! It is however possible to have multiple entries ... provided they are not concurrent
@@ -196,20 +251,20 @@ module MUtilsLib_messagelog
           msg_log%tag(1:s) = Tcopy(1:s)
           msg_log%message(1:s) = Ncopy(1:s)
           msg_log%tag(s+1) = tag(msg_type)   ! append the new tag onto the end
-          msg_log%message(s+1) = trim(message) ! append the new message onto the end
+          msg_log%message(s+1) = trim(messageLc) ! append the new message onto the end
           deallocate(Tcopy); nullify(Tcopy)
           deallocate(Ncopy); nullify(Ncopy)
         else
           ! add a single message into the msg_log
           allocate(msg_log%message(1))
           allocate(msg_log%tag(1))
-          msg_log%message(1) = trim(message)   ! insert the message
+          msg_log%message(1) = trim(messageLc)   ! insert the message
           msg_log%tag(1) = tag(msg_type)  ! insert the tag
         end if
       end if
 
       if(msg_type==$fatal) then
-        call add_log_no_tag("A fatal error has occurred. Please check "//TRIM(msg_log%file)//" for details. Program was not terminated, though results may be abnormal.")
+        call add_log_no_tag("Fatal error. Please check "//TRIM(msg_log%file)//". Program not terminated, though results may be abnormal.")
         call flush_messages()
       end if
 
@@ -366,6 +421,85 @@ module MUtilsLib_messagelog
        character(1), intent(in) :: ch
        comchar = ch
      end subroutine
+!************************************************************************************************
+    function init_msg_db(db_id,msg_file) result(ok)
+     ! description:  Initiliases a message file db and read's in a msg file into the database
+      use MUtilsLib_fileIO, only : findEof
+      use MUtilslib_stringfuncs, only : operator(//)
+      implicit none
+      character(len = *), intent(IN) :: msg_file ! file name of msg file
+      character(len = *), intent(IN) :: db_id ! id of the message db
+      
+      type (msg_db_type),allocatable ::new_msg_db(:)
+      integer(mik) :: ok,i
+      integer(mik) :: msg_db_num
+      character(len=len_vlongStr):: msg
+      
+      
+      if (.not.allocated(msg_db)) then
+        allocate(msg_db(1))
+        msg_db_num=1
+      else
+        msg_db_num=SIZE(msg_db)
+        allocate(new_msg_db(msg_db_num+1))
+        new_msg_db(1:msg_db_num)=msg_db
+        call move_alloc(new_msg_db,msg_db)
+        msg_db_num=msg_db_num+1
+      end if
+        
+      ! assign db_id
+      msg_db(msg_db_num)%id=db_id
+      
+      ! Read-in msg file
+      msg_db(msg_db_num)%n_msg=findEof(filepath=msg_file,err=ok,msg=msg)-1
+      if (ok/=0) then; call message($error,msg); return; end if
+      allocate(msg_db(msg_db_num)%msg(msg_db(msg_db_num)%n_msg))
+      
+      open(unit=10,file=msg_file,status="old",iostat=ok)
+      if (ok/=0)then; call message($error,"Unable to open "//msg_file//"in init_msg_db"); return; end if
+      read(10,*) ! Skip header
+      do i=1,msg_db(msg_db_num)%n_msg
+        read(10,*,iostat=ok) msg_db(msg_db_num)%msg(i)
+        if (ok/=0) then; call message($error,"Unable to read msg "//i//" in file: "//msg_file//" in init_msg_db"); end if
+      end do
+      
+      close(unit=10)
+     
+  end function init_msg_db
+!************************************************************************************************
+    function get_msg_from_db(msg_id,db_id) result(msg)
+     ! description:  Gets a message from the message db
+      use MUtilslib_stringfuncs, only : operator(//)
+      implicit none
+      character(len = *), intent(IN) :: db_id ! id of the message db 
+      integer(mik), intent(IN) :: msg_id ! message id 
+      
+      integer(mik) :: ok,i
+      integer(mik) :: msg_db_num,msg_num
+      character(len=len_vlongStr):: msg
+      
+      ! First find db
+      do i=1,size(msg_db)
+        if (trim(msg_db(i)%id)==trim(db_id)) then; msg_db_num=i;exit;end if
+      end do
+      
+      if (i>size(msg_db)) then
+           msg="Message db: "//db_id// " not found"
+           return
+      end if
+      
+      ! Find and return msg in db
+      do i=1,msg_db(msg_db_num)%n_msg
+        if (msg_db(msg_db_num)%msg(i)%id==msg_id) then; msg_num=i;exit;end if
+      end do
+      
+      if (i>msg_db(msg_db_num)%n_msg) then
+           msg="Msg id: "//msg_id//" not found in "//db_id
+      else
+        msg=trim(msg_db(msg_db_num)%msg(msg_num)%shortdesc)
+      end if
+      
+  end function get_msg_from_db
 !************************************************************************************************
 end module MUtilsLib_messagelog
 !************************************************************************************************

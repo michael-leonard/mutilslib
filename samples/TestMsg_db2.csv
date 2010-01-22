@@ -1,0 +1,4 @@
+ID,short description,long description,remedy
+1,"short db2 message id 1","long db2 message id 1","remedy db2 id 1"
+2,"short db2 message id 2","long db2 message id 2","remedy db2 id 2"
+-3,"short db2 message id -3","long db2 message id -3","remedy db2 id -3"
