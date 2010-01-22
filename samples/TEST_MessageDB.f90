@@ -17,15 +17,15 @@
     
     ! Generate some error messages
     call message("TEST MESSAGE: Default messages are errors")
-    call message($warn,"TEST MESSAGE:  This is a test-warning message")
+    call message(log_warn,"TEST MESSAGE:  This is a test-warning message")
     do i=1,3
-       call message($error,"Test for the message db",msg_id=i,db_id="Testdb")
+       call message(log_error,"Test for the message db",msg_id=i,db_id="Testdb")
     end do
-    call message($error,"Test for the message db with wrong msg_id ",msg_id=4,db_id="Testdb")
-    call message($error,"This is a test-error message for the message db with wrong db_id",msg_id=4,db_id="Testdb_wrong")
+    call message(log_error,"Test for the message db with wrong msg_id ",msg_id=4,db_id="Testdb")
+    call message(log_error,"This is a test-error message for the message db with wrong db_id",msg_id=4,db_id="Testdb_wrong")
 
     do i=1,3
-       call message($error,"Test for the message db",msg_id=i,db_id="Testdb2")
+       call message(log_error,"Test for the message db",msg_id=i,db_id="Testdb2")
     end do
     
     pause

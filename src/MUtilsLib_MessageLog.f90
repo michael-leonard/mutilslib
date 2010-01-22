@@ -78,7 +78,21 @@ module MUtilsLib_messagelog
     character(len = 100)  ::   file = 'message.log' ! file name if msg_log is written to file
   end type obj_msg_log
 
+  
   ! Enumeration for different tag types (public)
+  integer, parameter, public  ::   log_error   = 1, &
+                                   log_warn    = 2, &
+                                   log_write   = 4, &
+                                   log_calc    = 5, &
+                                   log_$name    = 6, &
+                                   log_path    = 7, &
+                                   log_title   = 8, &
+                                   log_comment = 9, &
+                                   log_debug   = 10, &
+                                   log_blank   = 11, &
+                                   log_fatal   = 12
+
+  ! Enumeration for different tag types (public) - retained for backwards compatibility, but obselete becomes $ prefix is not standard F95
   integer, parameter, public  ::   $error   = 1, &
                                    $warn    = 2, &
                                    $read    = 3, &
@@ -91,6 +105,7 @@ module MUtilsLib_messagelog
                                    $debug   = 10, &
                                    $blank   = 11, &
                                    $fatal   = 12
+  
 
   character(len = tag_len), parameter :: tag(1:12) = (/"Error:       ", &
                                                        "Warning:     ", &
@@ -179,7 +194,7 @@ module MUtilsLib_messagelog
       
       if (present(db_id) .and. present(msg_file)) then
         ok=init_msg_db(db_id=db_id,msg_file=msg_file)
-        if (ok/=0) call message($error,"Unable to initalise msg_db for "//db_id//" with file "//msg_file)
+        if (ok/=0) call message(log_error,"Unable to initalise msg_db for "//db_id//" with file "//msg_file)
       end if  
 
     end subroutine init_log
@@ -191,7 +206,7 @@ module MUtilsLib_messagelog
       character(len = *), intent(IN),optional ::  db_id
       integer(mik),intent(in), optional :: msg_id
       
-      call add_log_msg_tag($error,message,msg_id,db_id)
+      call add_log_msg_tag(log_error,message,msg_id,db_id)
 
     end subroutine
 !************************************************************************************************
@@ -231,11 +246,11 @@ module MUtilsLib_messagelog
 
       if (msg_log%active) then
         select case(msg_type)
-          case($error)
+          case(log_error)
             msg_log%err = msg_log%err + 1   ! increment the error count
-          case($warn)
+          case(log_warn)
             msg_log%warn = msg_log%warn + 1 ! increment the warning count
-          case($debug)
+          case(log_debug)
             if(.NOT.msg_log%debug) return ! ignore any debug comments made to the msg_log
         end select
 
@@ -288,9 +303,9 @@ module MUtilsLib_messagelog
           if (msg_log%unit ==6) then ! write to screen only
             ! write all msg_log entries to screen
             do i = 1, size(msg_log%message)
-              if (msg_log%ignore_warn .AND. msg_log%tag(i) == tag($warn)) cycle ! ignore warning messages
-              if (msg_log%ignore_error .AND. msg_log%tag(i) == tag($error)) cycle ! ignore error messages
-                if(msg_log%tag(i)==tag($blank)) then
+              if (msg_log%ignore_warn .AND. msg_log%tag(i) == tag(log_warn)) cycle ! ignore warning messages
+              if (msg_log%ignore_error .AND. msg_log%tag(i) == tag(log_error)) cycle ! ignore error messages
+                if(msg_log%tag(i)==tag(log_blank)) then
                     write(*,'(A)') trim(comchar) // trim(msg_log%tag(i)) // trim(msg_log%message(i))
                 else
                     write(*,'(A)') trim(comchar) // trim(msg_log%tag(i)) //" "// trim(msg_log%message(i))
@@ -302,9 +317,9 @@ module MUtilsLib_messagelog
 
               ! write all msg_log entries to file
               do i = 1, size(msg_log%message)
-                if (msg_log%ignore_warn .AND. msg_log%tag(i) == tag($warn)) cycle ! ignore warning messages
-                if (msg_log%ignore_error .AND. msg_log%tag(i) == tag($error)) cycle ! ignore error messages
-                if(msg_log%tag(i)==tag($blank)) then
+                if (msg_log%ignore_warn .AND. msg_log%tag(i) == tag(log_warn)) cycle ! ignore warning messages
+                if (msg_log%ignore_error .AND. msg_log%tag(i) == tag(log_error)) cycle ! ignore error messages
+                if(msg_log%tag(i)==tag(log_blank)) then
                     write(msg_log%unit,'(A)') trim(comchar) // trim(msg_log%tag(i)) // trim(msg_log%message(i))
                 else
                     write(msg_log%unit,'(A)') trim(comchar) // trim(msg_log%tag(i)) //" "// trim(msg_log%message(i))
@@ -314,9 +329,9 @@ module MUtilsLib_messagelog
               ! the message needs to be echoed to screen
               if (msg_log%echo) then
                 do i = 1, size(msg_log%message)
-                  if (msg_log%ignore_warn .AND. msg_log%tag(i) == tag($warn)) cycle ! ignore warning messages
-                  if (msg_log%ignore_error .AND. msg_log%tag(i) == tag($error)) cycle ! ignore error messages
-                  if(msg_log%tag(i)==tag($blank)) then
+                  if (msg_log%ignore_warn .AND. msg_log%tag(i) == tag(log_warn)) cycle ! ignore warning messages
+                  if (msg_log%ignore_error .AND. msg_log%tag(i) == tag(log_error)) cycle ! ignore error messages
+                  if(msg_log%tag(i)==tag(log_blank)) then
                     write(*,'(A)') trim(comchar) // trim(msg_log%tag(i)) // trim(msg_log%message(i))
                   else
                     write(*,'(A)') trim(comchar) // trim(msg_log%tag(i)) //" "// trim(msg_log%message(i))
@@ -452,15 +467,15 @@ module MUtilsLib_messagelog
       
       ! Read-in msg file
       msg_db(msg_db_num)%n_msg=findEof(filepath=msg_file,err=ok,msg=msg)-1
-      if (ok/=0) then; call message($error,msg); return; end if
+      if (ok/=0) then; call message(log_error,msg); return; end if
       allocate(msg_db(msg_db_num)%msg(msg_db(msg_db_num)%n_msg))
       
       open(unit=10,file=msg_file,status="old",iostat=ok)
-      if (ok/=0)then; call message($error,"Unable to open "//msg_file//"in init_msg_db"); return; end if
+      if (ok/=0)then; call message(log_error,"Unable to open "//msg_file//"in init_msg_db"); return; end if
       read(10,*) ! Skip header
       do i=1,msg_db(msg_db_num)%n_msg
         read(10,*,iostat=ok) msg_db(msg_db_num)%msg(i)
-        if (ok/=0) then; call message($error,"Unable to read msg "//i//" in file: "//msg_file//" in init_msg_db"); end if
+        if (ok/=0) then; call message(log_error,"Unable to read msg "//i//" in file: "//msg_file//" in init_msg_db"); end if
       end do
       
       close(unit=10)
@@ -525,8 +540,8 @@ IMPLICIT NONE
 !    CALL alertDialog("ERROR: "//mess)
 ! Wrapper Routine to print to screen
     !PRINT *,"ERROR: "//mess; READ (*,*)
-    call message($FATAL,trim(mess))
+    call message(log_FATAL,trim(mess))
 ! Wrapper Routine to ML's message logging system
-!  call message($fatal,msg)
+!  call message(log_fatal,msg)
 END SUBROUTINE fatal_error
 end module errorMOD
