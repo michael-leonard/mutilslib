@@ -61,7 +61,7 @@ module MUtilsLib_System
      val=expand(ev=ev)
      if (trim(val)==trim(ev)) then
       ok=-1;
-      call message($error,"Environment Variable: "//trim(ev)//" not found")
+      call message(log_error,"Environment Variable: "//trim(ev)//" not found")
       val=undefCH
      end if
    end function
@@ -226,7 +226,7 @@ module MUtilsLib_System
      end do
      
      if (count==0) then ! Make sure there are some files with that extension in path
-      call message($warn,errmsg)
+      call message(log_warn,errmsg)
       ok=1
       close(9538,status="delete")
       return
