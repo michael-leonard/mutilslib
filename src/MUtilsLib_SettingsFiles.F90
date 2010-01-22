@@ -29,6 +29,7 @@ interface ReadSetting
    module procedure ReadSetting_0d_str
    module procedure ReadSetting_0d_i_mik
    module procedure ReadSetting_0d_r_mrk
+   module procedure ReadSetting_0d_l_mlk
    module procedure ReadSetting_1d_str
    module procedure ReadSetting_1d_r_mrk
    module procedure ReadSetting_2d_r_mrk
@@ -317,6 +318,63 @@ end do
 
 
 end function ReadSetting_0d_r_mrk
+!#**********************************************************************
+function ReadSetting_0d_l_mlk(file,unit,keyword,val,rewindIn) result(ok)
+!#**********************************************************************
+!#* Purpose: Read Settings for logical values
+!#**********************************************************************
+!#* Programmer: Mark Thyer, University of Newcastle
+!#**********************************************************************
+use kinds_dmsl_kit ! numeric kind definitions from DMSL
+use MUtilsLib_Messagelog
+use MUtilsLib_StringFuncs, only : operator(//),real
+implicit none
+
+! Dummies - Inputs
+character(len=*), intent(in) :: file                ! file
+integer(mik), intent(in) :: unit                        ! Unit of file
+character(len=*), intent(in) :: keyword                 ! Keyword
+logical(mlk), intent(in),optional :: RewindIn                    ! Rewind file?
+
+! Dummies - Outputs
+logical(mlk), intent(out) :: val              ! Value of Keyword
+! Function - Outputs
+integer(mik) :: ok                                       ! Error Flag (0 = No Errors, >0 Error condition)
+! Locals
+integer(mik) :: status                                    ! 
+character(len=len_vLongStr) :: readLine                       ! 
+ok=0
+! Search file for keyword
+ok=findkeyword(file,unit,keyword,rewindIn=rewindIn)
+if (ok/=0) then
+  call message($ERROR,"Error finding keyword:"//trim(keyword)//" in settings file:"//trim(file)); return
+end if
+! Once found keyword then read value
+do
+  read(unit,*,iostat=status) readLine
+  select case(status)
+  case(0)
+    if (readLine(1:1)=="!") cycle ! Skip comments
+    select case(TRIM(readline))
+    case("T","t","TRUE","true")
+        val=.true.
+    case("F","f","FALSE","false")
+        val=.false.    
+    end select
+    exit
+  case(-1) 
+    call message($ERROR,"Reached end of file before finding value of keyword:"//trim(keyword)//" in settings file:"//trim(file))
+    ok=status
+    return
+  case default
+    call message($ERROR,"Error No of "//status//" while searching for value of keyword:"//trim(keyword)//" in settings file:"//trim(file))
+    ok=status
+   return
+  end select
+end do  
+
+
+end function ReadSetting_0d_l_mlk
 !#**********************************************************************
 function ReadSetting_1d_str(file,unit,keyword,val,rewindIn) result(ok)
 !#**********************************************************************
