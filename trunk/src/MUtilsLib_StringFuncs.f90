@@ -31,8 +31,8 @@ module MUtilsLib_stringfuncs
             relPathtoAbsPath, &    ! Convert a string with a relative path to an absolute path use for Rsetwd command
             stripBlanks,&          ! simple string function to remove blank spaces
             changeChar,&           ! string function to change a character in string to another (useful for changing spaces to underscores)
-            index                  ! finds the index of a character vector that corresponds to a string input                
-
+            index, &                  ! finds the index of a character vector that corresponds to a string input                
+            insertString
   interface index
     module procedure index_1D
   end interface 
@@ -1110,6 +1110,48 @@ function index_1D(strVec,str)
     index_1D=test(1)      
 
 end function index_1D
+!_____________________________________________________________________________________________
+function insertString(strIn) result(outString)
+    !use MUtilsLib_varFuncs,only :checkPresent
+    use kinds_dmsl_kit
+
+    IMPLICIT NONE
+
+    ! Dummy Arguments
+    CHARACTER(LEN=*), INTENT(IN) :: strIn
+    !CHARACTER(LEN=*), INTENT(IN), optional :: insertStr
+    !integer(mik),intent(in), optional :: strlen
+        
+    ! Local Variables
+    INTEGER(mik) :: i,lenInsert,j,k
+    character(len=len_shortStr) :: insertStrLc
+    integer(mik) :: strlenLc
+    
+    ! Function Definition
+    CHARACTER(LEN=len_vLongStr) :: outString 
+            
+    insertStrlc="\n"C
+    strlenLc=72
+    outString=""
+    lenInsert=len_trim(insertStrlc)
+    j=1
+    i=1
+    do while (i<=len_trim(strIn))
+        if (mod(i,strlenLc)==0) then
+            k=0
+            do while (strIn(i-k:i-k)/=" "); 
+                k=k+1
+            end do
+            outString(j-k:j-k+lenInsert)=trim(insertStrlc)
+            j=j-k+lenInsert
+            outString(j:j+k)=strIn(i-k:i)
+            j=j+k
+        end if
+        outString(j:j)=StrIn(i:i)
+        j=j+1
+        i=i+1
+    end do
+end function insertString
 
 end module MUtilsLib_stringfuncs
 !-------------------------------------------------------------------------

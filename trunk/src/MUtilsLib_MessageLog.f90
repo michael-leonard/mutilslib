@@ -213,7 +213,7 @@ module MUtilsLib_messagelog
     subroutine add_log_msg_tag(msg_type,message,msg_id,db_id)
      ! Adds a single message to the msg_log object
      ! All arguments non-optional
-
+      use MUtilsLib_StringFuncs, only : insertString
       implicit none
       integer, intent(IN)  ::  msg_type         ! Index of type of tag
       character(len = *), intent(IN) ::  message  ! Any descriptive message
@@ -227,11 +227,11 @@ module MUtilsLib_messagelog
       integer  ::   s ! size of message array
 
       if (present(db_id) .and. present(msg_id)) then
-        messageLc="["//db_id//"] "//trim(message)//" ("//trim(get_msg_from_db(msg_id,db_id))//")"
+        messageLc="["//db_id//"] "//trim(message)//trim(get_msg_from_db(msg_id,db_id))
       else
         messageLc=TRIM(message)
       end if
-      
+      messageLc = trim(insertString(messageLc))
       s = 0
       if(associated(msg_log%message)) s = size(msg_log%message)
       if(s/=0) then
@@ -499,7 +499,7 @@ module MUtilsLib_messagelog
       end do
       
       if (i>size(msg_db)) then
-           msg="Message db: "//db_id// " not found"
+           msg=" (Message db: "//db_id// " not found)"
            return
       end if
       
@@ -509,9 +509,9 @@ module MUtilsLib_messagelog
       end do
       
       if (i>msg_db(msg_db_num)%n_msg) then
-           msg="Msg id: "//msg_id//" not found in "//db_id
+           msg=" (Msg id: "//msg_id//" not found in "//db_id//")"
       else
-        msg=trim(msg_db(msg_db_num)%msg(msg_num)%shortdesc)
+        msg=" ("//trim(msg_db(msg_db_num)%msg(msg_num)%shortdesc)//") Remedy: "//trim(msg_db(msg_db_num)%msg(msg_num)%remedy)
       end if
       
   end function get_msg_from_db
