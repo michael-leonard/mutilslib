@@ -120,9 +120,9 @@ module MUtilsLib_messagelog
                                                        "             ", &
                                                        "Fatal Error: " /)
                                                        
-  type msg_db_msg_type                                  ! Type for messages in message database
+  type msg_db_msg_type                                 ! Type for messages in message database
     integer(mik):: id                                   ! id for messages in message database                    
-    character(len=len_stdStrD) :: shortDesc             ! message short description 
+    character(len=len_LongStr) :: shortDesc             ! message short description 
     character(len=len_vLongStr) :: longDesc             ! message long description
     character(len=len_vLongStr) :: remedy               ! possible remedies if message is for an error
   end type msg_db_msg_type
@@ -475,7 +475,13 @@ module MUtilsLib_messagelog
       read(10,*) ! Skip header
       do i=1,msg_db(msg_db_num)%n_msg
         read(10,*,iostat=ok) msg_db(msg_db_num)%msg(i)
-        if (ok/=0) then; call message(log_error,"Unable to read msg "//i//" in file: "//msg_file//" in init_msg_db"); end if
+        if (ok/=0) then; 
+          call message(log_error,"Unable to read msg "//i//" in file: "//msg_file//" in init_msg_db"); 
+        end if
+        ! Remove comma's on end
+        msg_db(msg_db_num)%msg(i)%shortDesc=msg_db(msg_db_num)%msg(i)%shortDesc(1:(len_trim(msg_db(msg_db_num)%msg(i)%shortDesc)-1))
+        msg_db(msg_db_num)%msg(i)%longDesc=msg_db(msg_db_num)%msg(i)%longDesc(1:(len_trim(msg_db(msg_db_num)%msg(i)%longDesc)-1))
+        msg_db(msg_db_num)%msg(i)%remedy=msg_db(msg_db_num)%msg(i)%remedy(1:(len_trim(msg_db(msg_db_num)%msg(i)%remedy)-1))
       end do
       
       close(unit=10)
@@ -509,9 +515,12 @@ module MUtilsLib_messagelog
       end do
       
       if (i>msg_db(msg_db_num)%n_msg) then
-           msg=" (Msg id: "//msg_id//" not found in "//db_id//")"
+           msg=" (Msg id: "//msg_id//" not found in "//db_id//" db)"
       else
-        msg=" ("//trim(msg_db(msg_db_num)%msg(msg_num)%shortdesc)//") Remedy: "//trim(msg_db(msg_db_num)%msg(msg_num)%remedy)
+        msg=" ("//trim(msg_db(msg_db_num)%msg(msg_num)%shortdesc)//")"  
+        if (trim(msg_db(msg_db_num)%msg(msg_num)%remedy)/="") then
+          msg=trim(msg)//" Remedy: "//trim(msg_db(msg_db_num)%msg(msg_num)%remedy)
+        end if                
       end if
       
   end function get_msg_from_db
