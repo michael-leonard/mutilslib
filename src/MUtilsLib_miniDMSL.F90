@@ -247,3 +247,36 @@ module iotools_dmsl_mod
 integer(4),parameter::normalFinish=0
 
 end module iotools_dmsl_mod
+!******************************************************************
+! (C) Copyright 2009-2010  ---  Dmitri Kavetski  ---  All rights reserved
+!******************************************************************
+! From   v5.011.000 of DMSL
+module intercom_dmsl_kit
+! Purpose: Program/language intercommunication:
+! (A) Defines global filepaths for
+!     (1) DMSL components'
+!     (2) RFortran and R scripts;
+!     (3) RGui (associated with RFortran).
+! (B) Provides language interoperability (COM, etc)
+! --
+! Programmer: Dmitri Kavetski & Mark Thyer, 2009
+! Civil, Environmental Engineering and Surveying
+! University of Newcastle, Callaghan, NSW 2308, Australia.
+! --
+! Comments:
+! 1. The default values can be overwritten in calling apps.
+! --
+use kinds_dmsl_kit
+implicit none
+private;save
+! 1. PATHS - deleted to save confusion!
+! 2. PROCEDURE STATUS
+public::myProcID,openedCOM
+!----------------------------------------------------
+integer(MY_INT_PTR_KIND)::myProcID=undefIN  ! procID of the current process
+logical(mlk)::openedCOM=.false.             ! true when the COM server is already initialized
+!----------------------------------------------------
+!----------------------------------------------------
+!----------------------------------------------------
+endmodule intercom_dmsl_kit
+!******************************************************************
