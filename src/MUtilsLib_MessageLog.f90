@@ -9,8 +9,10 @@ module MUtilsLib_messagelog
 ! interfaces of each routine in order to determine how to use
 
 !  INIT_LOG(unit,close,append,active,echo,file,auto_flush) ! set custom parameters for the msg_log file (otherwise use default)
-!  message(message,msg_id,db_id)    ! add message to the msg_log object, defaults to ERROR tag, select tag from predefined list using tagtype, 
-!  message(msg_type,message,msg,db_id)  ! add tag and message to the msg_log object, select tag from predefined list using tagtype
+!  message(message,msg_id,db_id)    ! add message to the msg_log object, defaults to ERROR tag, 
+!                                                   select tag from predefined list using tagtype, 
+!  message(msg_type,message,msg,db_id)  ! add tag and message to the msg_log object, 
+!                                                   select tag from predefined list using tagtype
 !           see 'Mesage Database Functionality' below for info on msg_id and db_id
 !  flush_messages()           ! write the entire msg_log to file (unit =6, specifies screen)
 !  get_messages()             ! reads the msg_log file and returns last message or entire msg_log
@@ -48,15 +50,17 @@ module MUtilsLib_messagelog
 !    see samples\TestMsg_db.csv for more details
 !    Tips: A simple trick to get Excel to put quotes around text is to put a comma in the cell
 ! 
-!  (3) Multiplie message data-bases are supported, just need to call init_log again (with append=.true.) to ensure messages are added to the same log file
+!  (3) Multiplie message data-bases are supported, just need to call init_log again (with append=.true.) 
+!      to ensure messages are added to the same log file
 ! 
 
   use kinds_dmsl_kit
   implicit none
+  save
   
   private ! All components are private unless declared otherwise
   integer, parameter, public   ::  tag_len  = len_stdStrB   ! tag length
-  integer, parameter, public   ::  msg_len = len_vLongStr   ! some messages can contain strings of deep file directories, therefore recommended min = 255
+  integer, parameter, public   ::  msg_len = len_vLongStr   ! some messages can contain strings of deep file directories
   integer, parameter, public   ::  msg_tag_len = msg_len+tag_len
   character(len=1)  :: comchar = " "    ! a comment character
 
@@ -92,7 +96,8 @@ module MUtilsLib_messagelog
                                    log_blank   = 11, &
                                    log_fatal   = 12
 
-  ! Enumeration for different tag types (public) - retained for backwards compatibility, but obselete becomes $ prefix is not standard F95
+  ! Enumeration for different tag types (public) - retained for backwards compatibility,
+  ! but obselete becomes $ prefix is not standard F95
   integer, parameter, public  ::   $error   = 1, &
                                    $warn    = 2, &
                                    $read    = 3, &
@@ -122,8 +127,7 @@ module MUtilsLib_messagelog
                                                        
   type msg_db_msg_type                                 ! Type for messages in message database
     integer(mik):: id                                   ! id for messages in message database                    
-    character(len=len_LongStr) :: shortDesc             ! message short description 
-    character(len=len_vLongStr) :: longDesc             ! message long description
+    character(len=len_LongStr) :: desc                  ! message description 
     character(len=len_vLongStr) :: remedy               ! possible remedies if message is for an error
   end type msg_db_msg_type
         
@@ -178,7 +182,8 @@ module MUtilsLib_messagelog
 
       ! Check for consistency/logic of log parameters
       if (msg_log%echo .AND. msg_log%unit == 6)   msg_log%unit   = 111     ! When echo-ing must have file ID other than 6
-      if (msg_log%append .AND. msg_log%unit == 6) msg_log%append = .false. ! file appending is not needed when  writing to screen only
+      if (msg_log%append .AND. msg_log%unit == 6) msg_log%append = .false. ! file appending is not needed 
+                                                                           ! when  writing to screen only
 
       ! if necessary open the log file
       if (msg_log%active) then
@@ -278,8 +283,9 @@ module MUtilsLib_messagelog
         end if
       end if
 
-      if(msg_type==$fatal) then
-        call add_log_no_tag("Fatal error. Please check "//TRIM(msg_log%file)//". Program not terminated, though results may be abnormal.")
+      if(msg_type==log_fatal) then
+        call add_log_no_tag("Fatal error. Please check "//TRIM(msg_log%file)// &
+                        ". Program not terminated, though results may be abnormal.")
         call flush_messages()
       end if
 
@@ -340,7 +346,8 @@ module MUtilsLib_messagelog
               end if
 
             ! close the file again if specified
-            !if (msg_log%close) open(unit = msg_log%unit, file = trim(msg_log%file), status = 'old', position = 'append') ML's old like
+            !if (msg_log%close) open(unit = msg_log%unit, file = trim(msg_log%file), &
+            !  status = 'old', position = 'append') ML's old line
             if (msg_log%close) close(unit=msg_log%unit) ! MT's new line
 
           end if
@@ -361,7 +368,8 @@ module MUtilsLib_messagelog
       use MUtilsLib_fileIO, only : findEOF
       implicit none
       ! Outputs      
-      character(len = msg_tag_len), allocatable, dimension(:),intent(out),optional ::  allmessages ! Descriptive text of tags and messages
+      character(len = msg_tag_len), allocatable, dimension(:),intent(out),optional ::  allmessages ! Descriptive text 
+                                                                                                   ! of tags and messages
       character(len = msg_tag_len), intent(out),optional ::  lastmessage ! Descriptive text of tags and messages
       
       integer :: err
@@ -373,8 +381,8 @@ module MUtilsLib_messagelog
 
       ! Initialisation
       call flush_messages ! Ensures all messages are sent to msg_log file before retrieval
-	  test_len=(msg_len+tag_len)
-      
+      test_len=(msg_len+tag_len)
+            
       if (present(lastmessage)) then ! If looking for last-only message
         nMess=findEOF(filepath=(msg_log%file),err=err,msg=msg)
         if (err/=0) then
@@ -383,7 +391,7 @@ module MUtilsLib_messagelog
         end if
         open(unit = msg_log%unit, file = trim(msg_log%file), status = 'old')
         do i=1,(nMess-1)
-	      read(msg_log%unit,'(a<test_len>)') dummy
+        read(msg_log%unit,'(a<test_len>)') dummy
         end do
         read(msg_log%unit,'(a<test_len>)') lastmessage
         close(msg_log%unit)
@@ -479,8 +487,7 @@ module MUtilsLib_messagelog
           call message(log_error,"Unable to read msg "//i//" in file: "//msg_file//" in init_msg_db"); 
         end if
         ! Remove comma's on end
-        msg_db(msg_db_num)%msg(i)%shortDesc=msg_db(msg_db_num)%msg(i)%shortDesc(1:(len_trim(msg_db(msg_db_num)%msg(i)%shortDesc)-1))
-        msg_db(msg_db_num)%msg(i)%longDesc=msg_db(msg_db_num)%msg(i)%longDesc(1:(len_trim(msg_db(msg_db_num)%msg(i)%longDesc)-1))
+        msg_db(msg_db_num)%msg(i)%desc=msg_db(msg_db_num)%msg(i)%desc(1:(len_trim(msg_db(msg_db_num)%msg(i)%desc)-1))
         msg_db(msg_db_num)%msg(i)%remedy=msg_db(msg_db_num)%msg(i)%remedy(1:(len_trim(msg_db(msg_db_num)%msg(i)%remedy)-1))
       end do
       
@@ -495,7 +502,7 @@ module MUtilsLib_messagelog
       character(len = *), intent(IN) :: db_id ! id of the message db 
       integer(mik), intent(IN) :: msg_id ! message id 
       
-      integer(mik) :: ok,i
+      integer(mik) :: i
       integer(mik) :: msg_db_num,msg_num
       character(len=len_vlongStr):: msg
       
@@ -517,7 +524,7 @@ module MUtilsLib_messagelog
       if (i>msg_db(msg_db_num)%n_msg) then
            msg=" (Msg id: "//msg_id//" not found in "//db_id//" db)"
       else
-        msg=" ("//trim(msg_db(msg_db_num)%msg(msg_num)%shortdesc)//")"  
+        msg=" ("//trim(msg_db(msg_db_num)%msg(msg_num)%desc)//")"  
         if (trim(msg_db(msg_db_num)%msg(msg_num)%remedy)/="") then
           msg=trim(msg)//" Remedy: "//trim(msg_db(msg_db_num)%msg(msg_num)%remedy)
         end if                
