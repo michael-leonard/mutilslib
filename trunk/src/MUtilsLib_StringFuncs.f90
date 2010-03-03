@@ -30,7 +30,8 @@ module MUtilsLib_stringfuncs
             removeChar, &          ! Remove Character from string
             relPathtoAbsPath, &    ! Convert a string with a relative path to an absolute path use for Rsetwd command
             stripBlanks,&          ! simple string function to remove blank spaces
-            changeChar,&           ! string function to change a character in string to another (useful for changing spaces to underscores)
+            changeChar,&           ! string function to change a character in string to another 
+                                   ! (useful for changing spaces to underscores)
             index, &                  ! finds the index of a character vector that corresponds to a string input                
             insertString
   interface index
@@ -153,7 +154,8 @@ module MUtilsLib_stringfuncs
     implicit none
     integer, intent(in) :: i     ! the integer variable
     integer, intent(in) :: n     ! n the length of the return string
-    character(len = 1), optional, intent(in) :: pad ! should the leading fields be padded with zeroes, return string is padded with this character default blank
+    character(len = 1), optional, intent(in) :: pad ! should the leading fields be padded with zeroes, 
+                                                    ! return string is padded with this character default blank
     ! Locals
     character(len = n) :: ch     ! the string to be returned
     character(len = 20) :: temp  ! temporary variable
@@ -175,7 +177,8 @@ module MUtilsLib_stringfuncs
     implicit none
     real(4), intent(in) :: r     ! the real variable
     integer, intent(in) :: n     ! n the length of the return string (number of significant digits)
-    character(len = 1), optional, intent(in) :: pad ! should the leading fields be padded with zeroes, return string is padded with this character default blank
+    character(len = 1), optional, intent(in) :: pad ! should the leading fields be padded with zeroes, 
+                                                    ! return string is padded with this character default blank
     ! Locals
     character(len = n) :: ch     ! the string to be returned
     character(len = 20) :: temp  ! temporary variable
@@ -197,7 +200,8 @@ module MUtilsLib_stringfuncs
     implicit none
     real(8), intent(in) :: r     ! the real variable
     integer, intent(in) :: n     ! n the length of the return string (number of significant digits)
-    character(len = 1), optional, intent(in) :: pad ! should the leading fields be padded with zeroes, return string is padded with this character default blank
+    character(len = 1), optional, intent(in) :: pad ! should the leading fields be padded with zeroes, 
+                                                    ! return string is padded with this character default blank
     ! Locals
     character(len = n) :: ch     ! the string to be returned
     character(len = 30) :: temp  ! temporary variable (using CVF string needs to be atleast len = 24 to avoid crash)
@@ -507,7 +511,9 @@ module MUtilsLib_stringfuncs
 
   function r4_array_concat(r) result(ch)
     ! Convert the array into a string of numbers that produces a command that will be interpreted as a vector in R
-    ! length of string is sum(real string length) + (number of ints -1 (for commas)) + 2 brackets + (1 for the leading 'c')... this includes commas and close brackets
+    ! length of string is sum(real string length) + 
+    ! (number of ints -1 (for commas)) + 2 brackets + (1 for the leading 'c')...
+    !  this includes commas and close brackets
     implicit none
     real(4), intent(in) :: r(:)  ! the input real variables
     character(len = sum(real_len(r)) + size(r) +2) :: ch     ! the string to be returned 
@@ -522,7 +528,8 @@ module MUtilsLib_stringfuncs
 
   function r8_array_concat(r) result(ch)
     ! Convert the array into a string of numbers that produces a command that will be interpreted as a vector in R
-    ! length of string is sum(real string length) + (number of ints -1 (for commas)) + 2 brackets + (1 for the leading 'c')... this includes commas and close brackets
+    ! length of string is sum(real string length) + 
+    ! (number of ints -1 (for commas)) + 2 brackets + (1 for the leading 'c')... this includes commas and close brackets
     implicit none
     real(8), intent(in) :: r(:)  ! the input real variables
     character(len =  sum(real_len(r)) + size(r) +2) :: ch     ! the string to be returned 
@@ -536,7 +543,8 @@ module MUtilsLib_stringfuncs
 
   function i4_array_concat(i4) result(ch)
      ! Convert the array into a string of numbers that produces a command that will be interpreted as a vector in R
-     ! length of string is sum(integer string length) + (number of ints -1 (for commas)) + 2 brackets + (1 for the leading 'c')... this includes commas and close brackets
+     ! length of string is sum(integer string length) 
+     ! + (number of ints -1 (for commas)) + 2 brackets + (1 for the leading 'c')... this includes commas and close brackets
      implicit none
      integer(4), intent(in) :: i4(:)  ! the input integer variables
      character(len = sum(int_len(i4))+size(i4)+2) :: ch     ! the string to be returned 
@@ -1158,7 +1166,8 @@ end module MUtilsLib_stringfuncs
 !*****************************************************************************
 ! For backwards compatibility
 module stringfuncs
-use MUtilsLib_stringfuncs, only :str,    &              ! this is just to make it easier to build up string expressions for passing numbers into R
+use MUtilsLib_stringfuncs, only :str,    &              ! this is just to make it easier
+                                                        ! to build up string expressions for passing numbers into R
             operator(//), &        ! overloaded to allow concatenation of strings
             operator(.pad.), &     ! same as above but allows one padding space between concatenation
             c,            &        ! converts arrays to strings
@@ -1171,7 +1180,8 @@ use MUtilsLib_stringfuncs, only :str,    &              ! this is just to make i
             removeChar, &          ! Remove Character from string
             relPathtoAbsPath, &    ! Convert a string with a relative path to an absolute path use for Rsetwd command
             stripBlanks,&          ! simple string function to remove blank spaces
-            changeChar             ! string function to changes a character in string to another (useful for changing spaces to underscores)
+            changeChar             ! string function to changes a character in string to another 
+                                   ! (useful for changing spaces to underscores)
 
 end module stringfuncs
 !**********************************************

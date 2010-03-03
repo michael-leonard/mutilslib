@@ -24,10 +24,12 @@ function checkPresent_str(var,valueIfNotPresent) result (checkPresent)
     character(len=len_vLongStr) :: checkPresent     
     
     if (present(var)) then
-      If (len_trim(var)>len_vLongStr) call message(log_warn,"length of string var is greater than len_vLongStr:"//len_vLongStr//" - need to increase")
+      If (len_trim(var)>len_vLongStr) call message(log_warn,& 
+           "length of string var is greater than len_vLongStr:"//len_vLongStr//" - need to increase")
         checkPresent=trim(var)
      else
-      If (len_trim(valueifNotPresent)>len_vLongStr) call message(log_warn,"length of string valueifNotPresent is greater than len_vLongStr:"//len_vLongStr//" - need to increase")
+      If (len_trim(valueifNotPresent)>len_vLongStr) call message(log_warn,&
+           "length of string valueifNotPresent is greater than len_vLongStr:"//len_vLongStr//" - need to increase")
       checkPresent=trim(valueIfNotPresent)
      end if
  

@@ -1,6 +1,9 @@
 module MUtilsLib_System
     ! Generic system (windows) utilities
-    ! Any subroutine that uses if/dfport module
+    ! Any subroutine that uses IVF/WINDOWS SPECIFIC routines
+    ! e.g. 
+    ! - calls to if/dfport module
+    ! - IVF extensions to Fortran standard
     ! No other modules should have calls to the dos interface
     use kinds_dmsl_kit
     use MUtilsLib_MessageLog
@@ -16,8 +19,27 @@ module MUtilsLib_System
               Generate_FileList,& ! Generates a list of files with a given extension in a given path 
               Generate_SystemList,& ! Generates a list from the system of either files or directories
               OSCall              ! OS Command line interface utility with immediate return or wait specified in milliseconds 
+!              Mutils_int_ptr_kind ! Generic int_ptr_kind wrapper for ivf int_ptr_kind extension
+              
+    !integer,parameter :: Mutils_int_ptr_kind=int_ptr_kind() 
               
   contains
+!*************************************************************************************************************   
+   function Mutils_loc(imageName) result(ok)
+     ! Terminates ALL copies of a current process based on its image name
+     ! uses command prompt + dos syntax
+     ! writes dos output to a temp file and then deletes
+     ! requisite dos functions: tasklist
+     use dfport,only: system
+     implicit none
+     character(len=*) :: imageName ! the name of the task to be killed
+     integer :: ok ! error flag
+
+     ok = system('taskkill /F /FI "IMAGENAME eq ' // trim(imageName) // '" >silent.txt' ) ! direct output to file rather than screen
+     ok = system('del silent.txt')
+
+   end function
+!************************************************************************************************************* 
 !*************************************************************************************************************   
    function taskkill(imageName) result(ok)
      ! Terminates ALL copies of a current process based on its image name
@@ -38,7 +60,8 @@ module MUtilsLib_System
      ! expand a dos environment variable
      ! uses command prompt + dos syntax
      ! writes dos output to a temp file and then deletes
-     ! requisite dos functions: ECHO, ev path variable must already be declared in the system and implicit rule for expanding: %EnvVar%
+     ! requisite dos functions: ECHO, ev path variable must already 
+     ! be declared in the system and implicit rule for expanding: %EnvVar%
      use dfport,only: system
      implicit none
      character(len=*) :: ev ! environment variable, specified as per a .bat file - must have %% symbols , e.g. %PATH%
@@ -212,7 +235,8 @@ module MUtilsLib_System
       ok=system('dir /A:D /B  "' // trim(path) // trim(slash) //'" >List.txt') 
       errmsg="Unable to locate any directories in path: "//trim(path)
      CASE("FILE")
-      ok=system('dir /B/L "' // trim(path) // trim(slash) //'*.*" >List.txt') ! use *.* to avoid an error message to the console when there are no .r files
+      ok=system('dir /B/L "' // trim(path) // trim(slash) //'*.*" >List.txt') ! use 
+               ! *.* to avoid an error message to the console when there are no .r files
       errmsg="Unable to locate files with extension "//trim(ext)//" in path: "//trim(path)
      END SELECT     
      
@@ -280,7 +304,8 @@ module MUtilsLib_System
     subroutine OSCall(iWaitMS,Command,Args,iRet)
 
       ! use iflib
-       use dfwin, only: T_STARTUPINFO,T_PROCESS_INFORMATION,NULL,STARTF_USESHOWWINDOW,SW_HIDE,NULL_CHARACTER,NULL_SECURITY_ATTRIBUTES,CREATEPROCESS,WAITFORSINGLEOBJECT,CLOSEHANDLE
+       use dfwin, only: T_STARTUPINFO,T_PROCESS_INFORMATION,NULL,STARTF_USESHOWWINDOW,SW_HIDE,& 
+                        NULL_CHARACTER,NULL_SECURITY_ATTRIBUTES,CREATEPROCESS,WAITFORSINGLEOBJECT,CLOSEHANDLE
        !USE DFWINTY !!use ifwin, only:
        
        implicit none
@@ -338,7 +363,8 @@ module MUtilsLib_System
 !              StartInfo, &
 !              ProcInfo)
 
-!! This version may not work with CVF6.6a, but works with IVF Project Properties|Fortran|Run-time|Check for null pointers and allocatable array references set
+!! This version may not work with CVF6.6a, 
+! but works with IVF Project Properties|Fortran|Run-time|Check for null pointers and allocatable array references set
 !
        iCRC = CreateProcess(null, &
               cmdLine, &
