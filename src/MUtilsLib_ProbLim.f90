@@ -10,7 +10,8 @@ MODULE MUtilsLib_Problim
 ! sub CalcProbLim(inputdata,problimIN,probLimPct); 
 !     inputdata  - vector (nPoints) or 2D array (nPoints,nReps) of data that requires probability limits    
 !     problimIN  - vector of probabilities for the probability limits, e.g. (0.05,0.5,0.95)
-!     probLimPct - vector (ith element is ith problim) or 2D array (ith column is ith problim) of the probability limits of inputdata 
+!     probLimPct - vector (ith element is ith problim) or 2D array (ith column is ith problim) 
+!    of the probability limits of inputdata 
 ! 
 !
 !*************************************************************************************************
@@ -131,7 +132,8 @@ IMPLICIT NONE
 ! Dummy Arguments
 real(mrk), dimension(:), intent(in)  :: inputdata
 real(mrk), intent(in)  :: problimIN        ! Values for probability limits, e.g 0.05, 0.5, 0.95
-real(mrk), intent(out) :: problimPct       ! Probability Limits Output: percentiles with each element i corresponding to the probability 
+real(mrk), intent(out) :: problimPct       ! Probability Limits Output: 
+                                           ! percentiles with each element i corresponding to the probability 
 
 ! Locals
 real(mrk), dimension(1):: probLimLc,probLimPctLc        ! Values for probability limits, e.g 0.05, 0.5, 0.95
@@ -149,13 +151,16 @@ IMPLICIT NONE
 ! Dummy Arguments
 real(mrk), dimension(:), intent(in)  :: inputdata
 real(mrk), dimension(:), intent(in)  :: problimIN        ! Values for probability limits, e.g 0.05, 0.5, 0.95
-real(mrk), dimension(:), intent(out) :: problimPct       ! Probability Limits Output: percentiles with each element i corresponding to the probability limit problimIN(i)
+real(mrk), dimension(:), intent(out) :: problimPct       ! Probability Limits Output: 
+                                                         ! percentiles with each element i corresponding 
+                                                         ! to the probability limit problimIN(i)
 ! Local Variables
 integer(mik) :: nData,status
 real(mrk), dimension(:), allocatable :: sortedData
 ! Initialise
 nData=SIZE(inputData); nproblim=SIZE(problimIN)
-allocate(sortedData(nData),problim(nproblim),percentile(nproblim),stat=status); if(status/=0) call fatal_error("Unable to allocate sortedData,problim,percentile")
+allocate(sortedData(nData),problim(nproblim),percentile(nproblim),stat=status); 
+if(status/=0) call fatal_error("Unable to allocate sortedData,problim,percentile")
 problim = problimIN
 ! Sort Data
 sortedData=InputData
@@ -180,7 +185,8 @@ integer(mik) :: i,status
 real(mrk), dimension(:,:), allocatable :: sortedData
 ! Initialise
 nproblim=3 
-allocate(sortedData(nPoints,nReps),problim(nproblim),percentile(nproblim),stat=status); if (status/=0) call fatal_error("Unable to allocate sorted data,problim,percentile")
+allocate(sortedData(nPoints,nReps),problim(nproblim),percentile(nproblim),stat=status); 
+if (status/=0) call fatal_error("Unable to allocate sorted data,problim,percentile")
 sortedData=inputData; problim = (/  .05d0,  .50d0,  .95d0 /);
 ! First rank individual runs
 do i = 1, nreps
@@ -204,21 +210,25 @@ subroutine calcproblimArray2(inputdata,problimIN,problimPct,probLimType)
 !           with nPoints number of data points and nReps as number of replicates
 IMPLICIT NONE
 ! Dummy Arguments
-real(mrk), dimension(:,:),intent(in) :: inputdata        ! Used to determine probability limits: array (nPoints,nReps) where nPoints is time series length with nReps Replicates
+real(mrk), dimension(:,:),intent(in) :: inputdata        ! Used to determine probability limits: array (nPoints,nReps) 
+                                                         ! where nPoints is time series length with nReps Replicates
 real(mrk), dimension(:),intent(in) ::   problimIN        ! Values for probability limits, e.g 0.05, 0.5, 0.95
 character(len=*),intent(in),optional ::   probLimType    ! Specifies problimits on the distributib( (DISTRIB) or time series (TS)
-real(mrk), dimension(:,:),intent(out) ::problimPct       ! Probability Limits Output: Percentiles with each column i corresponding to the probabilit limit problimIN(i)
+real(mrk), dimension(:,:),intent(out) ::problimPct       ! Probability Limits Output: Percentiles with each column i 
+                                                         ! corresponding to the probability limit problimIN(i)
                                                          ! with nPoints rows    
 ! Local Variables
 integer(mik) :: i,j,nPoints,nReps,status 
 real(mrk), dimension(:,:), allocatable :: sortedData
 ! Initialise
 nPoints=size(inputData,1); nReps=size(inputData,2); nproblim=SIZE(problimIN); 
-allocate(sortedData(nPoints,nReps),percentile(nproblim),problim(nproblim),stat=status); if(status/=0) call fatal_error("Unable to allocate problim,sortedData")
+allocate(sortedData(nPoints,nReps),percentile(nproblim),problim(nproblim),stat=status);
+if(status/=0) call fatal_error("Unable to allocate problim,sortedData")
 sortedData=inputData; problim = problimIN
 ! Perform Checks
 if(SIZE(problimPct,1)/=nPoints) call fatal_error("Rank 1 of problim Argument is not equal to nPoints in F:calproblimArrary2")
-if(SIZE(problimPct,2)/=nproblim) call fatal_error("Rank 2 of problim Argument is not equal to SIZE(problimProb) in F:calproblimArrary2")
+if(SIZE(problimPct,2)/=nproblim) call fatal_error&  
+    ("Rank 2 of problim Argument is not equal to SIZE(problimProb) in F:calproblimArrary2")
 ! Rank or not
 if (present(problimType)) then
   select case(problimType)

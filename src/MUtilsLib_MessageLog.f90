@@ -55,6 +55,7 @@ module MUtilsLib_messagelog
 ! 
 
   use kinds_dmsl_kit
+  use MUtilsLib_Deprecated
   implicit none
   save
   
@@ -88,29 +89,14 @@ module MUtilsLib_messagelog
                                    log_warn    = 2, &
                                    log_write   = 4, &
                                    log_calc    = 5, &
-                                   log_$name    = 6, &
+                                   log_name    = 6, &
                                    log_path    = 7, &
                                    log_title   = 8, &
                                    log_comment = 9, &
                                    log_debug   = 10, &
                                    log_blank   = 11, &
                                    log_fatal   = 12
-
-  ! Enumeration for different tag types (public) - retained for backwards compatibility,
-  ! but obselete becomes $ prefix is not standard F95
-  integer, parameter, public  ::   $error   = 1, &
-                                   $warn    = 2, &
-                                   $read    = 3, &
-                                   $write   = 4, &
-                                   $calc    = 5, &
-                                   $name    = 6, &
-                                   $path    = 7, &
-                                   $title   = 8, &
-                                   $comment = 9, &
-                                   $debug   = 10, &
-                                   $blank   = 11, &
-                                   $fatal   = 12
-  
+ 
 
   character(len = tag_len), parameter :: tag(1:12) = (/"Error:       ", &
                                                        "Warning:     ", &

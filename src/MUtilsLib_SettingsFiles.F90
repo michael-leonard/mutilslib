@@ -50,14 +50,16 @@ use MutilsLib_MessageLog, only : message,log_error
 implicit none
 
 ! Dummies - Inputs
-integer(mik), intent(in) ::  unit                        ! Unit no for settings file
-character(len=len_vLongStr), intent(inout) ::  file      ! Settings file with path - can be relative or absolute file paths, on exit it is the absolute filepath
-character(len=*), intent(in) :: checkVersion             ! Used to check whether setttings file has the same version number - ensures compatibaility
+integer(mik), intent(in) ::  unit                     ! Unit no for settings file
+character(len=len_vLongStr), intent(inout) ::  file   ! Settings file with path - can be relative 
+                                                      ! or absolute file paths, on exit it is the absolute filepath
+character(len=*), intent(in) :: checkVersion          ! Used to check whether setttings file has the same version number 
+                                                      ! - ensures compatibility
 ! Function - Outputs
-integer(mik) :: ok                                       ! Error Flag (0 = No Errors, >0 Error condition)
+integer(mik) :: ok                                    ! Error Flag (0 = No Errors, >0 Error condition)
 ! Locals
-integer(mik) :: status                                   ! 
-character(len=len_vLongStr) :: version                   !
+integer(mik) :: status                                ! 
+character(len=len_vLongStr) :: version                !
 ok=0  
 File=relPathtoAbsPath(file,findCurrentDir())
 do 
@@ -83,7 +85,8 @@ if (ok/=0) then
 end if
 
 if (trim(version)/=trim(checkVersion)) then
-  call message(log_error,"Incompatible version of settings file: "//trim(File)//", looking for version:"//trim(checkVersion)//" found version:"//trim(version))
+  call message(log_error,"Incompatible version of settings file: "//trim(File)&
+                //", looking for version:"//trim(checkVersion)//" found version:"//trim(version))
   ok=1; return
 end if
 
@@ -134,21 +137,24 @@ do
         if (present(nrow) .and. .not.present(ncol)) then
           read(unit,'(a,",",i12)',iostat=status) readLine,nrow
           if (status/=0) then
-            call message(log_ERROR,"IO Error No: "//status//" and unable to read nrow for keyword:"//trim(keyword)//" in settings file:"//trim(file))
+            call message(log_ERROR,"IO Error No: "//status//" and unable to read nrow for keyword:"//&
+                        trim(keyword)//" in settings file:"//trim(file))
             ok=status;return
           end if
           return
         else if (.not.present(nrow) .and. present(ncol)) then
           read(unit,'(a,",",i12)',iostat=status) readLine,ncol
           if (status/=0) then
-            call message(log_ERROR,"IO Error No: "//status//" and unable to read ncol for keyword:"//trim(keyword)//" in settings file:"//trim(file))
+            call message(log_ERROR,"IO Error No: "//status//" and unable to read ncol for keyword:"//&
+                         trim(keyword)//" in settings file:"//trim(file))
             ok=status;return
           end if
           return
         else
          read(unit,'(a,",",2i12)',iostat=status) readLine,nrow,ncol
          if (status/=0) then
-            call message(log_ERROR,"IO Error No: "//status//" and unable to read nrow and ncol for keyword:"//trim(keyword)//" in settings file:"//trim(file))
+            call message(log_ERROR,"IO Error No: "//status//" and unable to read nrow and ncol for keyword:"//&
+                        trim(keyword)//" in settings file:"//trim(file))
             ok=status;return
           end if
           return
@@ -156,11 +162,13 @@ do
       end if
     end if  
   case(-1) 
-    call message(log_ERROR,"Reached end of file before finding keyword:"//trim(keyword)//" in settings file:"//trim(file))
+    call message(log_ERROR,"Reached end of file before finding keyword:"//&
+                trim(keyword)//" in settings file:"//trim(file))
     ok=status
     return
   case default
-    call message(log_ERROR,"Error No of "//status//" while searching for keyword:"//trim(keyword)//" in settings file:"//trim(file))
+    call message(log_ERROR,"Error No of "//status//" while searching for keyword:"//&
+                trim(keyword)//" in settings file:"//trim(file))
     ok=status
     return
   end select
@@ -206,11 +214,13 @@ do
     val=TRIM(readLine)
     exit
   case(-1) 
-    call message(log_ERROR,"Reached end of file before finding value of keyword:"//trim(keyword)//" in settings file:"//trim(file))
+    call message(log_ERROR,"Reached end of file before finding value of keyword:"//&
+                    trim(keyword)//" in settings file:"//trim(file))
     ok=status
     return
   case default
-    call message(log_ERROR,"Error No of "//status//" while searching for value of keyword:"//trim(keyword)//" in settings file:"//trim(file))
+    call message(log_ERROR,"Error No of "//status//" while searching for value of keyword:"//&
+                    trim(keyword)//" in settings file:"//trim(file))
     ok=status
    return
   end select
@@ -254,11 +264,13 @@ do
     val=int(readLine)
     exit
   case(-1) 
-    call message(log_ERROR,"Reached end of file before finding value of keyword:"//trim(keyword)//" in settings file:"//trim(file))
+    call message(log_ERROR,"Reached end of file before finding value of keyword:"//&
+                            trim(keyword)//" in settings file:"//trim(file))
     ok=status
     return
   case default
-    call message(log_ERROR,"Error No of "//status//" while searching for value of keyword:"//trim(keyword)//" in settings file:"//trim(file))
+    call message(log_ERROR,"Error No of "//status//" while searching for value of keyword:"//&
+                            trim(keyword)//" in settings file:"//trim(file))
     ok=status
    return
   end select
@@ -306,11 +318,13 @@ do
     val=real(readLine)
     exit
   case(-1) 
-    call message(log_ERROR,"Reached end of file before finding value of keyword:"//trim(keyword)//" in settings file:"//trim(file))
+    call message(log_ERROR,"Reached end of file before finding value of keyword:"//&
+                trim(keyword)//" in settings file:"//trim(file))
     ok=status
     return
   case default
-    call message(log_ERROR,"Error No of "//status//" while searching for value of keyword:"//trim(keyword)//" in settings file:"//trim(file))
+    call message(log_ERROR,"Error No of "//status//" while searching for value of keyword:"//&
+                trim(keyword)//" in settings file:"//trim(file))
     ok=status
    return
   end select
@@ -363,11 +377,13 @@ do
     end select
     exit
   case(-1) 
-    call message(log_ERROR,"Reached end of file before finding value of keyword:"//trim(keyword)//" in settings file:"//trim(file))
+    call message(log_ERROR,"Reached end of file before finding value of keyword:"//&
+                trim(keyword)//" in settings file:"//trim(file))
     ok=status
     return
   case default
-    call message(log_ERROR,"Error No of "//status//" while searching for value of keyword:"//trim(keyword)//" in settings file:"//trim(file))
+    call message(log_ERROR,"Error No of "//status//" while searching for value of keyword:"//&
+                 trim(keyword)//" in settings file:"//trim(file))
     ok=status
    return
   end select
@@ -404,7 +420,8 @@ ok=0
 ! Search file for keyword
 ok=findkeyword(file,unit,keyword,rewindIn=rewindIn,ncol=ncol)
 if (ok/=0) then
-  call message(log_ERROR,"Error finding keyword and/or reading ncol for keyword:"//trim(keyword)//" in settings file:"//trim(file)); return
+  call message(log_ERROR,"Error finding keyword and/or reading ncol for keyword:"//&
+                trim(keyword)//" in settings file:"//trim(file)); return
 end if
 
 ! Once found keyword then read value
@@ -418,19 +435,23 @@ do
     backspace(unit)
     read(unit,"(<ncol>g)",iostat=status) val
     if (status/=0) then
-      call message(log_ERROR,"IO Error No: "//status//" and unable to read value of keyword: "//trim(keyword)//" in settings file:"//trim(file)); ok=status;return
+      call message(log_ERROR,"IO Error No: "//status//" and unable to read value of keyword: "//&
+                    trim(keyword)//" in settings file:"//trim(file)); ok=status;return
     end if
     len_val=len_trim(val)
     if(any(val==undefCH) .or. any(len_trim(val)==0)) then
-      call message(log_ERROR,"Size mismatch reading in values for:"//trim(keyword)//" in settings file:"//trim(file)); ok=-1;return
+      call message(log_ERROR,"Size mismatch reading in values for:"//&
+                    trim(keyword)//" in settings file:"//trim(file)); ok=-1;return
     end if
     exit
   case(-1) 
-    call message(log_ERROR,"Reached end of file before finding value of keyword:"//trim(keyword)//" in settings file:"//trim(file))
+    call message(log_ERROR,"Reached end of file before finding value of keyword:"//&
+                    trim(keyword)//" in settings file:"//trim(file))
     ok=status
     return
   case default
-    call message(log_ERROR,"Error No of "//status//" while searching for value of keyword:"//trim(keyword)//" in settings file:"//trim(file))
+    call message(log_ERROR,"Error No of "//status//" while searching for value of keyword:"//&
+                    trim(keyword)//" in settings file:"//trim(file))
     ok=status
    return
   end select
@@ -466,7 +487,8 @@ ok=0
 ! Search file for keyword
 ok=findkeyword(file,unit,keyword,ncol=ncol,rewindIn=rewindIn)
 if (ok/=0) then
-  call message(log_ERROR,"Error finding keyword and/or reading ncol for keyword:"//trim(keyword)//" in settings file:"//trim(file)); return
+  call message(log_ERROR,"Error finding keyword and/or reading ncol for keyword:"//&
+                trim(keyword)//" in settings file:"//trim(file)); return
 end if
 If(allocated(val)) deallocate(val)
 allocate(val(ncol))
@@ -480,16 +502,20 @@ do
     backspace(unit)
     read(unit,"(<ncol>f)",iostat=status) val
     if (status/=0) then
-      call message(log_ERROR,"IO Error No: "//status//" and unable to read value of keyword: "//trim(keyword)//" in settings file:"//trim(file)); ok=status;return
+      call message(log_ERROR,"IO Error No: "//status//" and unable to read value of keyword: "//&
+                    trim(keyword)//" in settings file:"//trim(file)); ok=status;return
     end if
     if(any(val==undefRN)) then
-      call message(log_ERROR,"Size mismatch reading in values for:"//trim(keyword)//" in settings file:"//trim(file)); ok=status;return
+      call message(log_ERROR,"Size mismatch reading in values for:"//&
+                    trim(keyword)//" in settings file:"//trim(file)); ok=status;return
     end if
     exit
   case(-1) 
-    call message(log_ERROR,"Reached end of file before finding value of keyword:"//trim(keyword)//" in settings file:"//trim(file)); ok=status;return
+    call message(log_ERROR,"Reached end of file before finding value of keyword:"//&
+                    trim(keyword)//" in settings file:"//trim(file)); ok=status;return
   case default
-    call message(log_ERROR,"Error No of "//status//" while searching for value of keyword:"//trim(keyword)//" in settings file:"//trim(file)); ok=status;return
+    call message(log_ERROR,"Error No of "//status//" while searching for value of keyword:"//&
+                    trim(keyword)//" in settings file:"//trim(file)); ok=status;return
   end select
 end do  
 
@@ -523,7 +549,8 @@ ok=0
 ! Search file for keyword
 ok=findkeyword(file,unit,keyword,nrow=nrow,ncol=ncol,rewindIn=rewindIn)
 if (ok/=0) then
-  call message(log_ERROR,"Error finding keyword and/or reading ncol/nrow for keyword:"//trim(keyword)//" in settings file:"//trim(file)); return
+  call message(log_ERROR,"Error finding keyword and/or reading ncol/nrow for keyword:"//&
+                trim(keyword)//" in settings file:"//trim(file)); return
 end if
 
 If(allocated(val)) deallocate(val)
@@ -539,7 +566,8 @@ do
     do i=1,nrow
       read(unit,"(<ncol>f12.0)",iostat=status) val(i,:)
       if (status/=0) then
-        call message(log_ERROR,"IO Error No: "//status//" and unable to read nrow:"//i//" value of keyword: "//trim(keyword)//" in settings file:"//trim(file)); ok=status;return
+        call message(log_ERROR,"IO Error No: "//status//" and unable to read nrow:"//i//" value of keyword: "//&
+                      trim(keyword)//" in settings file:"//trim(file)); ok=status;return
       end if
     end do
     ! Once finished reading array then exit
@@ -549,7 +577,8 @@ do
     ok=status
     return
   case default
-    call message(log_ERROR,"Error No of "//status//" while searching for value of keyword:"//trim(keyword)//" in settings file:"//trim(file))
+    call message(log_ERROR,"Error No of "//status//" while searching for value of keyword:"//&
+                    trim(keyword)//" in settings file:"//trim(file))
     ok=status
    return
   end select

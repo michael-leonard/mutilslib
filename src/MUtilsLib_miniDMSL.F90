@@ -168,7 +168,6 @@ pure function average(nv1)
 ! Purpose: returns average of vector
 ! Source: Copied from DMSL  Version: 3.17 - 23 September 2004 ad
 !         File: utilities_dmsl_kit.f90, average_rn1
-! Due to Error: LNK2019: unresolved external symbol _UTILITIES_DMSL_KIT_mp_AVERAGE_RN1@4 referenced in function _probLIMMOD_mp_CALCprobLIMARRAY
 implicit none
 real(mrk),intent(in)::nv1(:)
 real(mrk)::average
