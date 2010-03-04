@@ -353,9 +353,9 @@ module MUtilsLib_messagelog
       use MUtilsLib_fileIO, only : findEOF
       implicit none
       ! Outputs      
-      character(len = msg_tag_len), allocatable, dimension(:),intent(out),optional ::  allmessages ! Descriptive text 
+      character(len = *), pointer, dimension(:),intent(out),optional ::  allmessages ! Descriptive text 
                                                                                                    ! of tags and messages
-      character(len = msg_tag_len), intent(out),optional ::  lastmessage ! Descriptive text of tags and messages
+      character(len = *), intent(out),optional ::  lastmessage ! Descriptive text of tags and messages
       
       integer :: err
       character(len=len_vLongStr) :: msg
@@ -382,7 +382,7 @@ module MUtilsLib_messagelog
         close(msg_log%unit)
       end if
       if (present(allmessages)) then ! If looking to return all error messages
-        if (allocated(allmessages)) deallocate(allmessages) ! Ensures messages is clear before retrival
+        if (ASSOCIATED(allmessages)) deallocate(allmessages) ! Ensures messages is clear before retrival
         nMess=findEOF(filepath=(msg_log%file),err=err,msg=msg)
         if (err/=0) then
          allocate(allmessages(1))
