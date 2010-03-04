@@ -19,9 +19,6 @@ module MUtilsLib_System
               Generate_FileList,& ! Generates a list of files with a given extension in a given path 
               Generate_SystemList,& ! Generates a list from the system of either files or directories
               OSCall              ! OS Command line interface utility with immediate return or wait specified in milliseconds 
-!              Mutils_int_ptr_kind ! Generic int_ptr_kind wrapper for ivf int_ptr_kind extension
-              
-    !integer,parameter :: Mutils_int_ptr_kind=int_ptr_kind() 
               
   contains
 !*************************************************************************************************************   

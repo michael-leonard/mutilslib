@@ -1137,6 +1137,11 @@ function insertString(strIn) result(outString)
     
     ! Function Definition
     CHARACTER(LEN=len_vLongStr) :: outString 
+    
+    outString=StrIN
+    return
+    
+    ! Still needs further development
             
     insertStrlc="\n"C
     strlenLc=72
