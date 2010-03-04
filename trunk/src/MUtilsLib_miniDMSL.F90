@@ -1,10 +1,10 @@
 !***************************************************************************************************
 ! miniDMSL 
-! - Developed by Mark Thyer
-! A VERY cut-down version of DMSL library developed by Dmitri Kavetski.
-! (C) Copyright 2000,2001,2002,2003,2004,2005,2006,2007,2008,2009. Dmitri Kavetski. All rights reserved.
+!  - Developed by Mark Thyer
+!  A VERY cut-down version of DMSL library developed by Dmitri Kavetski.
+!*************************************************************************************************
 !
-! Based on Revision 33 of DMSL  (need to add to remain consistent)
+! Based on Version 5.011 of DMSL  
 !
 ! Enables 1. Compilation independent of DMSL
 !         2. Consistency when compiling when using DMSL
@@ -39,12 +39,15 @@ public
 ! ---
 ! (1) Parameterised numeric data types
 ! (a) Available precision
-!     CVF/IVF reals: 4=single, 8=double, [IVF only 16=quad]; CVF/IVF integers: 4=short, 8=long
-integer,     parameter::srk=selected_real_kind(p=4)   ! single precision
-integer,     parameter::drk=selected_real_kind(p=8)   ! double precision
-integer,     parameter::qrk=selected_real_kind(p=16)  ! quadruple precision
-integer,     parameter::sik=selected_int_kind(r=4)    ! short integer
-integer,     parameter::lik=selected_int_kind(r=8)    ! long integer (NB: NR-90 uses r=9)
+!     CVF/IVF reals:    4=single, 8=double, [IVF only: 16=quad]
+!     CVF/IVF integers: 1=byte,   2=short,  4=long, 8=long-long
+integer,     parameter::srk=selected_real_kind(p=4)   ! srk=4:  single precision
+integer,     parameter::drk=selected_real_kind(p=8)   ! drk=8:  double precision
+integer,     parameter::qrk=selected_real_kind(p=16)  ! qrk=16: quadruple precision
+integer,     parameter::bik=selected_int_kind(r=2)    ! tik=1: byte integer: -128->127
+integer,     parameter::sik=selected_int_kind(r=4)    ! tik=2: short integer: -32768->32767
+integer,     parameter::lik=selected_int_kind(r=8)    ! tik=4: long integer: 2,147,483,647
+integer,     parameter::hik=selected_int_kind(r=10)   ! tik=8: long-long ("hyper") integer (9x10^18)
 ! (b) Selected global precision in all DMSL units
 integer,     parameter::mrk=drk                       ! global real kind
 integer,     parameter::mik=lik                       ! global integer kind
@@ -61,8 +64,9 @@ integer(mik),parameter::mikBy=mik                     ! number of bytes to store
 integer(mik),parameter::mckBy=2*mrk                   ! number of bytes to store protoCmx
 integer(mik),parameter::mlkBy=4                       ! number of bytes to store protoLog
 ! NB:
-! On CVF compiler: mrk and mik also denote the number of bytes used to store the value,
-!                  mlk requires 4 bytes storage
+! On CVF/IVF compiler:
+!   mrk and mik also denote the number of bytes used to store the value,
+!   mlk requires 4 bytes storage
 ! single precision      =  32-bit   (4 bytes)
 ! double precision      =  64-bit   (8 bytes)
 ! quadruple precisison  = 128-bits (16 bytes)
@@ -102,7 +106,7 @@ integer(mik),parameter::keyboardUnit=5                ! keyboard unit (default i
 integer(mik),parameter::screenUnit=6                  ! screen unit   (default output)
 ! ---
 ! (4) Library support features
-integer(mik),parameter::DMSL_vernum=424
+integer(mik),parameter::DMSL_vernum=426
 character(*),parameter::DMSL_authorName="Dmitri Kavetski"
 character(*),parameter::DMSL_authorEmail="dmitri.kavetski@gmail.com"
 ! ---
@@ -131,11 +135,14 @@ integer(mik),parameter::len_shortStr=8      ! 2^3 : shortish names
 integer(mik),parameter::len_stdStrB=16      ! 2^4 : brief descriptive names
 integer(mik),parameter::len_stdStrD=32      ! 2^5 : detailed descriptive name
 integer(mik),parameter::len_longStr=128     ! 2^7 : typical line-long string
-integer(mik),parameter::len_vLongStr=1024   ! 2^10: usually for file paths or very long messages
+integer(mik),parameter::len_vLongStr=1024   ! 2^10: verylong string, usually for file paths or very long messages
+integer(mik),parameter::len_uLongStr=8192   ! 2^13: ultralong string
 integer(mik),parameter::len_hLongStr=65536  ! 2^15: hyperlong string (use with care)
 ! ---
 ! (8) DMSL-wide registered string length purposes
-integer(mik),parameter::len_pathDMSL=len_vLongStr ! maximum length of filepaths
+integer(mik),parameter::len_DMSLpath=len_vLongStr     ! length of all DMSL filepaths
+integer(mik),parameter::len_DMSLmessage=len_vLongStr  ! length of legitimate messages
+integer(mik),parameter::len_DMSLjmsg=len_shortStr     ! length of junky messages
 ! ---
 ! (9) DMSL-wide software and hardware information
 ! (a) Software aspects
@@ -150,9 +157,17 @@ integer(mik),parameter::&   ! Operating system configuration types
   MAC_OS=-2,LINUX_OS=-1,WIN2K_OS=0,WINXP_OS=1,VISTA_OS=2
 ! (b) Hardware aspects
 integer(mik),parameter::MY_INT_PTR_KIND=INT_PTR_KIND()
-! 4 on 32-but bricks, 8 on 64-bit monsters, 16 on 128-bit beasts
+! 4 on 32-bit bricks, 8 on 64-bit monsters, 16 on 128-bit non-existent (2009) beasts
 ! ---
-endmodule kinds_dmsl_kit!---------------------------------------
+endmodule kinds_dmsl_kit
+!******************************************************************
+! module makeKinds_dmsl_kit
+! implicit none
+! contains
+! !----------------------------------------------------
+! !----------------------------------------------------
+! endmodule makeKinds_dmsl_kit
+!******************************************************************
 module utilities_dmsl_kit
 use kinds_dmsl_kit
 ! 0a. FREQUENTLY USED MATHEMATICAL CONSTANTS (with 50-digit Maple precision)

@@ -55,7 +55,6 @@ module MUtilsLib_messagelog
 ! 
 
   use kinds_dmsl_kit
-  use MUtilsLib_Deprecated
   implicit none
   save
   
@@ -191,7 +190,7 @@ module MUtilsLib_messagelog
     end subroutine init_log
 !************************************************************************************************
     subroutine add_log_no_tag(message,msg_id,db_id)
-      ! A wrapper to simplify recording error messages -default tag is $error
+      ! A wrapper to simplify recording error messages -default tag is log_error
       implicit none
       character(len = *), intent(IN) ::  message  ! Any descriptive message
       character(len = *), intent(IN),optional ::  db_id
