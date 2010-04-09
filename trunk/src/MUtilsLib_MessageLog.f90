@@ -353,7 +353,7 @@ module MUtilsLib_messagelog
       use MUtilsLib_fileIO, only : findEOF
       implicit none
       ! Outputs      
-      character(len = *), pointer, dimension(:),intent(out),optional ::  allmessages ! Descriptive text 
+      character(len = *), pointer, dimension(:),optional ::  allmessages ! Descriptive text 
                                                                                                    ! of tags and messages
       character(len = *), intent(out),optional ::  lastmessage ! Descriptive text of tags and messages
       
@@ -451,7 +451,11 @@ module MUtilsLib_messagelog
         msg_db_num=SIZE(msg_db)
         allocate(new_msg_db(msg_db_num+1))
         new_msg_db(1:msg_db_num)=msg_db
-        call move_alloc(new_msg_db,msg_db)
+		deallocate(msg_db)
+		allocate(msg_db(msg_db_num+1))
+        msg_db=new_msg_db
+		deallocate(new_msg_db)	
+        !call move_alloc(new_msg_db,msg_db)
         msg_db_num=msg_db_num+1
       end if
         
