@@ -13,7 +13,7 @@ module MUtilsLib_messagelog
 !                                                   select tag from predefined list using tagtype, 
 !  message(msg_type,message,msg,db_id)  ! add tag and message to the msg_log object, 
 !                                                   select tag from predefined list using tagtype
-!           see 'Mesage Database Functionality' below for info on msg_id and db_id
+!           see 'Message Database Functionality' below for info on msg_id and db_id
 !  flush_messages()           ! write the entire msg_log to file (unit =6, specifies screen)
 !  get_messages()             ! reads the msg_log file and returns last message or entire msg_log
 !  WARNING()                  ! logical function to check whether any warnings have occurred
@@ -72,7 +72,7 @@ module MUtilsLib_messagelog
     integer  ::   warn = 0           ! Cumulative count of system warnings
     integer  ::   unit = 151         ! file ID unit, screen = 6, file = other
     logical  ::   close  = .true.    ! determines if the msg_log file is to be opened and closed for each flush
-    logical  ::   append = .false.   ! Whether a new msg_log should be appeneded on to existing msg_log
+    logical  ::   append = .false.   ! Whether a new msg_log should be appended on to existing msg_log
     logical  ::   active = .true.    ! Allows msg_log to be activated / deactivated
     logical  ::   echo   = .true.   ! Whether msg_log should be written to screen and to file
     logical  ::   ignore_warn  = .false.           ! Whether warnings should be ignored
@@ -97,18 +97,18 @@ module MUtilsLib_messagelog
                                    log_fatal   = 12
  
 
-  character(len = tag_len), parameter :: tag(1:12) = (/"Error:       ", &
-                                                       "Warning:     ", &
-                                                       "Read:        ", &
-                                                       "Write:       ", &
-                                                       "Calculate:   ", &
-                                                       "File-Name:   ", &
-                                                       "File-Path:   ", &
-                                                       "Title:       ", &
-                                                       "Comment:     ", &
-                                                       "Debug:       ", &
-                                                       "             ", &
-                                                       "Fatal Error: " /)
+  character(len = tag_len), parameter :: tag(1:12) = (/"*ERROR    :", &
+                                                       " Warning  :", &
+                                                       " Read     :", &
+                                                       " Write    :", &
+                                                       " Calculate:", &
+                                                       " Filename :", &
+                                                       " Filepath :", &
+                                                       " Title    :", &
+                                                       " Comment  :", &
+                                                       " Debug    :", &
+                                                       "           ", &
+                                                       "FatalError:" /)
                                                        
   type msg_db_msg_type                                 ! Type for messages in message database
     integer(mik):: id                                   ! id for messages in message database                    
@@ -136,18 +136,20 @@ module MUtilsLib_messagelog
 !************************************************************************************************
   contains
 !************************************************************************************************
-    subroutine init_log(unit,close,append,active,echo,file, ignore_warn, ignore_error,auto_flush,debug,db_id,msg_file)
+    subroutine init_log(unit,close,append,active,echo,file, ignore_warn, ignore_error,auto_flush,debug,db_id,msg_file,append_always)
       ! description:  Set the parameters for the log file. Not necessary to be called if you are happy with defaults.
       implicit none
       integer, intent(IN), optional  ::   unit          ! file ID unit, screen = 6, file = other
       logical, intent(IN), optional  ::   close         ! determines if the log file is to be opened and closed for each flush
-      logical, intent(IN), optional  ::   append        ! Whether log should be appeneded on to existing log
+      logical, intent(IN), optional  ::   append        ! Whether log should be appended on to existing log
+      logical, intent(IN), optional  ::   append_always ! Whether all log messages in program should be appended to the log_file that is to be opened
       logical, intent(IN), optional  ::   active        ! Allows log to be activated / deactivated
       logical, intent(IN), optional  ::   echo          ! Whether log should be written to screen and to file
       logical, intent(IN), optional  ::   ignore_warn   ! Whether warnings should be ignored
       logical, intent(IN), optional  ::   ignore_error  ! Whether errors should be ignored
       logical, intent(IN), optional  ::   auto_flush    ! Whether the log should be automatically flushed each time
       logical, intent(IN), optional  ::   debug         ! Whether debug comments should be ignored
+      
       character(len = *), intent(IN), optional :: file ! file name if log is written to file
       character(len = *), intent(IN), optional :: db_id ! ID of the message database
       character(len = *), intent(IN), optional :: msg_file ! file name of the msg file for message database
@@ -177,6 +179,8 @@ module MUtilsLib_messagelog
             open(unit = msg_log%unit, file = trim(msg_log%file), status = 'unknown', position = 'append')
           else ! A new msg_log file
             open(unit = msg_log%unit, file = trim(msg_log%file), status = 'replace')
+            call message(log_debug,"All messages being written to log file (if no path &
+                                   &- written to current executable directory): "//trim(msg_log%file))
           end if
           if (msg_log%close) close(msg_log%unit) ! close the log file
         end if
@@ -185,7 +189,12 @@ module MUtilsLib_messagelog
       if (present(db_id) .and. present(msg_file)) then
         ok=init_msg_db(db_id=db_id,msg_file=msg_file)
         if (ok/=0) call message(log_error,"Unable to initalise msg_db for "//db_id//" with file "//msg_file)
+        call message(log_debug,"Using msg_db: "//trim(db_id)//", located at "//trim(msg_file))
       end if  
+      
+      ! Do this upon exit so that if it is called again it it will append to the one that is already opn
+      if (present(append_always)) msg_log%append = append_always
+      
 
     end subroutine init_log
 !************************************************************************************************
@@ -203,7 +212,7 @@ module MUtilsLib_messagelog
     subroutine add_log_msg_tag(msg_type,message,msg_id,db_id)
      ! Adds a single message to the msg_log object
      ! All arguments non-optional
-      use MUtilsLib_StringFuncs, only : insertString
+      use MUtilsLib_StringFuncs, only : insertString,operator(//)
       implicit none
       integer, intent(IN)  ::  msg_type         ! Index of type of tag
       character(len = *), intent(IN) ::  message  ! Any descriptive message
@@ -217,11 +226,11 @@ module MUtilsLib_messagelog
       integer  ::   s ! size of message array
 
       if (present(db_id) .and. present(msg_id)) then
-        messageLc="["//db_id//"] "//trim(message)//trim(get_msg_from_db(msg_id,db_id))
+        messageLc="["//db_id//"] ID:"//msg_id//" "//trim(message)//trim(get_msg_from_db(msg_id,db_id))
       else
         messageLc=TRIM(message)
       end if
-      messageLc = trim(insertString(messageLc))
+      !messageLc = trim(insertString(messageLc))
       s = 0
       if(associated(msg_log%message)) s = size(msg_log%message)
       if(s/=0) then
@@ -451,10 +460,10 @@ module MUtilsLib_messagelog
         msg_db_num=SIZE(msg_db)
         allocate(new_msg_db(msg_db_num+1))
         new_msg_db(1:msg_db_num)=msg_db
-		deallocate(msg_db)
-		allocate(msg_db(msg_db_num+1))
+        deallocate(msg_db)
+        allocate(msg_db(msg_db_num+1))
         msg_db=new_msg_db
-		deallocate(new_msg_db)	
+        deallocate(new_msg_db)
         !call move_alloc(new_msg_db,msg_db)
         msg_db_num=msg_db_num+1
       end if
