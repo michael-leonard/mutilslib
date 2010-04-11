@@ -103,11 +103,11 @@ module MUtilsLib_System
       open(unit=123,file="temp.txt")
       read(123,'(A512)') dir             ! get the filepath of the current directory
       close(123,status="delete")
-      dir = fwdslash(dir) ! convert to forward slashes (R likes it this way)
+      !dir = fwdslash(dir) ! convert to forward slashes 
       if(present(noslash)) then
-        if(.not.noslash) dir=trim(dir)//"/"
+        if(.not.noslash) dir=trim(dir)//"\"
       else
-        dir=trim(dir)//"/"
+        dir=trim(dir)//"\"
       end if
     end function findcurrentdir
 !*************************************************************************************************************   
