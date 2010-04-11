@@ -286,10 +286,14 @@ private;save
 ! 1. PATHS - deleted to save confusion!
 ! 2. PROCEDURE STATUS
 public::myProcID,openedCOM
+public::RGui_path,RGui_name
 !----------------------------------------------------
 integer(MY_INT_PTR_KIND)::myProcID=undefIN  ! procID of the current process
 logical(mlk)::openedCOM=.false.             ! true when the COM server is already initialized
 !----------------------------------------------------
+! 3. Path to R console
+character(len_DMSLpath)::RGui_path="C:\Program Files\R\R-2.10.1\bin"
+character(len_vLongStr)::RGui_name="Rgui.exe"
 !----------------------------------------------------
 !----------------------------------------------------
 endmodule intercom_dmsl_kit

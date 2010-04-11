@@ -22,10 +22,11 @@ module MUtilsLib_stringfuncs
             c,            &        ! converts arrays to strings
             set_pad, &             ! change the padding character when using the .pad. operator
             fwdslash,backslash, &  ! convert a <filepath> string with back/fwd slashes to having forward/back slashes
-            FolderUp, &            ! convert a <filepath> string be removing trailing folders
+            endslash,&           ! check there is a end slash on a string - useful for checking paths before added filenames
+            FolderUp, &            ! convert a <filepath> string by removing trailing folders
             Lcase, Ucase,&         ! convert string to lower/upper case (important for string comparisons)
             int,&                  ! Convert a string to integer
-            real,&                 ! COnvert string to real 
+            real,&                 ! Convert string to real 
             insertString_end, &    ! Insert a string on the end
             removeChar, &          ! Remove Character from string
             relPathtoAbsPath, &    ! Convert a string with a relative path to an absolute path use for Rsetwd command
@@ -928,6 +929,32 @@ module MUtilsLib_stringfuncs
         if(strOut(i:i)=="/") strOut(i:i)="\"
       end do
    end function
+   
+ function endslash(strIn) result(strOut)
+      ! Check there is slash at end of strIn - useful for checking paths are ok before concatenating with filenames
+      implicit none
+      character(len = *), intent(in) :: strIn
+      character(len = len(strIn)) :: strOut
+      character(len = 1) :: lastslash
+      
+      integer :: i,n
+
+      strOut = strIn
+      n=len_trim(strOut)
+      do i = 1,n
+        if(strOut(i:i)=="/") then
+            lastslash="/"
+            exit
+        else if (strOut(i:i)=="\") then
+            lastslash="\"
+            exit
+        end if
+      end do
+      
+      if (strOut(n:n)/=lastslash) strOut((n+1):(n+1))=lastslash
+      
+   end function
+
 
   function FolderUp(strIn,n) result(strOut)
       ! For a filepath string, move up 'n' folder levels
