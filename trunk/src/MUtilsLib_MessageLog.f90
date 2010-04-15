@@ -142,7 +142,8 @@ module MUtilsLib_messagelog
       integer, intent(IN), optional  ::   unit          ! file ID unit, screen = 6, file = other
       logical, intent(IN), optional  ::   close         ! determines if the log file is to be opened and closed for each flush
       logical, intent(IN), optional  ::   append        ! Whether log should be appended on to existing log
-      logical, intent(IN), optional  ::   append_always ! Whether all log messages in program should be appended to the log_file that is to be opened
+      logical, intent(IN), optional  ::   append_always ! Whether all log messages in program should be appended to the log_file
+                                                        ! that is to be opened
       logical, intent(IN), optional  ::   active        ! Allows log to be activated / deactivated
       logical, intent(IN), optional  ::   echo          ! Whether log should be written to screen and to file
       logical, intent(IN), optional  ::   ignore_warn   ! Whether warnings should be ignored
