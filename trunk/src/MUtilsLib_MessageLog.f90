@@ -127,7 +127,7 @@ module MUtilsLib_messagelog
   type(obj_msg_log)  :: msg_log                           ! a private system message log
   
   ! public interface
-  public :: init_log, message, flush_messages, warning, error,get_messages
+  public :: init_log, message, flush_messages, warning, error,get_messages,close_log
 
   interface message
     module procedure add_log_no_tag
@@ -188,6 +188,7 @@ module MUtilsLib_messagelog
       end if
       
       if (present(db_id) .and. present(msg_file)) then
+        ok=init_msg_db(db_id=db_id,msg_file=msg_file)
         ok=init_msg_db(db_id=db_id,msg_file=msg_file)
         if (ok/=0) call message(log_error,"Unable to initalise msg_db for "//db_id//" with file "//msg_file)
         call message(log_debug,"Using msg_db: "//trim(db_id)//", located at "//trim(msg_file))
@@ -452,13 +453,18 @@ module MUtilsLib_messagelog
       integer(mik) :: ok,i
       integer(mik) :: msg_db_num
       character(len=len_vlongStr):: msg
-      
-      
-      if (.not.allocated(msg_db)) then
+      ok=0 
+       if (.not.allocated(msg_db)) then
         allocate(msg_db(1))
         msg_db_num=1
       else
         msg_db_num=SIZE(msg_db)
+        do i=1,msg_db_num
+            if(trim(msg_db(i)%id)==trim(db_id)) then
+                ! Already have same msg_db - no need to add it again!
+                return
+            end if
+        end do
         allocate(new_msg_db(msg_db_num+1))
         new_msg_db(1:msg_db_num)=msg_db
         deallocate(msg_db)
@@ -530,6 +536,20 @@ module MUtilsLib_messagelog
       end if
       
   end function get_msg_from_db
+!************************************************************************************************
+subroutine close_log()
+! *** Tidies up message log and msg_db
+ 
+integer(mik) :: i
+  
+! Deallocate msg_log
+if (.not.msg_log%auto_flush) deallocate(msg_log%tag,msg_log%message)
+
+! Deallocate msg_db
+do i=1,size(msg_db); deallocate(msg_db(i)%msg); end do
+deallocate(msg_db)
+
+end subroutine close_log
 !************************************************************************************************
 end module MUtilsLib_messagelog
 !************************************************************************************************
