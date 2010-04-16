@@ -189,7 +189,6 @@ module MUtilsLib_messagelog
       
       if (present(db_id) .and. present(msg_file)) then
         ok=init_msg_db(db_id=db_id,msg_file=msg_file)
-        ok=init_msg_db(db_id=db_id,msg_file=msg_file)
         if (ok/=0) call message(log_error,"Unable to initalise msg_db for "//db_id//" with file "//msg_file)
         call message(log_debug,"Using msg_db: "//trim(db_id)//", located at "//trim(msg_file))
       end if  
