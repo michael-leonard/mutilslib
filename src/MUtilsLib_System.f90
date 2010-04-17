@@ -177,7 +177,7 @@ module MUtilsLib_System
                              ! for files with one letter extentions (e.g, *.r), 
                              ! it is important to use a space, e.g. ext="*.r " to distinguish from .r** extensions
      ! Dummies - Outputs
-     character(len=len_vLongStr),pointer :: filelist(:) ! Output: the list of Rscripts
+     character(len=*),pointer :: filelist(:) ! Output: the list of Rscripts
      ! Function Results
      integer(mik) :: ok
 
@@ -234,7 +234,10 @@ module MUtilsLib_System
      CASE("FILE")
       ok=system('dir /B/L "' // trim(path) // trim(slash) //'*.*" >List.txt') ! use 
                ! *.* to avoid an error message to the console when there are no .r files
-      errmsg="Unable to locate files with extension "//trim(ext)//" in path: "//trim(path)
+      if (ok/=0) then
+        errmsg="Unable to locate files with extension "//trim(ext)//" in path: "//trim(path)
+        return
+      end if
      END SELECT     
      
      open(unit = 9538,file="list.txt")
@@ -254,6 +257,7 @@ module MUtilsLib_System
      end if
      
      ! retrieve file list
+     if (associated(list)) deallocate(list)
      allocate(list(count))
      rewind(9538)
      count = 0
