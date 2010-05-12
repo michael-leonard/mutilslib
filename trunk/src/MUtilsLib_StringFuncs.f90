@@ -20,6 +20,7 @@ module MUtilsLib_stringfuncs
             operator(//), &        ! overloaded to allow concatenation of strings
             operator(.pad.), &     ! same as above but allows one padding space between concatenation
             c,            &        ! converts arrays to strings
+            concat,       &        ! Concatenate strings arrays to a single string
             set_pad, &             ! change the padding character when using the .pad. operator
             fwdslash,backslash, &  ! convert a <filepath> string with back/fwd slashes to having forward/back slashes
             endslash,&           ! check there is a end slash on a string - useful for checking paths before added filenames
@@ -33,8 +34,9 @@ module MUtilsLib_stringfuncs
             stripBlanks,&          ! simple string function to remove blank spaces
             changeChar,&           ! string function to change a character in string to another 
                                    ! (useful for changing spaces to underscores)
-            index, &                  ! finds the index of a character vector that corresponds to a string input                
-            insertString
+            index, &               ! finds the index of a character vector that corresponds to a string input                
+            insertString,&
+            cL                     ! converts a string to a common length (cl)
   interface index
     module procedure index_1D
   end interface 
@@ -571,6 +573,21 @@ module MUtilsLib_stringfuncs
       ch=trim(ch)//"'"//trim(str(i))//"',"
     end do
     ch(len_trim(ch):len_trim(ch)) = ')' ! close bracket
+    ch=trim(ch)
+  end function
+  
+  function concat(str) result(ch)
+    ! Convert the string array and produces a command that will be interpreted as a vector in R
+    ! length of string is (len(str)+1*array_size + 2 ... this includes commas and close brackets
+    implicit none
+    character(len=*), dimension(:), intent(in) :: str ! the input variable to be concatenated
+    character(len = (len(str)+3)*size(str) +3) :: ch     ! the string to be returned 
+    integer :: i ! loop counter
+
+    ch = "" 
+    do i = 1,size(str)
+      ch=trim(ch)//trim(str(i))//";"
+    end do
     ch=trim(ch)
   end function
 !!! PADDING - COPIED FROM ABOVE + 1 EXTRA SPACE FOR A PAD IN THE MIDDLE
@@ -1192,6 +1209,41 @@ function insertString(strIn) result(outString)
         i=i+1
     end do
 end function insertString
+
+function cL(strIn) result (StrOut)
+!
+    use kinds_dmsl_kit
+!
+    IMPLICIT NONE
+!
+!    ! Dummy Arguments
+    CHARACTER(LEN=*), INTENT(IN) :: StrIn
+    
+    CHARACTER(LEN=Len_vLongStr) :: StrOut
+    
+    if (len_trim(Strin)>Len_vLongStr) then
+     !   call message("Cmd: "//trim(strIn)//" is longer then "//Len_vLongStr)
+      continue
+    end if
+    
+    StrOut=trim(strIn)
+    
+end function
+!    
+!    ! Locals
+!    integer(mik) char_dim
+!    
+!    !
+!    
+!    if (present(a2)) then
+!        char_dim=2
+!    else if (present(a1) then
+!        char_dim=1
+!    end if
+!    
+    
+   
+
 
 end module MUtilsLib_stringfuncs
 !-------------------------------------------------------------------------
