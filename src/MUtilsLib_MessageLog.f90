@@ -228,7 +228,9 @@ module MUtilsLib_messagelog
 
       if (present(db_id) .and. present(msg_id)) then
         messageLc="["//db_id//"] ID:"//msg_id//" "//trim(message)//trim(get_msg_from_db(msg_id,db_id))
-      else
+      else if (present(db_id)) then
+        messageLc="["//db_id//"] "//trim(message)
+      else 
         messageLc=TRIM(message)
       end if
       !messageLc = trim(insertString(messageLc))
