@@ -11,5 +11,6 @@ module MUtilsLib
     use MUtilsLib_SettingsFiles
     use MUtilsLib_System
     use MUtilsLib_VarFuncs
-            
+    use MUtilsLib_unitTestPlatform
+                
 end module MUtilsLib
