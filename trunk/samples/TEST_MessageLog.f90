@@ -1,6 +1,6 @@
   subroutine sample_subroutine
     ! Example to test messageslog
-    
+    !Test line
     
     use MUtilsLib_messagelog
 
