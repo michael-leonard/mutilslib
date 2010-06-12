@@ -18,8 +18,9 @@ module MUtilsLib_System
               processExist, &     ! Determine if a given process exists
               Generate_FileList,& ! Generates a list of files with a given extension in a given path 
               Generate_SystemList,& ! Generates a list from the system of either files or directories
-              OSCall              ! OS Command line interface utility with immediate return or wait specified in milliseconds 
-              
+              OSCall,&              ! OS Command line interface utility with immediate return or wait specified in milliseconds
+              systemDateTime,&      ! Returns the system clock time and date as a text string
+              viewTxtFile           ! Windows call to launch notepad and pass it a file                  
   contains
 !*************************************************************************************************************   
    function Mutils_loc(imageName) result(ok)
@@ -395,6 +396,109 @@ module MUtilsLib_System
        return
 
     end subroutine
+
+!*************************************************************************************************************
+FUNCTION systemDateTime() RESULT(dateTimeString)
+!*                                                                                                                        
+!*  FUNCTION:      curntDateTime
+!*  DESCRIPTION:   Returns the current system time and date as a text string                                                  
+!*  DEVELOPED BY:  Matthew Hardy
+!*  VERSION:       1.0                                                                                                                                                                                   
+!*  Last Modified: 08/06/2010 MJH 
+!
+USE kinds_dmsl_kit
+IMPLICIT NONE
+INTEGER(MIK),DIMENSION(8)::vals
+CHARACTER(LEN=16)::dateTimeString
+!---
+!
+dateTimeString=""
+
+CALL DATE_AND_TIME(VALUES=vals)
+
+SELECT CASE(vals(5))
+  CASE(0:9);WRITE(dateTimeString(1:3),'(a1,i1,a1)')'0',vals(5),':'
+  CASE(10:);WRITE(dateTimeString(1:3),'(i2,a1)')vals(5),':'
+END SELECT
+
+SELECT CASE(vals(6))
+  CASE(0:9);WRITE(dateTimeString(4:6),'(a1,i1,a1)')'0',vals(6),'-'
+  CASE(10:);WRITE(dateTimeString(4:6),'(i2,a1)')vals(6),'-'
+END SELECT
+
+SELECT CASE(vals(3))
+  CASE(0:9);WRITE(dateTimeString(7:9),'(a1,i1,a1)')'0',vals(3),'/'
+  CASE(10:);WRITE(dateTimeString(7:9),'(i2,a1)')vals(3),'/'
+END SELECT
+
+SELECT CASE(vals(2))
+  CASE(0:9);WRITE(dateTimeString(10:12),'(a1,i1,a1)')'0',vals(2),'/'
+  CASE(10:);WRITE(dateTimeString(10:12),'(i2,a1)')vals(2),'/'
+END SELECT
+
+WRITE(dateTimeString(13:16),'(i4)')vals(1)
+
+END FUNCTION systemDateTime
+!*************************************************************************************************************
+SUBROUTINE viewTxtFile(fileToOpen)
+!*                                                                                                                        
+!*  FUNCTION:      curntDateTime
+!*  DESCRIPTION:   Returns the current system time and date as a text string                                                  
+!*  DEVELOPED BY:  Matthew Hardy
+!*  VERSION:       1.0                                                                                                                                                                                   
+!*  Last Modified: 08/06/2010 MJH 
+USE dfwin,ONLY:GetSystemDirectory,null0 => null       
+USE dflib,only: RUNQQ,SYSTEMQQ
+IMPLICIT NONE
+!
+! Dummy variables
+CHARACTER(LEN=*),INTENT(IN)::fileToOpen      
+!
+! Local variables
+INTEGER::sysDirOk,indx_i,indx_ii      
+CHARACTER(LEN=240)::sysDir,notePadExePath
+CHARACTER(LEN=360)::command
+LOGICAL::fileExist,launchOk     
+!---
+!   
+! Check output file is present
+INQUIRE(FILE=fileToOpen(1:LEN_TRIM(fileToOpen)),EXIST=fileExist)
+IF(.NOT.fileExist)THEN;CALL message('Can not find output: '//fileToOpen(1:LEN_TRIM(fileToOpen)));RETURN;END IF
+!
+! Check notepad.exe can be found    
+sysDirOk = GetSystemDirectory(sysDir,240)      
+notePadExePath=sysDir(1:sysDirOk)//'\notepad.exe'
+
+INQUIRE(FILE=notePadExePath(1:LEN_TRIM(notePadExePath)),EXIST=fileExist)
+
+SELECT CASE(fileExist)
+   CASE(.FALSE.)
+         CALL message('Can not find the notepad text editor.& Output file created: '//fileToOpen(1:LEN_TRIM(fileToOpen)));RETURN
+   CASE(.TRUE.)
+      command=''
+      indx_i =1 
+      indx_ii=indx_i
+      WRITE(command(indx_i:indx_ii),'(a)',ERR=100)'"'
+
+      indx_i =indx_ii+1 
+      indx_ii=indx_i+LEN_TRIM(fileToOpen)
+      WRITE(command(indx_i:indx_ii),'(a)',ERR=100)fileToOpen(1:LEN_TRIM(fileToOpen))
+
+      indx_i =indx_ii+1 
+      indx_ii=indx_i
+      WRITE(command(indx_i:indx_ii),'(a)',ERR=100)'"'
+      command=command(1:LEN_TRIM(command))//char(0)
+      
+      launchOk = RUNQQ(notePadExePath,command)
+END SELECT
+
+RETURN
+!
+! Error Handling
+100 CALL message('Error writing output file name string to command line call& Output file created: '//fileToOpen(1:LEN_TRIM(fileToOpen)))
+RETURN
+
+END SUBROUTINE viewTxtFile  
 
  end module MUtilsLib_System
 !*****************************************************************************
