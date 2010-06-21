@@ -79,7 +79,7 @@ module MUtilsLib_messagelog
     logical  ::   ignore_error = .false.           ! Whether errors should be ignored
     logical  ::   auto_flush   = .true.            ! Automatically flush each entry after it is made
     logical  ::   debug   = .true.                 ! Should debug messages be written to the msg_log
-    character(len = 100)  ::   file = 'message.log' ! file name if msg_log is written to file
+    character(len = len_vLongStr)  ::   file = 'message.log' ! file name if msg_log is written to file
   end type obj_msg_log
 
   

@@ -284,15 +284,19 @@ use kinds_dmsl_kit
 implicit none
 private;save
 ! 1. PATHS - deleted to save confusion!
+public::RGui_path,RGui_name
+public::RFortran_path,Rscript_path
 ! 2. PROCEDURE STATUS
 public::myProcID,openedCOM
-public::RGui_path,RGui_name
 !----------------------------------------------------
 integer(MY_INT_PTR_KIND)::myProcID=undefIN  ! procID of the current process
 logical(mlk)::openedCOM=.false.             ! true when the COM server is already initialized
 !----------------------------------------------------
+! 2. Path to RFortran scripts
+character(len_DMSLpath)::RFortran_path="C:\DMITRI\My_Documents\FortranLibs"
+character(len_DMSLpath)::Rscript_path="C:\DMITRI\My_Documents\FortranLibs\RFortran\Rscripts"
 ! 3. Path to R console
-character(len_DMSLpath)::RGui_path="C:\Program Files\R\R-2.10.1\bin"
+character(len_DMSLpath)::RGui_path="C:\Program Files\R\R-2.8.0\bin"
 character(len_vLongStr)::RGui_name="Rgui.exe"
 !----------------------------------------------------
 !----------------------------------------------------
