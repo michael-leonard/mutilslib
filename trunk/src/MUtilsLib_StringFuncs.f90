@@ -23,7 +23,7 @@ module MUtilsLib_stringfuncs
             concat,       &        ! Concatenate strings arrays to a single string
             set_pad, &             ! change the padding character when using the .pad. operator
             fwdslash,backslash, &  ! convert a <filepath> string with back/fwd slashes to having forward/back slashes
-            endslash,&           ! check there is a end slash on a string - useful for checking paths before added filenames
+            endslash,&             ! check there is a end slash on a string - useful for checking paths before added filenames
             FolderUp, &            ! convert a <filepath> string by removing trailing folders
             Lcase, Ucase,&         ! convert string to lower/upper case (important for string comparisons)
             int,&                  ! Convert a string to integer
@@ -36,7 +36,9 @@ module MUtilsLib_stringfuncs
                                    ! (useful for changing spaces to underscores)
             index, &               ! finds the index of a character vector that corresponds to a string input                
             insertString,&
-            cL                     ! converts a string to a common length (cl)
+            cL,&                   ! converts a string to a common length (cl)
+            fullPath               ! convert a <filename> and <filepath> into a full file name and path
+            
   interface index
     module procedure index_1D
   end interface 
@@ -1093,21 +1095,34 @@ function removeChar(strIn,char) result (strOut)
 END function removeChar
 !_____________________________________________________________________________________________
 !
-CHARACTER FUNCTION stripBlanks(inString)
+FUNCTION stripBlanks(inString) RESULT (outString)
   IMPLICIT NONE
-  CHARACTER(LEN=*),INTENT(IN)::inString      
+  CHARACTER(LEN=*),INTENT(IN)::inString   
+  CHARACTER(LEN=LEN_TRIM(inString)):: outString   
   INTEGER::i,indx
   !---
   !
   indx=0
-  stripBlanks=''
+  outString=''
   DO i=1,LEN_TRIM(inString)
      IF(inString(i:i)==' ')CYCLE
      indx=indx+1
-     stripBlanks(indx:indx)=inString(i:i)
+     outString(indx:indx)=inString(i:i)
   END DO
 
 END FUNCTION stripBlanks
+!_____________________________________________________________________________________________
+!
+FUNCTION fullPath(fileName,filePath) RESULT(fullPathStr)
+!
+IMPLICIT NONE
+CHARACTER(LEN=*),INTENT(IN)::fileName,filePath
+CHARACTER(LEN=LEN(filePath))::fullPathStr
+!---
+!
+fullPathStr=filePath(1:LEN_TRIM(filePath))//fileName(1:LEN_TRIM(fileName))
+
+END FUNCTION
 !_____________________________________________________________________________________________
 !
 function changeChar(strIn,charIn,CharOut) result (strOut)
