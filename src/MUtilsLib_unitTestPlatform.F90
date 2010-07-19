@@ -38,7 +38,7 @@ PUBLIC::myFileInquire,myFileOpen,myWriteHeader,testMyResult,myWriteTestResult,my
 !---
 !
 INTERFACE testMyResult
-MODULE PROCEDURE testMyResult_Integer
+MODULE PROCEDURE testMyResult_Integer,testMyResult_Logical
 END INTERFACE
 
 CONTAINS
@@ -108,7 +108,9 @@ SUBROUTINE myFileOpen(unitID,myResult,fileName,filePath,fileNameAndPath,status)
    ! CHECK FILE
    OPEN(UNIT=unitID,FILE=open_fileNameAndPath(1:LEN_TRIM(open_fileNameAndPath)),IOSTAT=err,STATUS=fileStatus)
    
-   IF(err/=0)THEN
+   IF(err==0)THEN
+      myResult=.TRUE.
+   ELSE   
       myResult=.FALSE.
       CALL message(log_error,"Could not open the file "//open_fileNameAndPath(1:LEN_TRIM(open_fileNameAndPath)))
    END IF   
@@ -174,47 +176,74 @@ SUBROUTINE myWriteHeader(unitID,myResult,name,inputFiles,standardsFiles,resultsF
    CALL message(log_error,"Error writing header for "//name(1:LEN_TRIM(name)))
  
 END SUBROUTINE myWriteHeader
+!___________________________________________________________________________________________________________________
+!
+SUBROUTINE myWriteMessage(unitID,myMessage,blankLine)
+   IMPLICIT NONE
+   ! Subroutine
+   INTEGER(MIK),INTENT(IN)::unitID   
+   CHARACTER(LEN=*),INTENT(IN)::myMessage
+   LOGICAL,OPTIONAL::blankLine
+   !---
+   !
+   WRITE(unitID,"(a)",err=101)myMessage(1:LEN_TRIM(myMessage))
+   IF(PRESENT(blankLine))WRITE(unitID,*,err=101)""
+   RETURN
+   
+101 CONTINUE
+   CALL message(log_error,"Error writing message to unit test module summary file")
+ 
+END SUBROUTINE myWriteMessage
 !__________________________________________________________________________________________________________________
 !
-SUBROUTINE myFileCompare(unitOne,unitTwo,myTestResult)
+SUBROUTINE myFileCompare(unitOne,unitTwo,skip,myTestResult)
    !
    ! Compare two file
    IMPLICIT NONE
    !
    ! Subroutine variables
-   INTEGER(MIK),INTENT(IN),OPTIONAL::unitOne,unitTwo
+   INTEGER(MIK),INTENT(IN),OPTIONAL::unitOne,unitTwo,skip
    LOGICAL,INTENT(OUT)::myTestResult
 
    !
    ! General variables
-   INTEGER(MIK)::fileOneLineCount,fileTwoLineCount,endOfFile
+   INTEGER(MIK)::i,fileOneLineCount,fileTwoLineCount,endOfFile_i,endOfFile_ii
    CHARACTER(LEN=1)::dummy 
    CHARACTER(LEN=240)::standard,test
    !---
    !
+   INQUIRE(UNIT=unitOne,EXIST=myTestResult);IF(.not.myTestResult)RETURN
+   INQUIRE(UNIT=unitTwo,EXIST=myTestResult);IF(.not.myTestResult)RETURN
+  
    REWIND(UNIT=unitOne);REWIND(UNIT=unitTwo)
    fileOneLineCount=0_MIK;fileTwoLineCount=0_MIK
 
    DO
-      READ(unitOne,*,IOSTAT=endOfFile)dummy
-      IF(endOfFile/=0)THEN;EXIT;ELSE;fileOneLineCount=fileOneLineCount+1;END IF
+      READ(unitOne,*,IOSTAT=endOfFile_i)dummy
+      IF(endOfFile_i/=0)THEN;EXIT;ELSE;fileOneLineCount=fileOneLineCount+1;END IF
    END DO
 
    DO
-      READ(unitTwo,*,IOSTAT=endOfFile)dummy
-      IF(endOfFile/=0)THEN;EXIT;ELSE;fileTwoLineCount=fileTwoLineCount+1;END IF
+      READ(unitTwo,*,IOSTAT=endOfFile_ii)dummy
+      IF(endOfFile_ii/=0)THEN;EXIT;ELSE;fileTwoLineCount=fileTwoLineCount+1;END IF
    END DO
    
    IF((fileOneLineCount-fileTwoLineCount)/=0)THEN;myTestResult=.FALSE.;RETURN;ELSE;myTestResult=.TRUE.;END IF
-   
 
    REWIND(UNIT=unitOne);REWIND(UNIT=unitTwo)
    
+   IF(PRESENT(skip))THEN
+      DO i=1,skip;READ(unitOne,"(a)",IOSTAT=endOfFile_i)standard;READ(unitTwo,"(a)",IOSTAT=endOfFile_ii)test;END DO
+   END IF
+   
    DO
    standard='';test=''
-   READ(unitOne,*,IOSTAT=endOfFile)standard;READ(unitTwo,*,IOSTAT=endOfFile)test
-   IF(endOfFile/=0)THEN;myTestResult=.TRUE.;EXIT;END IF
-   IF(test/=standard)THEN;myTestResult=.FALSE.;RETURN;END IF
+   READ(unitOne,"(a)",IOSTAT=endOfFile_i)standard;READ(unitTwo,"(a)",IOSTAT=endOfFile_ii)test
+   IF((endOfFile_i/=0).and.(endOfFile_ii/=0))THEN;myTestResult=.TRUE.;EXIT;ELSE;myTestResult=.FALSE.;END IF
+   IF(test(1:LEN_TRIM(test))/=standard(1:LEN_TRIM(standard)))THEN
+   myTestResult=.FALSE.
+   EXIT
+   END IF
    END DO
    
    REWIND(UNIT=unitOne);REWIND(UNIT=unitTwo)
@@ -237,18 +266,27 @@ SUBROUTINE testMyResult_Integer(testValue,value_true,value_false,myTestResult)
    END IF
 
 END SUBROUTINE testMyResult_Integer
-!___________________________________________________________________________________________________________________
+!__________________________________________________________________________________________________________________
 !
-!SUBROUTINE mylogResult(testResult)
-!   IMPLICIT NONE
-!   ! Subroutine
-!   INTEGER(MIK),INTENT(IN)::integerTest
-!   INTEGER(MIK),INTENT(IN),OPTIONAL::value_true,value_false
-!   LOGICAL,INTENT(IN)::testResult
-!   !---
-!   !
-!
-!END SUBROUTINE mylogResult
+SUBROUTINE testMyResult_Logical(testValue,value_true,value_false,myTestResult)
+   IMPLICIT NONE
+   ! Subroutine
+   LOGICAL,INTENT(IN)::testValue
+   LOGICAL,INTENT(IN),OPTIONAL::value_true,value_false
+   LOGICAL,INTENT(OUT)::myTestResult
+   !---
+   !
+   IF(PRESENT(value_true))THEN
+     IF(testValue==value_true)THEN;myTestResult=.TRUE.;ELSE;myTestResult=.FALSE.;END IF
+   ELSE IF(PRESENT(value_false))THEN 
+     IF(testValue==value_false)THEN;myTestResult=.FALSE.;ELSE;myTestResult=.TRUE.;END IF  
+   ELSE IF(testValue)THEN
+      myTestResult=.TRUE.
+   ELSE
+      myTestResult=.FALSE.
+   END IF
+
+END SUBROUTINE testMyResult_Logical
 !___________________________________________________________________________________________________________________
 !
 SUBROUTINE myWriteTestResult(testName,testResult,failMessage,unitID)
@@ -265,19 +303,19 @@ SUBROUTINE myWriteTestResult(testName,testResult,failMessage,unitID)
    outputString=""
 
    SELECT CASE(testResult)
-       CASE(.TRUE.) ; WRITE(outputString,*,err=101)testName(1:LEN_TRIM(testName))
-                      WRITE(outputString(80:84),"(a)",err=101)"PASS"
-                      WRITE(unitID,'(a)',err=101)outputString(1:LEN_TRIM(outputString))
+       CASE(.TRUE.) ; WRITE(outputString,*,err=102)testName(1:LEN_TRIM(testName))
+                      WRITE(outputString(80:84),"(a)",err=102)"PASS"
+                      WRITE(unitID,'(a)',err=102)outputString(1:LEN_TRIM(outputString))
        
-       CASE(.FALSE.); WRITE(outputString,*,err=101)testName(1:LEN_TRIM(testName))
-                      WRITE(outputString(80:84),"(a)",err=101)"FAIL"
-                      WRITE(unitID,'(a)',err=101)outputString(1:LEN_TRIM(outputString))
-                      WRITE(unitID,'(a)',err=101)"                     "//failMessage(1:LEN_TRIM(failMessage))    
+       CASE(.FALSE.); WRITE(outputString,*,err=102)testName(1:LEN_TRIM(testName))
+                      WRITE(outputString(80:84),"(a)",err=102)"FAIL"
+                      WRITE(unitID,'(a)',err=102)outputString(1:LEN_TRIM(outputString))
+                      WRITE(unitID,'(a)',err=102)"                     "//failMessage(1:LEN_TRIM(failMessage))    
    END SELECT
 
    RETURN
    
-101 CONTINUE
+102 CONTINUE
 
    CALL message(log_error,"Error writing test results for "//testName(1:LEN_TRIM(testName)))
  
@@ -294,7 +332,7 @@ SUBROUTINE myGlobalTestPlatformLog(action)
    !
    SELECT CASE(action(1:LEN_TRIM(action)))
       CASE("open","OPEN")
-         CALL init_log()
+         CALL init_log(close=.false.)
       CASE("close","CLOSE")
          CALL close_log()
    END SELECT
