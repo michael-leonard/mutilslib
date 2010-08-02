@@ -1,10 +1,10 @@
 !***************************************************************************************************
-! miniDMSL 
+! miniDMSL
 !  - Developed by Mark Thyer
 !  A VERY cut-down version of DMSL library developed by Dmitri Kavetski.
 !*************************************************************************************************
 !
-! Based on Version 5.011 of DMSL  
+! Based on Version 5.011 of DMSL
 !
 ! Enables 1. Compilation independent of DMSL
 !         2. Consistency when compiling when using DMSL
@@ -156,7 +156,7 @@ integer(mik),parameter::&   ! Application configuration types
 integer(mik),parameter::&   ! Operating system configuration types
   MAC_OS=-2,LINUX_OS=-1,WIN2K_OS=0,WINXP_OS=1,VISTA_OS=2
 ! (b) Hardware aspects
-integer(mik),parameter::MY_INT_PTR_KIND=INT_PTR_KIND()
+integer(mik),parameter::MY_INT_PTR_KIND=KIND(1) ! INT_PTR_KIND() not intrinsic function, G95 cannot compile
 ! 4 on 32-bit bricks, 8 on 64-bit monsters, 16 on 128-bit non-existent (2009) beasts
 ! ---
 endmodule kinds_dmsl_kit
