@@ -43,6 +43,29 @@ function findEOF(filepath,err,msg) result(nLines)
 
 end function findEOF
 
+function countlines(unit) result(nLines)
+  ! Returns number of lines at EOF 
+  ! Without opening/closing files (slow!)
+  implicit none
+  ! Dummies
+  integer,intent(in) :: unit ! unit no. of open file
+  integer(mik) :: nLines
+  ! Locals
+  integer(mik) status
+    
+  nLines=0
+  do 
+    read(unit,*,iostat=status)
+    if(status==0) then
+      nLines=nLines+1
+    else
+      exit
+    end if
+  end do
+  rewind(unit)
+end function countLines
+
+
 end module MUtilsLib_fileIO
 !**************************
 ! For backwards compatibility
