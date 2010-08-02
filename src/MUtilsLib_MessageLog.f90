@@ -5,13 +5,13 @@ module MUtilsLib_messagelog
 !
 ! List of Routines
 ! ----------------
-! Below provides a list of routines used in this module. The user is recommended to inspect the actual 
+! Below provides a list of routines used in this module. The user is recommended to inspect the actual
 ! interfaces of each routine in order to determine how to use
 
 !  INIT_LOG(unit,close,append,active,echo,file,auto_flush) ! set custom parameters for the msg_log file (otherwise use default)
-!  message(message,msg_id,db_id)    ! add message to the msg_log object, defaults to ERROR tag, 
-!                                                   select tag from predefined list using tagtype, 
-!  message(msg_type,message,msg,db_id)  ! add tag and message to the msg_log object, 
+!  message(message,msg_id,db_id)    ! add message to the msg_log object, defaults to ERROR tag,
+!                                                   select tag from predefined list using tagtype,
+!  message(msg_type,message,msg,db_id)  ! add tag and message to the msg_log object,
 !                                                   select tag from predefined list using tagtype
 !           see 'Message Database Functionality' below for info on msg_id and db_id
 !  flush_messages()           ! write the entire msg_log to file (unit =6, specifies screen)
@@ -28,17 +28,17 @@ module MUtilsLib_messagelog
 ! (3) This method of logging errors and warnings was selected so that the interface for each function
 !     did not get polluted. Also, it is quite easy to remove the references to the msg_log object at a later
 !     date, whereas it is messy to change the interface of a routine at a later date.
-!	(4) A tag must be specified for every message that gets entered into the msg_log. Tags can be chosen from a
+! (4) A tag must be specified for every message that gets entered into the msg_log. Tags can be chosen from a
 !     predefined set for which a global enum is provided.
-!	(5) msg_log is kept private, so as to avoid incorrect use and so that logging facilities can be easily removed
+! (5) msg_log is kept private, so as to avoid incorrect use and so that logging facilities can be easily removed
 !     from a project
-!	(6) The msg_log class has several different options for outputting the data and for tracking errors and
-!     warnings. The warning() and error() routines can be used to provide error handling and check 
+! (6) The msg_log class has several different options for outputting the data and for tracking errors and
+!     warnings. The warning() and error() routines can be used to provide error handling and check
 !     if a subroutine executed okay.
 !
 ! Message Database Functionality
-!  - Users can supply a msg_id (and db_id) to the message subroutine and that is used to locate message 
-!    in msg_db (given by db_id) which is appended to the message 
+!  - Users can supply a msg_id (and db_id) to the message subroutine and that is used to locate message
+!    in msg_db (given by db_id) which is appended to the message
 !
 ! Notes:
 ! (1) msg_db is read-in using init_msg_db which is called from init_log - need to supply db_id and msg_file to init_log
@@ -46,18 +46,18 @@ module MUtilsLib_messagelog
 !       ID,short description,long description,remedy
 !       1,"short db message id 1","long db message id 1","remedy id 1"
 !       2,"short db message id 2","long db message id 2","remedy id 2"
-!       -3,"short db message id -3","long db message id -3","remedy id -3" 
+!       -3,"short db message id -3","long db message id -3","remedy id -3"
 !    see samples\TestMsg_db.csv for more details
 !    Tips: A simple trick to get Excel to put quotes around text is to put a comma in the cell
-! 
-!  (3) Multiplie message data-bases are supported, just need to call init_log again (with append=.true.) 
+!
+!  (3) Multiplie message data-bases are supported, just need to call init_log again (with append=.true.)
 !      to ensure messages are added to the same log file
-! 
+!
 
   use kinds_dmsl_kit
   implicit none
   save
-  
+
   private ! All components are private unless declared otherwise
   integer, parameter, public   ::  tag_len  = len_stdStrB   ! tag length
   integer, parameter, public   ::  msg_len = len_vLongStr   ! some messages can contain strings of deep file directories
@@ -82,7 +82,7 @@ module MUtilsLib_messagelog
     character(len = len_vLongStr)  ::   file = 'message.log' ! file name if msg_log is written to file
   end type obj_msg_log
 
-  
+
   ! Enumeration for different tag types (public)
   integer, parameter, public  ::   log_error   = 1, &
                                    log_warn    = 2, &
@@ -95,7 +95,7 @@ module MUtilsLib_messagelog
                                    log_debug   = 10, &
                                    log_blank   = 11, &
                                    log_fatal   = 12
- 
+
 
   character(len = tag_len), parameter :: tag(1:12) = (/"*ERROR    :", &
                                                        " Warning  :", &
@@ -109,23 +109,23 @@ module MUtilsLib_messagelog
                                                        " Debug    :", &
                                                        "           ", &
                                                        "FatalError:" /)
-                                                       
+
   type msg_db_msg_type                                 ! Type for messages in message database
-    integer(mik):: id                                   ! id for messages in message database                    
-    character(len=len_LongStr) :: desc                  ! message description 
+    integer(mik):: id                                   ! id for messages in message database
+    character(len=len_LongStr) :: desc                  ! message description
     character(len=len_vLongStr) :: remedy               ! possible remedies if message is for an error
   end type msg_db_msg_type
-        
+
   type msg_db_type                                      ! Type for message database
     character(len=len_stdStrD) :: id                    ! id message database
     integer(mik) ::n_msg                                ! number of message in message database
     type(msg_db_msg_type),allocatable :: msg(:)         ! message in message database
   end type
-  
-  type (msg_db_type), allocatable :: msg_db(:)          ! Message database(s)    
-    
+
+  type (msg_db_type), allocatable :: msg_db(:)          ! Message database(s)
+
   type(obj_msg_log)  :: msg_log                           ! a private system message log
-  
+
   ! public interface
   public :: init_log, message, flush_messages, warning, error,get_messages,close_log
 
@@ -150,7 +150,7 @@ module MUtilsLib_messagelog
       logical, intent(IN), optional  ::   ignore_error  ! Whether errors should be ignored
       logical, intent(IN), optional  ::   auto_flush    ! Whether the log should be automatically flushed each time
       logical, intent(IN), optional  ::   debug         ! Whether debug comments should be ignored
-      
+
       character(len = *), intent(IN), optional :: file ! file name if log is written to file
       character(len = *), intent(IN), optional :: db_id ! ID of the message database
       character(len = *), intent(IN), optional :: msg_file ! file name of the msg file for message database
@@ -170,7 +170,7 @@ module MUtilsLib_messagelog
 
       ! Check for consistency/logic of log parameters
       if (msg_log%echo .AND. msg_log%unit == 6)   msg_log%unit   = 111     ! When echo-ing must have file ID other than 6
-      if (msg_log%append .AND. msg_log%unit == 6) msg_log%append = .false. ! file appending is not needed 
+      if (msg_log%append .AND. msg_log%unit == 6) msg_log%append = .false. ! file appending is not needed
                                                                            ! when  writing to screen only
 
       ! if necessary open the log file
@@ -186,16 +186,16 @@ module MUtilsLib_messagelog
           if (msg_log%close) close(msg_log%unit) ! close the log file
         end if
       end if
-      
+
       if (present(db_id) .and. present(msg_file)) then
         ok=init_msg_db(db_id=db_id,msg_file=msg_file)
         if (ok/=0) call message(log_error,"Unable to initalise msg_db for "//db_id//" with file "//msg_file)
         call message(log_debug,"Using msg_db: "//trim(db_id)//", located at "//trim(msg_file))
-      end if  
-      
+      end if
+
       ! Do this upon exit so that if it is called again it it will append to the one that is already opn
       if (present(append_always)) msg_log%append = append_always
-      
+
 
     end subroutine init_log
 !************************************************************************************************
@@ -205,7 +205,7 @@ module MUtilsLib_messagelog
       character(len = *), intent(IN) ::  message  ! Any descriptive message
       character(len = *), intent(IN),optional ::  db_id
       integer(mik),intent(in), optional :: msg_id
-      
+
       call add_log_msg_tag(log_error,message,msg_id,db_id)
 
     end subroutine
@@ -219,9 +219,9 @@ module MUtilsLib_messagelog
       character(len = *), intent(IN) ::  message  ! Any descriptive message
       character(len = *), intent(IN),optional ::  db_id ! id of the message db
       integer(mik),intent(in), optional :: msg_id ! message id
-      
+
       character(len=len_vLongStr):: messageLc
-      
+
       character(len = tag_len), pointer, dimension(:) ::   Tcopy =>null() ! Temporary storage
       character(len = msg_len), pointer, dimension(:) ::  Ncopy =>null() ! Temporary storage
       integer  ::   s ! size of message array
@@ -230,7 +230,7 @@ module MUtilsLib_messagelog
         messageLc="["//db_id//"] ID:"//msg_id//" "//trim(message)//trim(get_msg_from_db(msg_id,db_id))
       else if (present(db_id)) then
         messageLc="["//db_id//"] "//trim(message)
-      else 
+      else
         messageLc=TRIM(message)
       end if
       !messageLc = trim(insertString(messageLc))
@@ -364,22 +364,24 @@ module MUtilsLib_messagelog
       ! reads the msg_log file and returns the lastmessage or allmessages depending which is present
       use MUtilsLib_fileIO, only : findEOF
       implicit none
-      ! Outputs      
-      character(len = *), pointer, dimension(:),optional ::  allmessages ! Descriptive text 
+      ! Outputs
+      character(len = *), pointer, dimension(:),optional ::  allmessages ! Descriptive text
                                                                                                    ! of tags and messages
       character(len = *), intent(out),optional ::  lastmessage ! Descriptive text of tags and messages
-      
+
       integer :: err
       character(len=len_vLongStr) :: msg
-      
-       ! Locals
+      ! Locals
       integer :: i,nMess,test_len ! loop counter
       character(len = msg_len+tag_len) ::  dummy ! dummy text
+      character(len=len_vLongStr) :: fmt
+      character(len=len_vLongStr) :: testLenCh
 
       ! Initialisation
       call flush_messages ! Ensures all messages are sent to msg_log file before retrieval
       test_len=(msg_len+tag_len)
-            
+      write(testLenCh,*) test_len
+      fmt = "(A"//trim(adjustl(testLenCh))//")"
       if (present(lastmessage)) then ! If looking for last-only message
         nMess=findEOF(filepath=(msg_log%file),err=err,msg=msg)
         if (err/=0) then
@@ -388,9 +390,11 @@ module MUtilsLib_messagelog
         end if
         open(unit = msg_log%unit, file = trim(msg_log%file), status = 'old')
         do i=1,(nMess-1)
-        read(msg_log%unit,'(a<test_len>)') dummy
+!        read(msg_log%unit,'(a<test_len>)') dummy ! deprecated<> usage
+          read(msg_log%unit,fmt) dummy
         end do
-        read(msg_log%unit,'(a<test_len>)') lastmessage
+!        read(msg_log%unit,'(a<test_len>)') lastmessage ! deprecated<> usage
+        read(msg_log%unit,fmt) lastmessage
         close(msg_log%unit)
       end if
       if (present(allmessages)) then ! If looking to return all error messages
@@ -404,7 +408,8 @@ module MUtilsLib_messagelog
         allocate(allmessages(nMess))
         open(unit = msg_log%unit, file = trim(msg_log%file), status = 'old')
         do i=1,(nMess)
-          read(msg_log%unit,'(a<test_len>)') allmessages(i)
+!          read(msg_log%unit,'(a<test_len>)') allmessages(i) ! deprecated<> usage
+          read(msg_log%unit,fmt) allmessages(i) ! deprecated<> usage
         end do
         close(msg_log%unit)
       end if
@@ -412,23 +417,23 @@ module MUtilsLib_messagelog
     end subroutine get_messages
 !************************************************************************************************
     elemental function warning() result(bool)
-      ! description:  
+      ! description:
       implicit none
-      logical  ::   bool ! 
+      logical  ::   bool !
 
-      if (msg_log%warn>0) then 
+      if (msg_log%warn>0) then
         bool = .true.
-      else 
+      else
         bool = .false.
       end if
     end function warning
 !************************************************************************************************
     elemental function error() result(bool)
-      ! description:  
+      ! description:
       implicit none
-      logical  ::   bool ! 
+      logical  ::   bool !
 
-      if (msg_log%err>0) then 
+      if (msg_log%err>0) then
         bool = .true.
       else
         bool = .false.
@@ -449,12 +454,12 @@ module MUtilsLib_messagelog
       implicit none
       character(len = *), intent(IN) :: msg_file ! file name of msg file
       character(len = *), intent(IN) :: db_id ! id of the message db
-      
+
       type (msg_db_type),allocatable ::new_msg_db(:)
       integer(mik) :: ok,i
       integer(mik) :: msg_db_num
       character(len=len_vlongStr):: msg
-      ok=0 
+      ok=0
        if (.not.allocated(msg_db)) then
         allocate(msg_db(1))
         msg_db_num=1
@@ -475,74 +480,74 @@ module MUtilsLib_messagelog
         !call move_alloc(new_msg_db,msg_db)
         msg_db_num=msg_db_num+1
       end if
-        
+
       ! assign db_id
       msg_db(msg_db_num)%id=db_id
-      
+
       ! Read-in msg file
       msg_db(msg_db_num)%n_msg=findEof(filepath=msg_file,err=ok,msg=msg)-1
       if (ok/=0) then; call message(log_error,msg); return; end if
       allocate(msg_db(msg_db_num)%msg(msg_db(msg_db_num)%n_msg))
-      
+
       open(unit=10,file=msg_file,status="old",iostat=ok)
       if (ok/=0)then; call message(log_error,"Unable to open "//msg_file//"in init_msg_db"); return; end if
       read(10,*) ! Skip header
       do i=1,msg_db(msg_db_num)%n_msg
         read(10,*,iostat=ok) msg_db(msg_db_num)%msg(i)
-        if (ok/=0) then; 
-          call message(log_error,"Unable to read msg "//i//" in file: "//msg_file//" in init_msg_db"); 
+        if (ok/=0) then;
+          call message(log_error,"Unable to read msg "//i//" in file: "//msg_file//" in init_msg_db");
         end if
         ! Remove comma's on end
         msg_db(msg_db_num)%msg(i)%desc=msg_db(msg_db_num)%msg(i)%desc(1:(len_trim(msg_db(msg_db_num)%msg(i)%desc)-1))
         msg_db(msg_db_num)%msg(i)%remedy=msg_db(msg_db_num)%msg(i)%remedy(1:(len_trim(msg_db(msg_db_num)%msg(i)%remedy)-1))
       end do
-      
+
       close(unit=10)
-     
+
   end function init_msg_db
 !************************************************************************************************
     function get_msg_from_db(msg_id,db_id) result(msg)
      ! description:  Gets a message from the message db
       use MUtilslib_stringfuncs, only : operator(//)
       implicit none
-      character(len = *), intent(IN) :: db_id ! id of the message db 
-      integer(mik), intent(IN) :: msg_id ! message id 
-      
+      character(len = *), intent(IN) :: db_id ! id of the message db
+      integer(mik), intent(IN) :: msg_id ! message id
+
       integer(mik) :: i
       integer(mik) :: msg_db_num,msg_num
       character(len=len_vlongStr):: msg
-      
+
       ! First find db
       do i=1,size(msg_db)
         if (trim(msg_db(i)%id)==trim(db_id)) then; msg_db_num=i;exit;end if
       end do
-      
+
       if (i>size(msg_db)) then
            msg=" (Message db: "//db_id// " not found)"
            return
       end if
-      
+
       ! Find and return msg in db
       do i=1,msg_db(msg_db_num)%n_msg
         if (msg_db(msg_db_num)%msg(i)%id==msg_id) then; msg_num=i;exit;end if
       end do
-      
+
       if (i>msg_db(msg_db_num)%n_msg) then
            msg=" (Msg id: "//msg_id//" not found in "//db_id//" db)"
       else
-        msg=" ("//trim(msg_db(msg_db_num)%msg(msg_num)%desc)//")"  
+        msg=" ("//trim(msg_db(msg_db_num)%msg(msg_num)%desc)//")"
         if (trim(msg_db(msg_db_num)%msg(msg_num)%remedy)/="") then
           msg=trim(msg)//" Remedy: "//trim(msg_db(msg_db_num)%msg(msg_num)%remedy)
-        end if                
+        end if
       end if
-      
+
   end function get_msg_from_db
 !************************************************************************************************
 subroutine close_log()
 ! *** Tidies up message log and msg_db
- 
+
 integer(mik) :: i
-  
+
 ! Deallocate msg_log
 if (.not.msg_log%auto_flush) deallocate(msg_log%tag,msg_log%message)
 
