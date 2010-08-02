@@ -1273,6 +1273,7 @@ module MUtilsLib_stringfuncs
 !____________________________________________________________________
     function trimL(str,ch) result(strOut)
       ! Description: strip a string according to some delimeter. Case sensitive.
+      ! not case sensitive
       implicit none
       character(len=*) :: str ! string to be stripped
       character(len=len(str)) :: strOut ! output string
@@ -1281,7 +1282,7 @@ module MUtilsLib_stringfuncs
       integer  :: l  ! length of string
 
       l = len(str)
-      i = index(str,ch)
+      i = index(LCase(str),LCase(ch))
       if(i<l) then
         strOut = str(i+len(ch):)
       else
@@ -1291,7 +1292,7 @@ module MUtilsLib_stringfuncs
 
     function charCount(str,ch) result(i)
       ! description:  counts the number of occurrences of ch in str
-        
+      ! not case sensitive
       implicit none
       character(len = *), intent(in)  ::   str ! string to be searched
       character(len = *), intent(in)  ::   ch  ! character(s) to be recognized
@@ -1300,7 +1301,7 @@ module MUtilsLib_stringfuncs
 
       i = 0
       do j = 1,len(str)
-        if (index(str(j:),ch)==1) i = i + 1
+        if (index(LCase(str(j:)),LCase(ch))==1) i = i + 1
       end do ! i 
 
     end function charCount
