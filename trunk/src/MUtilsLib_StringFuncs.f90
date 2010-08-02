@@ -37,7 +37,8 @@ module MUtilsLib_stringfuncs
             index, &               ! finds the index of a character vector that corresponds to a string input
             insertString,&
             cL,&                   ! converts a string to a common length (cl)
-            fullPath               ! convert a <filename> and <filepath> into a full file name and path
+            fullPath, &            ! convert a <filename> and <filepath> into a full file name and path
+            trimL                  ! extracts the right hand side of a string following a specified delimeter
 
   interface index
     module procedure index_1D
@@ -54,6 +55,7 @@ module MUtilsLib_stringfuncs
 
   ! This routine is a generic utility for making it easier to interface using string commands between R and Fortran
   interface str
+    module procedure str_i_exact
     module procedure str_i
     module procedure str_r4
     module procedure str_r8
@@ -153,6 +155,19 @@ module MUtilsLib_stringfuncs
   end function real8_str
 !!!!!!!!!!! Number conversion / string handling conveniences for passing arguments into R
 !!!!!!!!!!! Convert Others to String
+
+
+  function str_i_exact(i) result(ch)
+    ! Converts an integer to a string
+    implicit none
+    integer, intent(in) :: i     ! the integer variable
+    character(len = int_len(i)) :: ch     ! the string to be returned
+
+
+    ch = str_i(i,int_len(i))
+
+  end function
+
 
   function str_i(i,n,pad,rhs) result(ch)
     ! Converts an integer to a string
@@ -1073,198 +1088,205 @@ module MUtilsLib_stringfuncs
     strOut((lenStr-lenInsert):lenStr)=insert
    end function
 !-------------------------------------------------------------------------
-function removeChar(strIn,char) result (strOut)
-! Removes given character from the input string
+    function removeChar(strIn,char) result (strOut)
+    ! Removes given character from the input string
 
-    IMPLICIT NONE
+        IMPLICIT NONE
 
-    ! Dummy Arguments
-    CHARACTER(LEN=*), INTENT(IN) :: strIn
-    CHARACTER(LEN=1), INTENT(IN) :: char
+        ! Dummy Arguments
+        CHARACTER(LEN=*), INTENT(IN) :: strIn
+        CHARACTER(LEN=1), INTENT(IN) :: char
 
-     character(len=len(strIn)):: strOut
+         character(len=len(strIn)):: strOut
 
-    ! Local Variables
-    INTEGER :: i,k
+        ! Local Variables
+        INTEGER :: i,k
 
-    ! Remove Char
-    k=0
-    DO i=1,LEN_TRIM(strIn)
-        IF(strIn(i:i)/=char) THEN
-            k=k+1
-            strOut(k:k)=strIn(i:i)
-        END IF
-    END DO
-
-    ! Place Spaces at end of string
-    DO i=k+1,LEN_TRIM(strOut)
-        strOut(i:i)=' '
-    END DO
-
-END function removeChar
-!_____________________________________________________________________________________________
-!
-FUNCTION stripBlanks(inString) RESULT (outString)
-  IMPLICIT NONE
-  CHARACTER(LEN=*),INTENT(IN)::inString
-  CHARACTER(LEN=LEN_TRIM(inString)):: outString
-  INTEGER::i,indx
-  !---
-  !
-  indx=0
-  outString=''
-  DO i=1,LEN_TRIM(inString)
-     IF(inString(i:i)==' ')CYCLE
-     indx=indx+1
-     outString(indx:indx)=inString(i:i)
-  END DO
-
-END FUNCTION stripBlanks
-!_____________________________________________________________________________________________
-!
-FUNCTION fullPath(fileName,filePath) RESULT(fullPathStr)
-!
-IMPLICIT NONE
-CHARACTER(LEN=*),INTENT(IN)::fileName,filePath
-CHARACTER(LEN=LEN(filePath))::fullPathStr
-!---
-!
-fullPathStr=filePath(1:LEN_TRIM(filePath))//fileName(1:LEN_TRIM(fileName))
-
-END FUNCTION
-!_____________________________________________________________________________________________
-!
-function changeChar(strIn,charIn,CharOut) result (strOut)
-! Changes all occurences of CharIn in StrIn to CharOut
-
-    IMPLICIT NONE
-
-    ! Dummy Arguments
-    CHARACTER(LEN=*), INTENT(IN) :: strIn
-    CHARACTER(LEN=1), INTENT(IN) :: charIn,CharOut
-
-    character(len=len_trim(strIn)):: strOut
-
-    ! Local Variables
-    INTEGER :: i
-
-    ! Remove Char
-    DO i=1,LEN_TRIM(strIn)
-        IF(strIn(i:i)==charIn) THEN
-          strOut(i:i)=charOut
-        Else
-          strOut(i:i)=strIn(i:i)
-        eND IF
-    END DO
-
-END function ChangeChar
-!_____________________________________________________________________________________________
-function index_1D(strVec,str)
-
-    use kinds_dmsl_kit
-
-    IMPLICIT NONE
-
-    ! Dummy Arguments
-    CHARACTER(LEN=*), INTENT(IN) :: strVec(:),Str
-
-    ! Local Variables
-    INTEGER(mik) :: i,testVec(size(strVec)),test(1),n
-
-    ! Function Definition
-    integer(mik) :: index_1D
-    n=SIZE(strVec)
-
-    If (all(StrVec/=Str)) then
-        index_1D=0
-        return
-    end if
-
-    testVec=(/(i,i=1,n)/)
-    test=PACK(testVec,StrVec==Str)
-
-    index_1D=test(1)
-
-end function index_1D
-!_____________________________________________________________________________________________
-function insertString(strIn) result(outString)
-    !use MUtilsLib_varFuncs,only :checkPresent
-    use kinds_dmsl_kit
-
-    IMPLICIT NONE
-
-    ! Dummy Arguments
-    CHARACTER(LEN=*), INTENT(IN) :: strIn
-    !CHARACTER(LEN=*), INTENT(IN), optional :: insertStr
-    !integer(mik),intent(in), optional :: strlen
-
-    ! Local Variables
-    INTEGER(mik) :: i,lenInsert,j,k
-    character(len=len_shortStr) :: insertStrLc
-    integer(mik) :: strlenLc
-
-    ! Function Definition
-    CHARACTER(LEN=len_vLongStr) :: outString
-
-    outString=StrIN
-    return
-
-    ! Still needs further development
-
-    insertStrlc="\n"
-    strlenLc=72
-    outString=""
-    lenInsert=len_trim(insertStrlc)
-    j=1
-    i=1
-    do while (i<=len_trim(strIn))
-        if (mod(i,strlenLc)==0) then
-            k=0
-            do while (strIn(i-k:i-k)/=" ");
+        ! Remove Char
+        k=0
+        DO i=1,LEN_TRIM(strIn)
+            IF(strIn(i:i)/=char) THEN
                 k=k+1
-            end do
-            outString(j-k:j-k+lenInsert)=trim(insertStrlc)
-            j=j-k+lenInsert
-            outString(j:j+k)=strIn(i-k:i)
-            j=j+k
-        end if
-        outString(j:j)=StrIn(i:i)
-        j=j+1
-        i=i+1
-    end do
-end function insertString
+                strOut(k:k)=strIn(i:i)
+            END IF
+        END DO
 
-function cL(strIn) result (StrOut)
-!
-    use kinds_dmsl_kit
-!
+        ! Place Spaces at end of string
+        DO i=k+1,LEN_TRIM(strOut)
+            strOut(i:i)=' '
+        END DO
+
+    END function removeChar
+    !_____________________________________________________________________________________________
+    !
+    FUNCTION stripBlanks(inString) RESULT (outString)
+      IMPLICIT NONE
+      CHARACTER(LEN=*),INTENT(IN)::inString
+      CHARACTER(LEN=LEN_TRIM(inString)):: outString
+      INTEGER::i,indx
+      !---
+      !
+      indx=0
+      outString=''
+      DO i=1,LEN_TRIM(inString)
+         IF(inString(i:i)==' ')CYCLE
+         indx=indx+1
+         outString(indx:indx)=inString(i:i)
+      END DO
+
+    END FUNCTION stripBlanks
+    !_____________________________________________________________________________________________
+    !
+    FUNCTION fullPath(fileName,filePath) RESULT(fullPathStr)
+    !
     IMPLICIT NONE
-!
-!    ! Dummy Arguments
-    CHARACTER(LEN=*), INTENT(IN) :: StrIn
+    CHARACTER(LEN=*),INTENT(IN)::fileName,filePath
+    CHARACTER(LEN=LEN(filePath))::fullPathStr
+    !---
+    !
+    fullPathStr=filePath(1:LEN_TRIM(filePath))//fileName(1:LEN_TRIM(fileName))
 
-    CHARACTER(LEN=Len_vLongStr) :: StrOut
+    END FUNCTION
+    !_____________________________________________________________________________________________
+    !
+    function changeChar(strIn,charIn,CharOut) result (strOut)
+    ! Changes all occurences of CharIn in StrIn to CharOut
 
-    if (len_trim(Strin)>Len_vLongStr) then
-     !   call message("Cmd: "//trim(strIn)//" is longer then "//Len_vLongStr)
-      continue
-    end if
+        IMPLICIT NONE
 
-    StrOut=trim(strIn)
+        ! Dummy Arguments
+        CHARACTER(LEN=*), INTENT(IN) :: strIn
+        CHARACTER(LEN=1), INTENT(IN) :: charIn,CharOut
 
-end function
-!
-!    ! Locals
-!    integer(mik) char_dim
-!
-!    !
-!
-!    if (present(a2)) then
-!        char_dim=2
-!    else if (present(a1) then
-!        char_dim=1
-!    end if
-!
+        character(len=len_trim(strIn)):: strOut
+
+        ! Local Variables
+        INTEGER :: i
+
+        ! Remove Char
+        DO i=1,LEN_TRIM(strIn)
+            IF(strIn(i:i)==charIn) THEN
+              strOut(i:i)=charOut
+            Else
+              strOut(i:i)=strIn(i:i)
+            eND IF
+        END DO
+
+    END function ChangeChar
+    !_____________________________________________________________________________________________
+    function index_1D(strVec,str)
+
+        use kinds_dmsl_kit
+
+        IMPLICIT NONE
+
+        ! Dummy Arguments
+        CHARACTER(LEN=*), INTENT(IN) :: strVec(:),Str
+
+        ! Local Variables
+        INTEGER(mik) :: i,testVec(size(strVec)),test(1),n
+
+        ! Function Definition
+        integer(mik) :: index_1D
+        n=SIZE(strVec)
+
+        If (all(StrVec/=Str)) then
+            index_1D=0
+            return
+        end if
+
+        testVec=(/(i,i=1,n)/)
+        test=PACK(testVec,StrVec==Str)
+
+        index_1D=test(1)
+
+    end function index_1D
+    !_____________________________________________________________________________________________
+    function insertString(strIn) result(outString)
+        !use MUtilsLib_varFuncs,only :checkPresent
+        use kinds_dmsl_kit
+
+        IMPLICIT NONE
+
+        ! Dummy Arguments
+        CHARACTER(LEN=*), INTENT(IN) :: strIn
+        !CHARACTER(LEN=*), INTENT(IN), optional :: insertStr
+        !integer(mik),intent(in), optional :: strlen
+
+        ! Local Variables
+        INTEGER(mik) :: i,lenInsert,j,k
+        character(len=len_shortStr) :: insertStrLc
+        integer(mik) :: strlenLc
+
+        ! Function Definition
+        CHARACTER(LEN=len_vLongStr) :: outString
+
+        outString=StrIN
+        return
+
+        ! Still needs further development
+
+        insertStrlc="\n"
+        strlenLc=72
+        outString=""
+        lenInsert=len_trim(insertStrlc)
+        j=1
+        i=1
+        do while (i<=len_trim(strIn))
+            if (mod(i,strlenLc)==0) then
+                k=0
+                do while (strIn(i-k:i-k)/=" ");
+                    k=k+1
+                end do
+                outString(j-k:j-k+lenInsert)=trim(insertStrlc)
+                j=j-k+lenInsert
+                outString(j:j+k)=strIn(i-k:i)
+                j=j+k
+            end if
+            outString(j:j)=StrIn(i:i)
+            j=j+1
+            i=i+1
+        end do
+    end function insertString
+
+    function cL(strIn) result (StrOut)
+    !
+        use kinds_dmsl_kit
+    !
+        IMPLICIT NONE
+    !
+    !    ! Dummy Arguments
+        CHARACTER(LEN=*), INTENT(IN) :: StrIn
+
+        CHARACTER(LEN=Len_vLongStr) :: StrOut
+
+        if (len_trim(Strin)>Len_vLongStr) then
+         !   call message("Cmd: "//trim(strIn)//" is longer then "//Len_vLongStr)
+          continue
+        end if
+
+        StrOut=trim(strIn)
+
+    end function
+!____________________________________________________________________
+    function trimL(str,ch) result(strOut)
+      ! Description: strip a string according to some delimeter. Case sensitive.
+      implicit none
+      character(len=*) :: str ! string to be stripped
+      character(len=len(str)) :: strOut ! output string
+      character(len=*) :: ch  ! delimiting character(s)
+      integer  :: i  ! index of starting position to strip
+      integer  :: l  ! length of string
+
+      l = len(str)
+      i = index(str,ch)
+      if(i<l) then
+        strOut = str(i+len(ch):)
+      else
+        ! the delimeter does not appear
+      end if
+    end function
+
 
 
 
