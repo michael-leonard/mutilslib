@@ -38,7 +38,9 @@ module MUtilsLib_stringfuncs
             insertString,&
             cL,&                   ! converts a string to a common length (cl)
             fullPath, &            ! convert a <filename> and <filepath> into a full file name and path
-            trimL                  ! extracts the right hand side of a string following a specified delimeter
+            trimL, &               ! extracts the right hand side of a string following a specified delimeter
+            charCount              ! count the number of times a certain character occurs in a string
+
 
   interface index
     module procedure index_1D
@@ -1287,6 +1289,21 @@ module MUtilsLib_stringfuncs
       end if
     end function
 
+    function charCount(str,ch) result(i)
+      ! description:  counts the number of occurrences of ch in str
+        
+      implicit none
+      character(len = *), intent(in)  ::   str ! string to be searched
+      character(len = *), intent(in)  ::   ch  ! character(s) to be recognized
+      integer                         ::   i   ! no. of occurrences
+      integer                         ::   j   ! index
+
+      i = 0
+      do j = 1,len(str)
+        if (index(str(j:),ch)==1) i = i + 1
+      end do ! i 
+
+    end function charCount
 
 
 
