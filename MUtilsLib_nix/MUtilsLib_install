@@ -1,0 +1,85 @@
+#!/bin/sh
+
+#
+# Notes:
+# 1. Object directories Debug and Release need not pre-exist
+# 2. Deleting Debug and/or Release files also removes directory
+#
+#--------------------------------------------------------------
+
+MAKE_NAME="makefile"
+DEBUG_PATH="./Dbg/"
+RELEASE_PATH="./Rls/"
+
+#--------------------------------------------------------------
+
+
+# Function for creating Debug directory
+create_debug() {
+  mkdir -p $DEBUG_PATH
+}
+
+# Function for removing Debug directory
+remove_debug() {
+  rm -r $DEBUG_PATH
+}
+
+# Function for creating Release directory
+create_release() {
+  mkdir -p $RELEASE_PATH
+}
+
+# Function for removing Release directory
+remove_release() {
+  rm -r $RELEASE_PATH
+}
+
+#--------------------------------------------------------------
+
+echo
+echo "MUtilsLib installation utility"
+echo
+echo "Please select an option:"
+echo "1. Install Debug Mode"
+echo "2. Install Release Mode"
+echo "3. Install Debug/Release"
+echo "4. Delete Debug Files"
+echo "5. Delete Release Files"
+echo "6. Delete Debug/Release"
+echo "7. Exit"
+echo
+
+while :
+do
+  read x
+  case $x in
+    1) echo "compiling Debug ..."
+       create_debug
+       make debug -f $MAKE_NAME
+       break ;;
+    2) echo "compiling Release ..."
+       create_release
+       make release -f $MAKE_NAME
+       break ;;
+    3) echo "compiling Debug/Release ..."
+       create_debug
+       create_release
+       make all -f $MAKE_NAME
+       break ;;
+    4) echo "deleting Debug ..."
+       remove_debug
+       echo "done"
+       break ;;
+    5) echo "deleting Release ..."
+       remove_release
+       echo "done"
+       break ;;
+    6) echo "deleting Debug/Release ..."
+       remove_debug
+       remove_release
+       echo "done"
+       break ;;
+    7) echo "exiting ..."
+       exit ;;
+  esac
+done
