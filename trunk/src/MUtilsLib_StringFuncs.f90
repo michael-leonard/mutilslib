@@ -154,13 +154,14 @@ module MUtilsLib_stringfuncs
 !!!!!!!!!!! Number conversion / string handling conveniences for passing arguments into R
 !!!!!!!!!!! Convert Others to String
 
-  function str_i(i,n,pad) result(ch)
+  function str_i(i,n,pad,rhs) result(ch)
     ! Converts an integer to a string
     implicit none
     integer, intent(in) :: i     ! the integer variable
     integer, intent(in) :: n     ! n the length of the return string
     character(len = 1), optional, intent(in) :: pad ! should the leading fields be padded with zeroes,
                                                     ! return string is padded with this character default blank
+    logical, optional, intent(in) :: rhs ! shift to right hand side
     ! Locals
     character(len = n) :: ch     ! the string to be returned
     character(len = 20) :: temp  ! temporary variable
@@ -168,7 +169,9 @@ module MUtilsLib_stringfuncs
 
     write(temp,*) i ! default formatting requires atleast 12 spaces
     ch = trim(adjustl(temp))
-
+    if(present(rhs)) then
+      if(rhs) ch = adjustr(ch)
+    end if
     if(present(pad)) then
       forall(j = 1:n,ch(j:j)==" ")
         ch(j:j) = pad
@@ -177,13 +180,14 @@ module MUtilsLib_stringfuncs
 
   end function
 
-  function str_r4(r,n,pad) result(ch)
+  function str_r4(r,n,pad,rhs) result(ch)
     ! Converts an real(4) to a string
     implicit none
     real(4), intent(in) :: r     ! the real variable
     integer, intent(in) :: n     ! n the length of the return string (number of significant digits)
     character(len = 1), optional, intent(in) :: pad ! should the leading fields be padded with zeroes,
                                                     ! return string is padded with this character default blank
+    logical, optional, intent(in) :: rhs ! shift to right hand side
     ! Locals
     character(len = n) :: ch     ! the string to be returned
     character(len = 20) :: temp  ! temporary variable
@@ -191,7 +195,9 @@ module MUtilsLib_stringfuncs
 
     write(temp,*) r ! default formatting
     ch = trim(adjustl(temp))
-
+    if(present(rhs)) then
+      if(rhs) ch = adjustr(ch)
+    end if
     if(present(pad)) then
       forall(j = 1:n,ch(j:j)==" ")
         ch(j:j) = pad
@@ -200,13 +206,14 @@ module MUtilsLib_stringfuncs
 
   end function
 
-  function str_r8(r,n,pad) result(ch)
+  function str_r8(r,n,pad,rhs) result(ch)
     ! Converts an real(8) to a string
     implicit none
     real(8), intent(in) :: r     ! the real variable
     integer, intent(in) :: n     ! n the length of the return string (number of significant digits)
     character(len = 1), optional, intent(in) :: pad ! should the leading fields be padded with zeroes,
                                                     ! return string is padded with this character default blank
+    logical, optional, intent(in) :: rhs ! shift to right hand side
     ! Locals
     character(len = n) :: ch     ! the string to be returned
     character(len = 30) :: temp  ! temporary variable (using CVF string needs to be atleast len = 24 to avoid crash)
@@ -214,7 +221,9 @@ module MUtilsLib_stringfuncs
 
     write(temp,*) r ! default formatting
     ch = trim(adjustl(temp))
-
+    if(present(rhs)) then
+      if(rhs) ch = adjustr(ch)
+    end if
     if(present(pad)) then
       forall(j = 1:n,ch(j:j)==" ")
         ch(j:j) = pad
