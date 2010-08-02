@@ -27,27 +27,27 @@ module MUtilsLib_stringfuncs
             FolderUp, &            ! convert a <filepath> string by removing trailing folders
             Lcase, Ucase,&         ! convert string to lower/upper case (important for string comparisons)
             int,&                  ! Convert a string to integer
-            real,&                 ! Convert string to real 
+            real,&                 ! Convert string to real
             insertString_end, &    ! Insert a string on the end
             removeChar, &          ! Remove Character from string
             relPathtoAbsPath, &    ! Convert a string with a relative path to an absolute path use for Rsetwd command
             stripBlanks,&          ! simple string function to remove blank spaces
-            changeChar,&           ! string function to change a character in string to another 
+            changeChar,&           ! string function to change a character in string to another
                                    ! (useful for changing spaces to underscores)
-            index, &               ! finds the index of a character vector that corresponds to a string input                
+            index, &               ! finds the index of a character vector that corresponds to a string input
             insertString,&
             cL,&                   ! converts a string to a common length (cl)
             fullPath               ! convert a <filename> and <filepath> into a full file name and path
-            
+
   interface index
     module procedure index_1D
-  end interface 
-    
+  end interface
+
   ! This routine is a generic utility for making it easier to interface using strings between and others Fortran
   interface int
     module procedure i4_str
   end interface int
-  
+
   interface real
    module procedure real8_str
   end interface
@@ -159,7 +159,7 @@ module MUtilsLib_stringfuncs
     implicit none
     integer, intent(in) :: i     ! the integer variable
     integer, intent(in) :: n     ! n the length of the return string
-    character(len = 1), optional, intent(in) :: pad ! should the leading fields be padded with zeroes, 
+    character(len = 1), optional, intent(in) :: pad ! should the leading fields be padded with zeroes,
                                                     ! return string is padded with this character default blank
     ! Locals
     character(len = n) :: ch     ! the string to be returned
@@ -182,7 +182,7 @@ module MUtilsLib_stringfuncs
     implicit none
     real(4), intent(in) :: r     ! the real variable
     integer, intent(in) :: n     ! n the length of the return string (number of significant digits)
-    character(len = 1), optional, intent(in) :: pad ! should the leading fields be padded with zeroes, 
+    character(len = 1), optional, intent(in) :: pad ! should the leading fields be padded with zeroes,
                                                     ! return string is padded with this character default blank
     ! Locals
     character(len = n) :: ch     ! the string to be returned
@@ -205,7 +205,7 @@ module MUtilsLib_stringfuncs
     implicit none
     real(8), intent(in) :: r     ! the real variable
     integer, intent(in) :: n     ! n the length of the return string (number of significant digits)
-    character(len = 1), optional, intent(in) :: pad ! should the leading fields be padded with zeroes, 
+    character(len = 1), optional, intent(in) :: pad ! should the leading fields be padded with zeroes,
                                                     ! return string is padded with this character default blank
     ! Locals
     character(len = n) :: ch     ! the string to be returned
@@ -229,7 +229,7 @@ module MUtilsLib_stringfuncs
     implicit none
     logical(4), intent(in) :: l             ! the input logical variable
     character(len=*), intent(in) :: s    ! the input string
-    character(len = len(s)+1) :: ch     ! the string to be returned 
+    character(len = len(s)+1) :: ch     ! the string to be returned
     if(l) then
      ch = "T" // s
     else
@@ -255,7 +255,7 @@ module MUtilsLib_stringfuncs
     ! Concatenate an logical and a logical
     implicit none
     logical(4), intent(in) :: l1,l2             ! the input logical variables
-    character(len = 2) :: ch     ! the string to be returned 
+    character(len = 2) :: ch     ! the string to be returned
     if(l1.AND.l2) then
         ch =  "TT"
     elseif(l1.AND..NOT.l2) then
@@ -416,8 +416,8 @@ module MUtilsLib_stringfuncs
     implicit none
     logical(4), intent(in) :: l             ! the input logical variable
     integer(4), intent(in) :: i     ! the input integer variable
-    character(len = int_len(i) +1) :: ch     ! the string to be returned 
-    if(l) then 
+    character(len = int_len(i) +1) :: ch     ! the string to be returned
+    if(l) then
         ch = "T" // str(i,int_len(i))
     else
         ch = "F" // str(i,int_len(i))
@@ -430,8 +430,8 @@ module MUtilsLib_stringfuncs
     implicit none
     logical(4), intent(in) :: l             ! the input logical variable
     integer(4), intent(in) :: i     ! the input integer variable
-    character(len = int_len(i) +1) :: ch     ! the string to be returned 
-    if(l) then 
+    character(len = int_len(i) +1) :: ch     ! the string to be returned
+    if(l) then
         ch =   str(i,int_len(i)) // "T"
     else
        ch =   str(i,int_len(i)) // "F"
@@ -444,7 +444,7 @@ module MUtilsLib_stringfuncs
     implicit none
     logical(4), intent(in) :: l             ! the input logical variable
     real(4), intent(in) :: r4  ! the input real variables
-    character(len = real_len(r4) +1) :: ch     ! the string to be returned 
+    character(len = real_len(r4) +1) :: ch     ! the string to be returned
     if(l) then
       ch = "T" //  str(r4,real_len(r4))
     else
@@ -458,7 +458,7 @@ module MUtilsLib_stringfuncs
     implicit none
     logical(4), intent(in) :: l             ! the input logical variable
     real(4), intent(in) :: r4  ! the input real variables
-    character(len = real_len(r4) +1) :: ch     ! the string to be returned 
+    character(len = real_len(r4) +1) :: ch     ! the string to be returned
     if(l) then
         ch =   str(r4,real_len(r4)) // "T"
     else
@@ -472,7 +472,7 @@ module MUtilsLib_stringfuncs
     implicit none
     logical(4), intent(in) :: l             ! the input logical variable
     real(8), intent(in) :: r8  ! the input real variables
-    character(len = real_len(r8) +1) :: ch     ! the string to be returned 
+    character(len = real_len(r8) +1) :: ch     ! the string to be returned
     if(l) then
       ch = "T" // str(r8,real_len(r8))
     else
@@ -486,7 +486,7 @@ module MUtilsLib_stringfuncs
     implicit none
     logical(4), intent(in) :: l             ! the input logical variable
     real(8), intent(in) :: r8  ! the input real variables
-    character(len = real_len(r8) +1) :: ch     ! the string to be returned 
+    character(len = real_len(r8) +1) :: ch     ! the string to be returned
     if(l) then
      ch =   str(r8,real_len(r8)) // "T"
     else
@@ -499,7 +499,7 @@ module MUtilsLib_stringfuncs
     ! length of string is 2*array_size + 2 ... this includes commas and close brackets
     implicit none
     logical(4), intent(in) :: l(:)             ! the input logical variable
-    character(len = 2*size(l) +2) :: ch     ! the string to be returned 
+    character(len = 2*size(l) +2) :: ch     ! the string to be returned
     integer :: i ! loop counter
 
     ch = "c(" ! openbracket
@@ -516,14 +516,14 @@ module MUtilsLib_stringfuncs
 
   function r4_array_concat(r) result(ch)
     ! Convert the array into a string of numbers that produces a command that will be interpreted as a vector in R
-    ! length of string is sum(real string length) + 
+    ! length of string is sum(real string length) +
     ! (number of ints -1 (for commas)) + 2 brackets + (1 for the leading 'c')...
     !  this includes commas and close brackets
     implicit none
     real(4), intent(in) :: r(:)  ! the input real variables
-    character(len = sum(real_len(r)) + size(r) +2) :: ch     ! the string to be returned 
+    character(len = sum(real_len(r)) + size(r) +2) :: ch     ! the string to be returned
     integer :: i ! loop counter
-    
+
     ch = "c(" ! openbracket
     do i = 1,size(r)
       ch = trim(ch) // str(r(i),real_len(r(i))) // ","
@@ -533,11 +533,11 @@ module MUtilsLib_stringfuncs
 
   function r8_array_concat(r) result(ch)
     ! Convert the array into a string of numbers that produces a command that will be interpreted as a vector in R
-    ! length of string is sum(real string length) + 
+    ! length of string is sum(real string length) +
     ! (number of ints -1 (for commas)) + 2 brackets + (1 for the leading 'c')... this includes commas and close brackets
     implicit none
     real(8), intent(in) :: r(:)  ! the input real variables
-    character(len =  sum(real_len(r)) + size(r) +2) :: ch     ! the string to be returned 
+    character(len =  sum(real_len(r)) + size(r) +2) :: ch     ! the string to be returned
     integer :: i ! loop counter
     ch = "c(" ! openbracket
     do i = 1,size(r)
@@ -548,26 +548,26 @@ module MUtilsLib_stringfuncs
 
   function i4_array_concat(i4) result(ch)
      ! Convert the array into a string of numbers that produces a command that will be interpreted as a vector in R
-     ! length of string is sum(integer string length) 
+     ! length of string is sum(integer string length)
      ! + (number of ints -1 (for commas)) + 2 brackets + (1 for the leading 'c')... this includes commas and close brackets
      implicit none
      integer(4), intent(in) :: i4(:)  ! the input integer variables
-     character(len = sum(int_len(i4))+size(i4)+2) :: ch     ! the string to be returned 
+     character(len = sum(int_len(i4))+size(i4)+2) :: ch     ! the string to be returned
      integer :: i ! loop counter
- 
+
      ch = "c(" ! openbracket
      do i = 1,size(i4)
        ch = trim(ch) // trim(str(i4(i),int_len(i4(i)))) // ","
      end do
      ch(len_trim(ch):len_trim(ch)) = ')' ! close bracket
    end function
-   
+
   function str_array_concat(str) result(ch)
     ! Convert the string array and produces a command that will be interpreted as a vector in R
     ! length of string is (len(str)+1*array_size + 2 ... this includes commas and close brackets
     implicit none
     character(len=*), dimension(:), intent(in) :: str ! the input variable to be concatenated
-    character(len = (len(str)+3)*size(str) +3) :: ch     ! the string to be returned 
+    character(len = (len(str)+3)*size(str) +3) :: ch     ! the string to be returned
     integer :: i ! loop counter
 
     ch = "c(" ! openbracket
@@ -577,16 +577,16 @@ module MUtilsLib_stringfuncs
     ch(len_trim(ch):len_trim(ch)) = ')' ! close bracket
     ch=trim(ch)
   end function
-  
+
   function concat(str) result(ch)
     ! Convert the string array and produces a command that will be interpreted as a vector in R
     ! length of string is (len(str)+1*array_size + 2 ... this includes commas and close brackets
     implicit none
     character(len=*), dimension(:), intent(in) :: str ! the input variable to be concatenated
-    character(len = (len(str)+3)*size(str) +3) :: ch     ! the string to be returned 
+    character(len = (len(str)+3)*size(str) +3) :: ch     ! the string to be returned
     integer :: i ! loop counter
 
-    ch = "" 
+    ch = ""
     do i = 1,size(str)
       ch=trim(ch)//trim(str(i))//";"
     end do
@@ -600,7 +600,7 @@ module MUtilsLib_stringfuncs
     implicit none
     character(len=*), intent(in) :: s1    ! the input string
     character(len=*), intent(in) :: s2    ! the input string
-    character(len = len(s1)+len(s2)+1) :: ch     ! the string to be returned 
+    character(len = len(s1)+len(s2)+1) :: ch     ! the string to be returned
     ch = s1 // pad_ch // s2
   end function
 
@@ -610,7 +610,7 @@ module MUtilsLib_stringfuncs
     implicit none
     logical(4), intent(in) :: l             ! the input logical variable
     character(len=*), intent(in) :: s    ! the input string
-    character(len = len(s)+1+1) :: ch     ! the string to be returned 
+    character(len = len(s)+1+1) :: ch     ! the string to be returned
     if(l) then
         ch = "T" // pad_ch // s
     else
@@ -636,7 +636,7 @@ module MUtilsLib_stringfuncs
     ! Concatenate an logical and a logical
     implicit none
     logical(4), intent(in) :: l1,l2             ! the input logical variables
-    character(len = 2+1) :: ch     ! the string to be returned 
+    character(len = 2+1) :: ch     ! the string to be returned
     if(l1.AND.l2) then
        ch =  "T"  // pad_ch // "T"
     elseif(l1.AND..NOT.l2) then
@@ -797,7 +797,7 @@ module MUtilsLib_stringfuncs
     implicit none
     logical(4), intent(in) :: l             ! the input logical variable
     integer(4), intent(in) :: i     ! the input integer variable
-    character(len = int_len(i) +1+1) :: ch     ! the string to be returned 
+    character(len = int_len(i) +1+1) :: ch     ! the string to be returned
     if(l) then
      ch = "T" // pad_ch // str(i,int_len(i))
     else
@@ -811,7 +811,7 @@ module MUtilsLib_stringfuncs
     implicit none
     logical(4), intent(in) :: l             ! the input logical variable
     integer(4), intent(in) :: i     ! the input integer variable
-    character(len = int_len(i) +1+1) :: ch     ! the string to be returned 
+    character(len = int_len(i) +1+1) :: ch     ! the string to be returned
     if(l) then
      ch =   str(i,int_len(i)) // pad_ch // "T"
     else
@@ -825,7 +825,7 @@ module MUtilsLib_stringfuncs
     implicit none
     logical(4), intent(in) :: l             ! the input logical variable
     real(4), intent(in) :: r4  ! the input real variables
-    character(len = real_len(r4) +1+1) :: ch     ! the string to be returned 
+    character(len = real_len(r4) +1+1) :: ch     ! the string to be returned
     if(l) then
       ch = "T" // pad_ch //  str(r4,real_len(r4))
     else
@@ -839,7 +839,7 @@ module MUtilsLib_stringfuncs
     implicit none
     logical(4), intent(in) :: l             ! the input logical variable
     real(4), intent(in) :: r4  ! the input real variables
-    character(len = real_len(r4) +1+1) :: ch     ! the string to be returned 
+    character(len = real_len(r4) +1+1) :: ch     ! the string to be returned
     if(l) then
       ch =   str(r4,real_len(r4)) // pad_ch // "T"
     else
@@ -853,7 +853,7 @@ module MUtilsLib_stringfuncs
     implicit none
     logical(4), intent(in) :: l             ! the input logical variable
     real(8), intent(in) :: r8  ! the input real variables
-    character(len = real_len(r8) +1+1) :: ch     ! the string to be returned 
+    character(len = real_len(r8) +1+1) :: ch     ! the string to be returned
     if(l) then
      ch = "T" // pad_ch // str(r8,real_len(r8))
     else
@@ -867,7 +867,7 @@ module MUtilsLib_stringfuncs
     implicit none
     logical(4), intent(in) :: l             ! the input logical variable
     real(8), intent(in) :: r8  ! the input real variables
-    character(len = real_len(r8) +1+1) :: ch     ! the string to be returned 
+    character(len = real_len(r8) +1+1) :: ch     ! the string to be returned
     if(l) then
      ch =   str(r8,real_len(r8)) // pad_ch // "T"
     else
@@ -891,7 +891,7 @@ module MUtilsLib_stringfuncs
       len = len + 1  ! allow for negative sign
     end if
   end function
-  
+
   elemental function r8_len(r) result(len)
     ! determines the exact length of integer to string conversions
     implicit none
@@ -948,14 +948,14 @@ module MUtilsLib_stringfuncs
         if(strOut(i:i)=="/") strOut(i:i)="\"
       end do
    end function
-   
+
  function endslash(strIn) result(strOut)
       ! Check there is slash at end of strIn - useful for checking paths are ok before concatenating with filenames
       implicit none
       character(len = *), intent(in) :: strIn
       character(len = len(strIn)) :: strOut
       character(len = 1) :: lastslash
-      
+
       integer :: i,n
 
       strOut = strIn
@@ -969,9 +969,9 @@ module MUtilsLib_stringfuncs
             exit
         end if
       end do
-      
+
       if (strOut(n:n)/=lastslash) strOut((n+1):(n+1))=lastslash
-      
+
    end function
 
 
@@ -994,9 +994,9 @@ module MUtilsLib_stringfuncs
         k = index(strOut(1:k),slash,back=.true.)
         strOut = strOut(1:k)
       end do
- 
+
    end function
-   
+
   function relPathtoAbsPath(relPath,currentDir) result(absPath)
       ! Change a relative path to an absolute path, using current directory location
       implicit none
@@ -1009,7 +1009,7 @@ module MUtilsLib_stringfuncs
       CopyRelPath=relPath
       i=0
       DO WHILE (copyRelPath(1:2)=="..")
-        i=i+1 
+        i=i+1
         copyRelPath=copyRelPath(4:len_trim(copyRelPath))
      end do
      if (i>0) then
@@ -1019,7 +1019,7 @@ module MUtilsLib_stringfuncs
       abspath=relpath
      end if
    end function
-  
+
   function Lcase(strIn) result(strOut)
       ! converts to lower case
       implicit none
@@ -1051,7 +1051,7 @@ module MUtilsLib_stringfuncs
         if(k>=lb.and.k<=ub) strOut(i:i) = achar(k - 32) ! convert to upper case
       end do
    end function
-   
+
   function insertString_end(strIn,insert) result(strOut)
     ! Inserts a string on the end of string - don't concatenate
     implicit none
@@ -1072,18 +1072,18 @@ function removeChar(strIn,char) result (strOut)
     ! Dummy Arguments
     CHARACTER(LEN=*), INTENT(IN) :: strIn
     CHARACTER(LEN=1), INTENT(IN) :: char
-    
+
      character(len=len(strIn)):: strOut
 
     ! Local Variables
     INTEGER :: i,k
-    
-    ! Remove Char    
+
+    ! Remove Char
     k=0
     DO i=1,LEN_TRIM(strIn)
         IF(strIn(i:i)/=char) THEN
             k=k+1
-            strOut(k:k)=strIn(i:i)  
+            strOut(k:k)=strIn(i:i)
         END IF
     END DO
 
@@ -1097,8 +1097,8 @@ END function removeChar
 !
 FUNCTION stripBlanks(inString) RESULT (outString)
   IMPLICIT NONE
-  CHARACTER(LEN=*),INTENT(IN)::inString   
-  CHARACTER(LEN=LEN_TRIM(inString)):: outString   
+  CHARACTER(LEN=*),INTENT(IN)::inString
+  CHARACTER(LEN=LEN_TRIM(inString)):: outString
   INTEGER::i,indx
   !---
   !
@@ -1133,13 +1133,13 @@ function changeChar(strIn,charIn,CharOut) result (strOut)
     ! Dummy Arguments
     CHARACTER(LEN=*), INTENT(IN) :: strIn
     CHARACTER(LEN=1), INTENT(IN) :: charIn,CharOut
-        
+
     character(len=len_trim(strIn)):: strOut
 
     ! Local Variables
     INTEGER :: i
-    
-    ! Remove Char    
+
+    ! Remove Char
     DO i=1,LEN_TRIM(strIn)
         IF(strIn(i:i)==charIn) THEN
           strOut(i:i)=charOut
@@ -1151,30 +1151,30 @@ function changeChar(strIn,charIn,CharOut) result (strOut)
 END function ChangeChar
 !_____________________________________________________________________________________________
 function index_1D(strVec,str)
-    
+
     use kinds_dmsl_kit
 
     IMPLICIT NONE
 
     ! Dummy Arguments
     CHARACTER(LEN=*), INTENT(IN) :: strVec(:),Str
-        
+
     ! Local Variables
     INTEGER(mik) :: i,testVec(size(strVec)),test(1),n
-    
+
     ! Function Definition
     integer(mik) :: index_1D
     n=SIZE(strVec)
-        
+
     If (all(StrVec/=Str)) then
         index_1D=0
         return
     end if
-    
+
     testVec=(/(i,i=1,n)/)
     test=PACK(testVec,StrVec==Str)
-    
-    index_1D=test(1)      
+
+    index_1D=test(1)
 
 end function index_1D
 !_____________________________________________________________________________________________
@@ -1188,21 +1188,21 @@ function insertString(strIn) result(outString)
     CHARACTER(LEN=*), INTENT(IN) :: strIn
     !CHARACTER(LEN=*), INTENT(IN), optional :: insertStr
     !integer(mik),intent(in), optional :: strlen
-        
+
     ! Local Variables
     INTEGER(mik) :: i,lenInsert,j,k
     character(len=len_shortStr) :: insertStrLc
     integer(mik) :: strlenLc
-    
+
     ! Function Definition
-    CHARACTER(LEN=len_vLongStr) :: outString 
-    
+    CHARACTER(LEN=len_vLongStr) :: outString
+
     outString=StrIN
     return
-    
+
     ! Still needs further development
-            
-    insertStrlc="\n"C
+
+    insertStrlc="\n"
     strlenLc=72
     outString=""
     lenInsert=len_trim(insertStrlc)
@@ -1211,7 +1211,7 @@ function insertString(strIn) result(outString)
     do while (i<=len_trim(strIn))
         if (mod(i,strlenLc)==0) then
             k=0
-            do while (strIn(i-k:i-k)/=" "); 
+            do while (strIn(i-k:i-k)/=" ");
                 k=k+1
             end do
             outString(j-k:j-k+lenInsert)=trim(insertStrlc)
@@ -1233,31 +1233,31 @@ function cL(strIn) result (StrOut)
 !
 !    ! Dummy Arguments
     CHARACTER(LEN=*), INTENT(IN) :: StrIn
-    
+
     CHARACTER(LEN=Len_vLongStr) :: StrOut
-    
+
     if (len_trim(Strin)>Len_vLongStr) then
      !   call message("Cmd: "//trim(strIn)//" is longer then "//Len_vLongStr)
       continue
     end if
-    
+
     StrOut=trim(strIn)
-    
+
 end function
-!    
+!
 !    ! Locals
 !    integer(mik) char_dim
-!    
+!
 !    !
-!    
+!
 !    if (present(a2)) then
 !        char_dim=2
 !    else if (present(a1) then
 !        char_dim=1
 !    end if
-!    
-    
-   
+!
+
+
 
 
 end module MUtilsLib_stringfuncs
@@ -1279,7 +1279,7 @@ use MUtilsLib_stringfuncs, only :str,    &              ! this is just to make i
             removeChar, &          ! Remove Character from string
             relPathtoAbsPath, &    ! Convert a string with a relative path to an absolute path use for Rsetwd command
             stripBlanks,&          ! simple string function to remove blank spaces
-            changeChar             ! string function to changes a character in string to another 
+            changeChar             ! string function to changes a character in string to another
                                    ! (useful for changing spaces to underscores)
 
 end module stringfuncs
