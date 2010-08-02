@@ -139,7 +139,7 @@ module MUtilsLib_stringfuncs
     character(len=*),intent(in) :: str
     integer(4) :: i4_str
 
-    read(str,'(i)') i4_str
+    read(str,*) i4_str
 
   end function i4_str
 !!!!!!!!!!! Converts String to Others
@@ -148,7 +148,7 @@ module MUtilsLib_stringfuncs
     character(len=*),intent(in) :: str
     real(8) :: real8_str
 
-    read(str,'(f)') real8_str
+    read(str,*) real8_str
 
   end function real8_str
 !!!!!!!!!!! Number conversion / string handling conveniences for passing arguments into R
