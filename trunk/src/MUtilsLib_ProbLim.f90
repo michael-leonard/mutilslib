@@ -35,7 +35,7 @@ interface calcProblim
 end interface calcProblim
 ! Procedural Availability
 private
-public :: problimType,CalcProblim,hpsort,stanResidualsProb,pValResidualsProb
+public :: problimType,CalcProblim,hpsort,stanResidualsProb,pValResidualsProb,hpsortInd
 contains
 !****************************************************************************
 function prob (rank, nData)
@@ -380,55 +380,126 @@ do i=1,nPoints
   end if
 end do
 end subroutine pValResidualsProb
-SUBROUTINE hpsort(n,ra)
-!-----------------------------------------------------------------------
-!
-!     HEAPSORT - sorts an array using the heapsort method
-!     - sorts an array RA of length N into ascending numerical order
-!       using the Heapsort Algorithm
-!     - N is input; RA is replaced on output by its sorted rearrangement  
-!
-!-----------------------------------------------------------------------
-      INTEGER n
-      REAL(mrk) ra(n)
-      INTEGER(mik) i,ir,j,l
-      REAL(mrk) rra
-      if (n.lt.2) return
+
+    subroutine hpsortInd(n,ra,ind)
+      ! Inelegant ripoff of hpsort(). Uses a copied array to protect order = slow.
+      ! heapsort - sorts an array using the heapsort method
+      ! - sorts an array ra of length n into ascending numerical order
+      !   using the heapsort algorithm
+      ! - n is input; ra is replaced on output by its sorted rearrangement
+      implicit none
+      integer      :: n         ! length of array
+      real(mrk)    :: ra(n)     ! array
+      real(mrk)    :: copy(n)   ! array
+      integer(mik) :: ind(n)    ! index array
+      integer(mik) :: i,ir,j,l  ! index counters
+      real(mrk)    :: rra       ! swap?
+      integer(mik) :: temp      ! swap?
+
+      if (n<2) return
+
       l=n/2+1
       ir=n
-10    continue
-        if(l.gt.1)then
+      do i = 1,n
+        ind(i) = i
+        copy(i) = ra(i)
+      end do
+
+      do
+        if(l>1)then
+          l=l-1
+          rra=copy(l)
+          temp = ind(l)
+        else
+          rra=copy(ir)
+          copy(ir)=copy(1)
+          temp=ind(ir)
+          ind(ir)=ind(1)
+          ir=ir-1
+          if(ir==1)then
+            copy(1)=rra
+            ind(1)=temp
+            return
+          endif
+        endif
+        i=l
+        j=l+l
+        do
+          if(j<=ir)then
+            if(j<ir)then
+              if(copy(j)<copy(j+1))then
+                j=j+1
+              end if
+            endif
+            if(rra<copy(j))then
+              copy(i)=copy(j)
+              ind(i)=ind(j)
+              i=j
+              j=j+j
+            else
+              j=ir+1
+            endif
+          else
+            exit
+          endif
+        end do
+        copy(i)=rra
+        ind(i)=temp
+      end do
+    end subroutine hpsortInd
+
+    subroutine hpsort(n,ra)
+      ! heapsort - sorts an array using the heapsort method
+      ! - sorts an array ra of length n into ascending numerical order
+      !   using the heapsort algorithm
+      ! - n is input; ra is replaced on output by its sorted rearrangement
+      implicit none
+      integer      :: n         ! length of array
+      real(mrk)    :: ra(n)     ! array
+      integer(mik) :: i,ir,j,l  ! index counters
+      real(mrk)    :: rra       ! ?
+
+      if (n<2) return
+
+      l=n/2+1
+      ir=n
+
+      do
+        if(l>1)then
           l=l-1
           rra=ra(l)
         else
           rra=ra(ir)
           ra(ir)=ra(1)
           ir=ir-1
-          if(ir.eq.1)then
+          if(ir==1)then
             ra(1)=rra
             return
           endif
         endif
         i=l
         j=l+l
-20      if(j.le.ir)then
-          if(j.lt.ir)then
-            if(ra(j).lt.ra(j+1))j=j+1
-
-          endif
-          if(rra.lt.ra(j))then
-            ra(i)=ra(j)
-            i=j
-            j=j+j
+        do
+          if(j<=ir)then
+            if(j<ir)then
+              if(ra(j)<ra(j+1))then
+                j=j+1
+              end if
+            endif
+            if(rra<ra(j))then
+              ra(i)=ra(j)
+              i=j
+              j=j+j
+            else
+              j=ir+1
+            endif
           else
-            j=ir+1
+            exit
           endif
-        goto 20
-        endif
+        end do
         ra(i)=rra
-      goto 10
-
-      END SUBROUTINE hpsort
+      end do
+    end subroutine hpsort
 end module mutilslib_Problim
 !*********************************************************************************************
 ! For backwards compatibility
