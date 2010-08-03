@@ -39,7 +39,10 @@ module MUtilsLib_stringfuncs
             cL,&                   ! converts a string to a common length (cl)
             fullPath, &            ! convert a <filename> and <filepath> into a full file name and path
             trimL, &               ! extracts the right hand side of a string following a specified delimeter
-            charCount              ! count the number of times a certain character occurs in a string
+            trimR, &               ! extracts the left hand side of a string following a specified delimeter
+            charCount, &           ! count the number of times a certain character occurs in a string
+            findReplace, &         ! find string A within string B and replace A with string C
+            parseCount             ! like charCount, but ignores contiguous repeats, e.g. when space " " is a delimeter but there are multiple spaces "2   4"
 
 
   interface index
@@ -1046,7 +1049,7 @@ module MUtilsLib_stringfuncs
      end if
    end function
 
-  function Lcase(strIn) result(strOut)
+  elemental function Lcase(strIn) result(strOut)
       ! converts to lower case
       implicit none
       character(len = *), intent(in) :: strIn
@@ -1062,7 +1065,7 @@ module MUtilsLib_stringfuncs
       end do
    end function
 
-  function Ucase(strIn) result(strOut)
+  elemental function Ucase(strIn) result(strOut)
       ! converts to upper case
       implicit none
       character(len = *), intent(in) :: strIn
@@ -1271,26 +1274,129 @@ module MUtilsLib_stringfuncs
 
     end function
 !____________________________________________________________________
-    function trimL(str,ch) result(strOut)
-      ! Description: strip a string according to some delimeter. Case sensitive.
+    elemental function trimL(str,ch,back) result(strOut)
+      ! Description: strip a string to the left according to some delimeter.
       ! not case sensitive
       implicit none
-      character(len=*) :: str ! string to be stripped
+      character(len=*), intent(in) :: str ! string to be stripped
       character(len=len(str)) :: strOut ! output string
-      character(len=*) :: ch  ! delimiting character(s)
+      character(len=*), intent(in) :: ch  ! delimiting character(s)
+      logical, optional, intent(in) :: back
       integer  :: i  ! index of starting position to strip
       integer  :: l  ! length of string
 
       l = len(str)
-      i = index(LCase(str),LCase(ch))
-      if(i<l) then
+      if(present(back)) then
+        i = index(LCase(str),LCase(trim(ch)),back=back)
+      else
+        i = index(LCase(str),LCase(trim(ch)))
+      end if
+      if(i>0.and.i<l) then
         strOut = str(i+len(ch):)
       else
         ! the delimeter does not appear
+        strOut = str
+      end if
+    end function
+!____________________________________________________________________
+    elemental function trimR(str,ch,back) result(strOut)
+      ! Description: strip a string to the right according to some delimeter.
+      ! not case sensitive
+      implicit none
+      character(len=*), intent(in) :: str ! string to be stripped
+      character(len=len(str)) :: strOut ! output string
+      character(len=*), intent(in) :: ch  ! delimiting character(s)
+      logical, optional, intent(in) :: back
+      integer  :: i  ! index of starting position to strip
+      integer  :: l  ! length of string
+
+      l = len(str)
+      if(present(back)) then
+        i = index(LCase(str),LCase(trim(ch)),back=back)
+      else
+        i = index(LCase(str),LCase(trim(ch)))
+      end if
+      if(i>0.and.i<l) then
+        strOut = str(1:i-1)
+      else
+        ! the delimeter does not appear
+        strOut = str
       end if
     end function
 
-    function charCount(str,ch) result(i)
+    function findReplace(str,fnd,rpl) result(strOut)
+      ! Description: find and replace 'fnd' with 'rpl' in base
+      ! Assumes occurence is once only. Issues of string length
+      ! arise with 0, or 2+
+      ! not case sensitive
+      implicit none
+      character(len=*), intent(in) :: str  ! base string
+      character(len=*), intent(in) :: fnd  ! find string
+      character(len=*), intent(in) :: rpl  ! replacement string
+      character(len=len_trim(str)-len_trim(fnd)+len_trim(rpl)) :: strOut ! output string
+      integer  :: i  ! index of starting position to strip
+      integer  :: l  ! length of string
+
+      l = len(str)
+      i = index(LCase(str),LCase(trim(fnd)))
+      if(i<l) then
+        strOut     = str(1:i-1)               ! before fnd
+        strOut(i:i+len_trim(rpl)) = trim(rpl) ! replacement
+        strOut(i+len_trim(rpl):)  = str(i+len_trim(fnd):)
+      else
+        ! the delimeter does not appear
+        strOut=str
+      end if
+    end function
+
+     function parseCount(strIn,ch) result(i)
+       ! Parse a row of data to see how many columns spearated by delimeter
+       ! not case sensitive
+       ! different from charCount because delimeter may be a space " " where there 
+       ! are multiple spaces in between each data entry, or maybe some text has that
+       ! delimeter inside it
+
+       implicit none
+       character(len = *), intent(in)  ::   strIn ! string to be searched
+       character(len = len(strIn))     ::   str ! trimmed copy of string to be searched
+       character(len = *), intent(in)  ::   ch  ! character(s) to be recognized
+       integer                         ::   i   ! no. of occurrences
+       integer                         ::   j   ! index
+       logical                         :: insideTxt ! flag if we are inside a text block
+       logical                         :: newEntry  ! flag if we have just begun a new entry
+ 
+       insideTxt = .false.
+       newEntry  = .false.
+       str = adjustl(strIn)   ! make sure there is no leading white space
+       if(len_trim(str)==0) then
+         i = 0
+         return
+       end if
+       i = 1
+       do j = 1,len_trim(str) ! ignore trailing white space
+         ! When we are inside text, ignore all characters
+         if (.not.insideTxt.and.(str(j:)=="'".or.str(j:)=='"')) then
+           insideTxt = .true.
+           cycle
+         end if
+         if (insideTxt.and.(str(j:)=="'".or.str(j:)=='"')) then
+           insideTxt = .false.
+           cycle
+         end if
+         ! use index function since ch delimeter may be more than a single character
+         if (.not.insideTxt.and..not.newEntry.and.(index(LCase(str(j:)),LCase(trim(ch)))==1)) then
+           i = i + 1
+           newEntry = .true.
+         end if
+         if (.not.insideTxt.and.newEntry.and.(index(LCase(str(j:)),LCase(trim(ch)))/=1)) then
+           newEntry = .false.
+         end if
+       end do ! i 
+     end function parseCount
+
+
+
+    elemental function charCount(str,ch) result(i)
       ! description:  counts the number of occurrences of ch in str
       ! not case sensitive
       implicit none
@@ -1301,11 +1407,10 @@ module MUtilsLib_stringfuncs
 
       i = 0
       do j = 1,len(str)
-        if (index(LCase(str(j:)),LCase(ch))==1) i = i + 1
+        if (index(LCase(str(j:)),LCase(trim(ch)))==1) i = i + 1
       end do ! i 
 
     end function charCount
-
 
 
 
