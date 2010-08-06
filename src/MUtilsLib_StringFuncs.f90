@@ -44,7 +44,8 @@ module MUtilsLib_stringfuncs
             findReplace, &         ! find string A within string B and replace A with string C
             parseCount, &          ! like charCount, but ignores contiguous repeats, e.g. when space " " is a delimeter but there are multiple spaces "2   4"
             hasSubStr, &           ! tests is a substring exists within another string
-            subStr                 ! returns index of starting position of a string within another string
+            subStr, &              ! returns index of starting position of a string within another string
+            addStr                 ! add a string onto the end of a pointer array
 
 
   interface index
@@ -1444,6 +1445,30 @@ module MUtilsLib_stringfuncs
       str2Copy = lCase(str2)
       j = index(str1,trim(str2))
     end function subStr
+
+    subroutine addStr(arr,str)
+      ! description: Add a string onto the end of an array
+      implicit none
+      character(len = *), pointer  ::   arr(:) ! string array
+      character(len = *)  ::   str ! string to be added
+      ! Locals
+      character(len = len(arr)), pointer  ::   temp(:) ! string array
+      integer :: n ! array size
+
+      if(associated(arr)) then
+        n = size(arr)
+        temp=>arr
+        nullify(arr)
+        allocate(arr(n+1))
+        arr(1:n) = temp(1:n)
+        arr(n) = str
+        deallocate(temp)
+        nullify(temp)
+      else
+        allocate(arr(1))
+        arr(1) = str
+      end if
+    end subroutine
 
 
 end module MUtilsLib_stringfuncs
