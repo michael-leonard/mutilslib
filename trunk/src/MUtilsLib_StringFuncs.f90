@@ -42,7 +42,9 @@ module MUtilsLib_stringfuncs
             trimR, &               ! extracts the left hand side of a string following a specified delimeter
             charCount, &           ! count the number of times a certain character occurs in a string
             findReplace, &         ! find string A within string B and replace A with string C
-            parseCount             ! like charCount, but ignores contiguous repeats, e.g. when space " " is a delimeter but there are multiple spaces "2   4"
+            parseCount, &          ! like charCount, but ignores contiguous repeats, e.g. when space " " is a delimeter but there are multiple spaces "2   4"
+            hasSubStr, &           ! tests is a substring exists within another string
+            subStr                 ! returns index of starting position of a string within another string
 
 
   interface index
@@ -1412,6 +1414,36 @@ module MUtilsLib_stringfuncs
 
     end function charCount
 
+    function hasSubStr(str1,str2) result(ans)
+      ! Description: checks if str2 is contained within str1
+      ! Not case sensitive
+      implicit none
+      character(len = *), intent(in)  ::  str1 ! the containing string
+      character(len = *), intent(in)  ::  str2 ! the substring to match
+      logical :: ans ! output
+      ! Locals
+      integer :: j ! position of substring
+
+      ans = .false.           ! default
+      j = subStr(str1,trim(str2))
+      if(j /= 0) ans = .true. ! the string appeared in the ith rcrd
+    end function hasSubStr
+
+    function subStr(str1,str2) result(j)
+      ! Description: returns position of str2 contained within str1
+      ! This routine is not case sensitive, whereas index() is
+      implicit none
+      character(len = *), intent(in)  ::  str1 ! the containing string
+      character(len = *), intent(in)  ::  str2 ! the substring to match
+      integer :: j ! output, position of substring
+      ! Locals
+      character(len(str1)) :: str1Copy
+      character(len(str2)) :: str2Copy ! need copies for lowercase conversion
+
+      str1Copy = lCase(str1) 
+      str2Copy = lCase(str2)
+      j = index(str1,trim(str2))
+    end function subStr
 
 
 end module MUtilsLib_stringfuncs
