@@ -45,7 +45,8 @@ module MUtilsLib_stringfuncs
             parseCount, &          ! like charCount, but ignores contiguous repeats, e.g. when space " " is a delimeter but there are multiple spaces "2   4"
             hasSubStr, &           ! tests is a substring exists within another string
             subStr, &              ! returns index of starting position of a string within another string
-            addStr                 ! add a string onto the end of a pointer array
+            addStr, &              ! add a string onto the end of a pointer array
+            isSame                 ! compare two strings to see if they are the same
 
 
   interface index
@@ -1461,14 +1462,26 @@ module MUtilsLib_stringfuncs
         nullify(arr)
         allocate(arr(n+1))
         arr(1:n) = temp(1:n)
-        arr(n) = str
+        arr(n+1) = str
         deallocate(temp)
         nullify(temp)
       else
         allocate(arr(1))
         arr(1) = str
       end if
-    end subroutine
+    end subroutine addStr
+
+    elemental function isSame(str1,str2) result(ans)
+      ! description:  compare two strings to see if identical
+      ! not case sensitive
+      implicit none
+      character(len = *), intent(in)  ::   str1 ! string to be searched
+      character(len = *), intent(in)  ::   str2  ! character(s) to be recognized      
+      logical                         ::   ans   ! the output true/false
+
+      ans = (trim(LCase(str1))==trim(LCase(str2)))
+    end function isSame
+
 
 
 end module MUtilsLib_stringfuncs
