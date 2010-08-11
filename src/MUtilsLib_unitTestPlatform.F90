@@ -32,6 +32,8 @@ TYPE unitTestResultsData
    CHARACTER(LEN=75)::name
    CHARACTER(LEN=180)::metaDataTag
    CHARACTER(LEN=360)::message
+   CHARACTER(LEN=4)::resultString
+   
 END TYPE unitTestResultsData
 
 PUBLIC::myFileInquire,myFileOpen,myWriteHeader,testMyResult,myWriteTestResult,myFileCompare
@@ -251,17 +253,20 @@ SUBROUTINE myFileCompare(unitOne,unitTwo,skip,myTestResult)
 END SUBROUTINE myFileCompare
 !__________________________________________________________________________________________________________________
 !
-SUBROUTINE testMyResult_Real(testValue,trueValue,tolerance,myTestResult)
+SUBROUTINE testMyResult_Real(testValue,trueValue,tolerance,myTestResult,resultString)
    IMPLICIT NONE
    ! Subroutine
    REAL(MRK),INTENT(IN)::testValue,trueValue,tolerance
    LOGICAL,INTENT(OUT)::myTestResult
+   CHARACTER(LEN=*),OPTIONAL::resultString
    !---
    !
    IF(ABS(testValue)-ABS(trueValue)<=tolerance)THEN
       myTestResult=.TRUE.
+      IF(PRESENT(resultString))resultString="PASS"
    ELSE
       myTestResult=.FALSE.
+      IF(PRESENT(resultString))resultString="FAIL"
    END IF
 
 END SUBROUTINE testMyResult_Real
