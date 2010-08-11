@@ -38,7 +38,7 @@ PUBLIC::myFileInquire,myFileOpen,myWriteHeader,testMyResult,myWriteTestResult,my
 !---
 !
 INTERFACE testMyResult
-MODULE PROCEDURE testMyResult_Integer,testMyResult_Logical
+MODULE PROCEDURE testMyResult_Integer,testMyResult_Logical,testMyResult_Real
 END INTERFACE
 
 CONTAINS
@@ -249,6 +249,22 @@ SUBROUTINE myFileCompare(unitOne,unitTwo,skip,myTestResult)
    REWIND(UNIT=unitOne);REWIND(UNIT=unitTwo)
    
 END SUBROUTINE myFileCompare
+!__________________________________________________________________________________________________________________
+!
+SUBROUTINE testMyResult_Real(testValue,trueValue,tolerance,myTestResult)
+   IMPLICIT NONE
+   ! Subroutine
+   REAL(MRK),INTENT(IN)::testValue,trueValue,tolerance
+   LOGICAL,INTENT(OUT)::myTestResult
+   !---
+   !
+   IF(ABS(testValue)-ABS(trueValue)<=tolerance)THEN
+      myTestResult=.TRUE.
+   ELSE
+      myTestResult=.FALSE.
+   END IF
+
+END SUBROUTINE testMyResult_Real
 !__________________________________________________________________________________________________________________
 !
 SUBROUTINE testMyResult_Integer(testValue,value_true,value_false,myTestResult)
