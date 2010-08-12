@@ -79,6 +79,7 @@ module MUtilsLib_messagelog
     logical  ::   ignore_error = .false.           ! Whether errors should be ignored
     logical  ::   auto_flush   = .true.            ! Automatically flush each entry after it is made
     logical  ::   debug   = .true.                 ! Should debug messages be written to the msg_log
+    logical  ::   time_stamp   = .false.           ! Prefix the message with a timestamp
     character(len = len_vLongStr)  ::   file = 'message.log' ! file name if msg_log is written to file
   end type obj_msg_log
 
@@ -136,7 +137,7 @@ module MUtilsLib_messagelog
 !************************************************************************************************
   contains
 !************************************************************************************************
-    subroutine init_log(unit,close,append,active,echo,file, ignore_warn, ignore_error,auto_flush,debug,db_id,msg_file,append_always)
+    subroutine init_log(unit,close,append,active,echo,file, ignore_warn, ignore_error,auto_flush,debug,db_id,msg_file,append_always,time_stamp)
       ! description:  Set the parameters for the log file. Not necessary to be called if you are happy with defaults.
       implicit none
       integer, intent(IN), optional  ::   unit          ! file ID unit, screen = 6, file = other
@@ -150,6 +151,7 @@ module MUtilsLib_messagelog
       logical, intent(IN), optional  ::   ignore_error  ! Whether errors should be ignored
       logical, intent(IN), optional  ::   auto_flush    ! Whether the log should be automatically flushed each time
       logical, intent(IN), optional  ::   debug         ! Whether debug comments should be ignored
+      logical, intent(IN), optional  ::   time_stamp    ! Whether to prefix the message with a timestamp
 
       character(len = *), intent(IN), optional :: file ! file name if log is written to file
       character(len = *), intent(IN), optional :: db_id ! ID of the message database
@@ -157,16 +159,17 @@ module MUtilsLib_messagelog
       integer :: ok
 
       ! Transfer input variables into log object
-      if (present(unit))   msg_log%unit   = unit
-      if (present(file))   msg_log%file   = trim(file)
-      if (present(close))  msg_log%close  = close
-      if (present(append)) msg_log%append = append
-      if (present(active)) msg_log%active = active
-      if (present(echo))   msg_log%echo   = echo
-      if (present(ignore_warn))  msg_log%ignore_warn    = ignore_warn
-      if (present(ignore_error)) msg_log%ignore_error   = ignore_error
-      if (present(auto_flush))   msg_log%auto_flush     = auto_flush
-      if (present(debug))   msg_log%debug     = debug
+      if (present(unit))         msg_log%unit         = unit
+      if (present(file))         msg_log%file         = trim(file)
+      if (present(close))        msg_log%close        = close
+      if (present(append))       msg_log%append       = append
+      if (present(active))       msg_log%active       = active
+      if (present(echo))         msg_log%echo         = echo
+      if (present(ignore_warn))  msg_log%ignore_warn  = ignore_warn
+      if (present(ignore_error)) msg_log%ignore_error = ignore_error
+      if (present(auto_flush))   msg_log%auto_flush   = auto_flush
+      if (present(debug))        msg_log%debug        = debug
+      if (present(time_stamp))   msg_log%time_stamp   = time_stamp
 
       ! Check for consistency/logic of log parameters
       if (msg_log%echo .AND. msg_log%unit == 6)   msg_log%unit   = 111     ! When echo-ing must have file ID other than 6
@@ -219,6 +222,8 @@ module MUtilsLib_messagelog
       character(len = *), intent(IN) ::  message  ! Any descriptive message
       character(len = *), intent(IN),optional ::  db_id ! id of the message db
       integer(mik),intent(in), optional :: msg_id ! message id
+      character(8) :: dt
+      character(10) :: tm
 
       character(len=len_vLongStr):: messageLc
 
@@ -231,7 +236,12 @@ module MUtilsLib_messagelog
       else if (present(db_id)) then
         messageLc="["//db_id//"] "//trim(message)
       else
-        messageLc=TRIM(message)
+        if(msg_log%time_stamp) then
+          call date_and_time(date=dt,time=tm)
+          messageLc=dt(7:8)//"/"//dt(5:6)//"/"//dt(1:4)//" "//tm(1:2)//":"//tm(3:4)//":"//tm(5:6)//":"//tm(8:10)//" "//trim(message)
+        else
+          messageLc=trim(message)
+        end if
       end if
       !messageLc = trim(insertString(messageLc))
       s = 0
@@ -316,7 +326,7 @@ module MUtilsLib_messagelog
             end do
           else ! a file write is needed
             ! open the file if not already open
-            if (msg_log%close) open(unit = msg_log%unit, file = trim(msg_log%file), status = 'old', position = 'append')
+            if (msg_log%close) open(unit = msg_log%unit, file = trim(msg_log%file), status = 'unknown', position = 'append')
 
               ! write all msg_log entries to file
               do i = 1, size(msg_log%message)
