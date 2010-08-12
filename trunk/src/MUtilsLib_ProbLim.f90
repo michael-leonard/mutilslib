@@ -33,9 +33,11 @@ interface calcProblim
   module procedure calcProblimPoint1,calcProblimArray1 ! Maintained for Backwards Compatibility 
   module procedure calcProblimPoint2,calcProblimArray2   
 end interface calcProblim
+
 ! Procedural Availability
 private
-public :: problimType,CalcProblim,hpsort,stanResidualsProb,pValResidualsProb,hpsortInd
+public :: problimType,CalcProblim,hpsort,stanResidualsProb,pValResidualsProb
+public :: hpsortInd, isSameR4, isSameR8
 contains
 !****************************************************************************
 function prob (rank, nData)
@@ -500,6 +502,36 @@ end subroutine pValResidualsProb
         ra(i)=rra
       end do
     end subroutine hpsort
+
+    function isSameR8(r1,r2,tol) result(ans)
+      ! Compare to reals using a tolerance precision
+      implicit none
+      real(8), intent(in) :: r1,r2 ! reals to be compared
+      real(8), optional :: tol     ! user specified tolerance
+      logical :: ans               ! T/F answer
+      ! Locals
+      real(8) :: mytol   ! user specified tolerance
+
+      mytol = sqrt(tiny(mytol)) ! default tolerance
+      ans = .false.             ! default answer
+      if(present(tol)) mytol = tol        ! update tolerance
+      if(abs(r1-r2)<mytol) ans = .true.   ! update answer
+    end function isSameR8
+
+    function isSameR4(r1,r2,tol) result(ans)
+      ! Compare to reals using a tolerance precision
+      implicit none
+      real(4), intent(in) :: r1,r2 ! reals to be compared
+      real(4), optional :: tol     ! user specified tolerance
+      logical :: ans               ! T/F answer
+      ! Locals
+      real(4) :: mytol   ! user specified tolerance
+
+      mytol = sqrt(tiny(mytol)) ! default tolerance
+      ans = .false.             ! default answer
+      if(present(tol)) mytol = tol        ! update tolerance
+      if(abs(r1-r2)<mytol) ans = .true.   ! update answer
+    end function isSameR4
 end module mutilslib_Problim
 !*********************************************************************************************
 ! For backwards compatibility

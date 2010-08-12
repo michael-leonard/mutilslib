@@ -65,6 +65,20 @@ function countlines(unit) result(nLines)
   rewind(unit)
 end function countLines
 
+    subroutine skiplines(unit,n)
+      ! description:  skips n lines in file given by unit
+        
+      implicit none
+      integer, intent(in)  ::   unit ! unit of file to read
+      integer, intent(in)  ::   n    ! no. of lines to skip
+      integer              ::   i    ! index
+
+      do i = 1,n
+        read(unit,*)
+      end do ! i 
+
+    end subroutine skiplines
+
 
 end module MUtilsLib_fileIO
 !**************************
