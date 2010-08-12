@@ -46,7 +46,7 @@ module MUtilsLib_stringfuncs
             hasSubStr, &           ! tests is a substring exists within another string
             subStr, &              ! returns index of starting position of a string within another string
             addStr, &              ! add a string onto the end of a pointer array
-            isSame                 ! compare two strings to see if they are the same
+            isSameStr              ! compare two strings to see if they are the same
 
 
   interface index
@@ -1471,7 +1471,7 @@ module MUtilsLib_stringfuncs
       end if
     end subroutine addStr
 
-    elemental function isSame(str1,str2) result(ans)
+    elemental function isSameStr(str1,str2) result(ans)
       ! description:  compare two strings to see if identical
       ! not case sensitive
       implicit none
@@ -1480,7 +1480,7 @@ module MUtilsLib_stringfuncs
       logical                         ::   ans   ! the output true/false
 
       ans = (trim(LCase(str1))==trim(LCase(str2)))
-    end function isSame
+    end function isSameStr
 
 
 
