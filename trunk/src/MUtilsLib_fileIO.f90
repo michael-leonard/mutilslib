@@ -1,4 +1,6 @@
 !<license>
+
+! Notes: FileIO cannot contain any dependencies onto other modules, apart from kinds_dmsl_kit
 module MUtilsLib_fileIO
 use kinds_dmsl_kit
 implicit none
@@ -79,6 +81,21 @@ end function countLines
 
     end subroutine skiplines
 
+function fileExist(fileToOpen,msg)
+!*************************************************
+!use mutilslib_messagelog, only : message 
+
+character(len=*),intent(in):: fileToOpen             ! full path of file name to test
+character(len=*), intent(inout), optional :: msg ! suffix to add to log message, if not present no log message is written
+logical :: fileExist
+
+INQUIRE(FILE=trim(fileToOpen),EXIST=fileExist)
+
+if (present(msg)) then
+ if (.not.FileExist) then; msg='Could not find file: '//trim(fileToOpen); RETURN;END IF
+end if
+
+end function fileExist
 
 end module MUtilsLib_fileIO
 !**************************
