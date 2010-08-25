@@ -41,7 +41,8 @@ PUBLIC::myFileInquire,myFileOpen,myWriteHeader,testMyResult,myWriteTestResult,my
 !---
 !
 INTERFACE testMyResult
-MODULE PROCEDURE testMyResult_Integer,testMyResult_Logical,testMyResult_Real
+MODULE PROCEDURE testMyResult_Integer,testMyResult_Logical,testMyResult_Real,&
+                 testMyResult_Integer_NewAndImproved,testMyResult_Logical_NewAndImproved
 END INTERFACE
 
 CONTAINS
@@ -372,6 +373,24 @@ SUBROUTINE testMyResult_Integer(testValue,value_true,value_false,myTestResult)
 END SUBROUTINE testMyResult_Integer
 !__________________________________________________________________________________________________________________
 !
+SUBROUTINE testMyResult_Integer_NewAndImproved(test,value_true,value_false,outputUnit)
+   IMPLICIT NONE
+   ! Subroutine
+   TYPE(unitTestResultsData),INTENT(INOUT)::test
+   INTEGER(MIK),INTENT(IN),OPTIONAL::value_true,value_false,outputUnit
+   !---
+   !
+   IF(PRESENT(value_true))THEN
+     IF(test%result_i==value_true)THEN;test%ok=.TRUE.;ELSE;test%ok=.FALSE.;END IF
+   ELSE IF(PRESENT(value_false))THEN 
+     IF(test%result_i==value_false)THEN;test%ok=.FALSE.;ELSE;test%ok=.TRUE.;END IF   
+   END IF
+
+   IF(PRESENT(outputUnit))CALL myWriteTestResult(testName=test%name,testResult=test%ok,failMessage=test%message,unitID=outputUnit)
+
+END SUBROUTINE testMyResult_Integer_NewAndImproved
+!__________________________________________________________________________________________________________________
+!
 SUBROUTINE testMyResult_Logical(testValue,value_true,value_false,myTestResult)
    IMPLICIT NONE
    ! Subroutine
@@ -391,6 +410,29 @@ SUBROUTINE testMyResult_Logical(testValue,value_true,value_false,myTestResult)
    END IF
 
 END SUBROUTINE testMyResult_Logical
+!__________________________________________________________________________________________________________________
+!
+SUBROUTINE testMyResult_Logical_NewAndImproved(test,value_true,value_false,outputUnit)
+   IMPLICIT NONE
+   ! Subroutine
+   TYPE(unitTestResultsData),INTENT(INOUT)::test
+   LOGICAL,INTENT(IN),OPTIONAL::value_true,value_false
+   INTEGER(MIK),INTENT(IN),OPTIONAL::outputUnit
+   !---
+   !
+   IF(PRESENT(value_true))THEN
+     IF(test%result_l==value_true)THEN;test%ok=.TRUE.;ELSE;test%ok=.FALSE.;END IF
+   ELSE IF(PRESENT(value_false))THEN 
+     IF(test%result_l==value_false)THEN;test%ok=.FALSE.;ELSE;test%ok=.TRUE.;END IF  
+   ELSE IF(test%result_l)THEN
+      test%ok=.TRUE.
+   ELSE
+      test%ok=.FALSE.
+   END IF
+
+   IF(PRESENT(outputUnit))CALL myWriteTestResult(testName=test%name,testResult=test%ok,failMessage=test%message,unitID=outputUnit)
+
+END SUBROUTINE testMyResult_Logical_NewAndImproved
 !___________________________________________________________________________________________________________________
 !
 SUBROUTINE myWriteTestResult(testName,testResult,failMessage,unitID)
