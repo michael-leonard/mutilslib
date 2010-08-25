@@ -10,6 +10,7 @@ CALL unitTests_modOne()
 CALL viewTxtFile("..\moduleOne_unitTests\Results\results_summary.txt")
 
 !CALL myGlobalTestPlatformLog(action="close")
+pause
 
 END PROGRAM TestPlatform
 

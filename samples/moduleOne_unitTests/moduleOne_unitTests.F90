@@ -10,9 +10,9 @@ PUBLIC::unitTests_modOne
 ! io variables
 INTEGER(MIK),PARAMETER::SUMMARYFILEUNIT=500,RESULTSFILEUNIT=501,TESTFILEUNIT=502,STNDFILEUNIT=503
 CHARACTER(LEN=180)::inputFilePath,standardsPath,resultsPath
-CHARACTER(LEN=180),DIMENSION(1)::inputFiles
-CHARACTER(LEN=180),DIMENSION(1)::standardsFiles
-CHARACTER(LEN=180),DIMENSION(1)::resultsFiles
+CHARACTER(LEN=180),DIMENSION(4)::inputFiles
+CHARACTER(LEN=180),DIMENSION(4)::standardsFiles
+CHARACTER(LEN=180),DIMENSION(4)::resultsFiles
 !
 CONTAINS
 !____________
@@ -38,7 +38,7 @@ INTEGER(MIK)::i
 IF(PRESENT(unitTestModOk))unitTestModOk=.FALSE.
 ! 
 ! Initialise Unit Test Module Information
-unitTestMod%numTests = 2
+unitTestMod%numTests = 4
 unitTestMod%name = "Module One - Unit Test Module Results"
 IF(ALLOCATED(unitTest))DEALLOCATE(unitTest);ALLOCATE(unitTest(unitTestMod%numTests))
 !
@@ -58,13 +58,30 @@ END SELECT
 inputFiles(1)     = "moduleOne_Input.txt"
 standardsFiles(1) = "moduleOne_standard.txt"
 resultsFiles(1)   = "moduleOne_results.txt"
+
+inputFiles(2)     = "moduleOne_Input.txt"
+standardsFiles(2) = "moduleOne_standard.txt"
+resultsFiles(2)   = "moduleOne_results.txt"
+
 !
+inputFiles(3)     = "moduleOne_Input.txt"
+standardsFiles(3) = "moduleOne_standard.txt"
+resultsFiles(3)   = "moduleOne_results_wrong.txt"
+
+inputFiles(4)     = "moduleOne_Input.txt"
+standardsFiles(4) = "moduleOne_standard.txt"
+resultsFiles(4)   = "moduleOne_results_wrong.txt"
+
 ! Initialise unitTest info
 unitTest%ok=.FALSE.
 unitTest%metaDataTag="" ! currently not used
 
 unitTest(1)%name="Example test one"
+unitTest%message=""
 unitTest(2)%name="Example test two"
+unitTest(3)%name="Example test three"
+unitTest(4)%name="Example test four"
+
 
 ! Check that standards and input files are available
 DO i=1,SIZE(inputFiles);CALL myFileInquire(myResult=ok,fileName=inputFiles(i),filePath=inputFilePath);IF(.NOT.ok)RETURN;END DO
@@ -87,6 +104,17 @@ CALL myFileOpen(unitID=TESTFILEUNIT,myResult=ok,fileName=resultsFiles(1),filePat
 
 CALL myFileCompare(unitOne=TESTFILEUNIT,unitTwo=STNDFILEUNIT,myTestResult=unitTest(2)%ok)
 CALL myWriteTestResult(testName=unitTest(2)%name,testResult=unitTest(2)%ok,failMessage=unitTest(2)%message,unitID=SUMMARYFILEUNIT)
+
+!***TEST - Example Test Three
+CALL myFileCompare(fileOne=trim(standardsPath)//trim(standardsFiles(3)), &
+                   fileTwo=trim(resultsPath)//trim(resultsFiles(3)),myTestResult=unitTest(3)%ok)
+CALL myWriteTestResult(testName=unitTest(3)%name,testResult=unitTest(3)%ok,failMessage=unitTest(3)%message,unitID=SUMMARYFILEUNIT)
+
+!***TEST - Example Test Four - same as three but with external file comparison
+CALL myFileCompare(fileOne=trim(standardsPath)//trim(standardsFiles(3)), &
+                   fileTwo=trim(resultsPath)//trim(resultsFiles(3)),myTestResult=unitTest(3)%ok,Comparelevel=3)
+CALL myWriteTestResult(testName=unitTest(3)%name,testResult=unitTest(3)%ok,failMessage=unitTest(3)%message,unitID=SUMMARYFILEUNIT)
+
 
 IF(PRESENT(unitTestModOk))THEN;IF(ALL(unitTest%ok))unitTestModOk=.TRUE.;END IF
 
