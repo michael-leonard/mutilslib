@@ -1,0 +1,15 @@
+ Debug    : All messages being written to log file (if no path - written to current executable directory): message.log
+ Debug    : Using msg_db: Testdb2, located at ..\..\samples\TestMsg_db2.csv
+*ERROR    : TEST MESSAGE: Default messages are errors
+ Warning  : TEST MESSAGE:  This is a test-warning message
+*ERROR    : [Testdb] ID:1 Test for the message db (short db message id 1) Remedy: long db message id 1
+*ERROR    : [Testdb] ID:2 Test for the message db (short db message id 2) Remedy: long db message id 2
+*ERROR    : [Testdb] ID:3 Test for the message db (Msg id: 3 not found in Testdb db)
+*ERROR    : [Testdb] ID:4 Test for the message db with wrong msg_id (Msg id: 4 not found in Testdb db)
+*ERROR    : [Testdb_wrong] ID:4 This is a test-error message for the message db with wrong db_id (Message db: Testdb_wrong not found)
+*ERROR    : [Testdb2] ID:1 Test for the message db (short db2 message id) Remedy: long db2 message id
+*ERROR    : [Testdb2] ID:2 Test for the message db (short db2 message id) Remedy: long db2 message id
+*ERROR    : [Testdb2] ID:3 Test for the message db (Msg id: 3 not found in Testdb2 db)
+*ERROR    : [Testdb2] ID:1 Test for the message db (short db2 message id) Remedy: long db2 message id
+*ERROR    : [Testdb2] ID:2 Test for the message db (short db2 message id) Remedy: long db2 message id
+*ERROR    : [Testdb2] ID:3 Test for the message db (Msg id: 3 not found in Testdb2 db)
