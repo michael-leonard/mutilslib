@@ -13,6 +13,8 @@ Project("{6989167D-11E4-40FE-8C1A-2192A86A7E90}") = "moduleOne_unitTests", "..\s
 EndProject
 Project("{6989167D-11E4-40FE-8C1A-2192A86A7E90}") = "moduleTwo_unitTests", "..\samples\moduleTwo_unitTests\moduleTwo_unitTests.vfproj", "{34DC61A0-890B-4C0D-BE2D-B3C01BA5E9E9}"
 EndProject
+Project("{6989167D-11E4-40FE-8C1A-2192A86A7E90}") = "Test_FileCompare_External", "Test_FileCompare_External\Test_FileCompare_External.vfproj", "{267CF8BD-D770-407F-991C-AECF86DFE26D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -39,6 +41,10 @@ Global
 		{34DC61A0-890B-4C0D-BE2D-B3C01BA5E9E9}.Debug|Win32.Build.0 = Debug|Win32
 		{34DC61A0-890B-4C0D-BE2D-B3C01BA5E9E9}.Release|Win32.ActiveCfg = Release|Win32
 		{34DC61A0-890B-4C0D-BE2D-B3C01BA5E9E9}.Release|Win32.Build.0 = Release|Win32
+		{267CF8BD-D770-407F-991C-AECF86DFE26D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{267CF8BD-D770-407F-991C-AECF86DFE26D}.Debug|Win32.Build.0 = Debug|Win32
+		{267CF8BD-D770-407F-991C-AECF86DFE26D}.Release|Win32.ActiveCfg = Release|Win32
+		{267CF8BD-D770-407F-991C-AECF86DFE26D}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

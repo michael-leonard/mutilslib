@@ -37,6 +37,7 @@
 		<File RelativePath="..\..\src\MUtilsLib_SettingsFiles.F90"/>
 		<File RelativePath="..\..\src\MUtilsLib_StringFuncs.f90"/>
 		<File RelativePath="..\..\src\MUtilsLib_System.f90"/>
+		<File RelativePath="..\..\src\MUtilsLib_unitTestPlatform.F90"/>
 		<File RelativePath="..\..\src\MUtilsLib_VarFuncs.f90"/></Filter>
-		<File RelativePath="..\..\samples\TEST_MessageLog.f90"/></Filter></Files>
+		<File RelativePath="..\..\src\samples\TEST_MessageLog.f90"/></Filter></Files>
 	<Globals/></VisualStudioProject>
