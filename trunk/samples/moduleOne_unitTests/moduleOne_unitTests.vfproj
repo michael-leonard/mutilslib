@@ -11,8 +11,7 @@
 				<Tool Name="VFCustomBuildTool"/>
 				<Tool Name="VFPreLinkEventTool"/>
 				<Tool Name="VFPreBuildEventTool"/>
-				<Tool Name="VFPostBuildEventTool" CommandLine="copy $(TargetDir)..\..\..\Bin\system\arrSysFile.dat $(TargetDir)..\
-del $(TargetDir)..\Results\*.txt" Description="Post Build Event - Copy ARR system File &amp; Delete Old Results Files"/>
+				<Tool Name="VFPostBuildEventTool"/>
 				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration>
 		<Configuration Name="Release|Win32">
 				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" AdditionalIncludeDirectories="&quot;..\..\..\..\Release\DMSL\DMSL_SRC\include&quot;"/>
@@ -31,6 +30,7 @@ del $(TargetDir)..\Results\*.txt" Description="Post Build Event - Copy ARR syste
 		<File RelativePath=".\InputFiles\moduleOne_Input.txt"/></Filter>
 		<Filter Name="Results">
 		<File RelativePath=".\Results\moduleOne_results.txt"/>
+		<File RelativePath=".\Results\moduleOne_results_wrong.txt"/>
 		<File RelativePath=".\Results\results_summary.txt"/></Filter>
 		<Filter Name="Standards">
 		<File RelativePath=".\Standards\moduleOne_standard.txt"/></Filter></Filter>
