@@ -23,7 +23,8 @@ module MUtilsLib_stringfuncs
             concat,       &        ! Concatenate strings arrays to a single string
             set_pad, &             ! change the padding character when using the .pad. operator
             fwdslash,backslash, &  ! convert a <filepath> string with back/fwd slashes to having forward/back slashes
-            endslash,&             ! check there is a end slash on a string - useful for checking paths before added filenames
+            add_endslash,&         !  check there is a end slash on a string - useful for checking paths before added filenames
+            remove_startslash,&    ! check if there is start slash on a string, if so remove it, useful for checking relative paths before concatenating with absolute paths 
             FolderUp, &            ! convert a <filepath> string by removing trailing folders
             Lcase, Ucase,&         ! convert string to lower/upper case (important for string comparisons)
             int,&                  ! Convert a string to integer
@@ -982,7 +983,7 @@ module MUtilsLib_stringfuncs
       end do
    end function
 
- function endslash(strIn) result(strOut)
+ function add_endslash(strIn) result(strOut)
       ! Check there is slash at end of strIn - useful for checking paths are ok before concatenating with filenames
       implicit none
       character(len = *), intent(in) :: strIn
@@ -1004,6 +1005,21 @@ module MUtilsLib_stringfuncs
       end do
 
       if (strOut(n:n)/=lastslash) strOut((n+1):(n+1))=lastslash
+
+   end function
+   
+   function remove_startslash(strIn) result(strOut)
+      ! Check there is no slash at start of strIn - useful for checking relpaths are ok before concatenating with absolute paths
+      implicit none
+      character(len = *), intent(in) :: strIn
+      character(len = len(strIn)) :: strOut
+      integer :: n
+
+      strOut = strIn
+      n=len_trim(strOut)
+      if (strout(1:1)=="\" .or. strout(1:1)=="/") then
+        strOut=StrOut(2:n)
+      end if
 
    end function
 
@@ -1047,10 +1063,10 @@ module MUtilsLib_stringfuncs
      end do
      if (i>0) then
         abspath=folderup(CurrentDir,n=i)
-        abspath=trim(abspath)//trim(copyrelPath)
      else
-      abspath=relpath
+        abspath=CurrentDir
      end if
+     abspath=add_endslash(trim(abspath))//remove_startslash(trim(copyrelPath))
    end function
 
   elemental function Lcase(strIn) result(strOut)

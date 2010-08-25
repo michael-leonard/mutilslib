@@ -20,7 +20,8 @@ module MUtilsLib_System
               Generate_SystemList,& ! Generates a list from the system of either files or directories
               OSCall,&              ! OS Command line interface utility with immediate return or wait specified in milliseconds
               systemDateTime,&      ! Returns the system clock time and date as a text string
-              viewTxtFile           ! Windows call to launch notepad and pass it a file                  
+              viewTxtFile,&           ! Windows call to launch notepad and pass it a file   
+              FileCompare_External ! Compares two files using TortoiseMerge                
   contains
 !*************************************************************************************************************   
    function Mutils_loc(imageName) result(ok)
@@ -498,7 +499,52 @@ RETURN
 100 CALL message('Error writing output file name string to command line call& Output file created: '//fileToOpen(1:LEN_TRIM(fileToOpen)))
 RETURN
 
-END SUBROUTINE viewTxtFile  
+END SUBROUTINE viewTxtFile
+!*************************************************************************************************************  
+function FileCompare_External(fileOne,FileTwo,CompareOpt,unified_diff_file) result(ok)
+
+use MUtilsLib_varFuncs, only : checkPresent
+use MUtilsLib_StringFuncs, only : ucase
+use MUtilsLib_fileIo, only : fileExist
+
+implicit none
+! Dummies
+character(len=*),intent(in) :: fileOne                  ! Base File 
+character(len=*),intent(in) :: fileTwo                  ! File to be compared to baseFile 
+character(len=*),intent(in),optional :: CompareOpt      ! Options to determine how files are compared: 
+                                                        ! OPENTORTOISEMERGE:               
+character(len=*),intent(in),optional :: unified_diff_file
+
+! Locals
+character(len=len_longStr) :: CompareOptLc
+character(len=len_vlongStr) :: msg
+
+integer(mik) :: ok
+
+! Perform Checks
+IF(.NOT.fileExist(fileOne,msg=msg)) then; call message(msg//"in F: FileCompare_External"); ok=-1; RETURN; endif
+IF(.NOT.fileExist(fileTwo,msg=msg)) then; call message(msg//"in F: FileCompare_External"); ok=-1; RETURN; endif 
+
+compareOptLc=ucase(checkPresent(CompareOpt,"OPENTORTOISEMERGE"))
+
+select case(trim(compareOptLc))
+case ("OPENTORTOISEMERGE")
+    call OScall(iwaitMs=0,command="TortoiseMerge",args=trim(fileOne)//" "//trim(fileTwo),iRet=ok)
+    if (ok/=0) then
+        call message("Error in using TortoiseMerge, it may not be installed &
+                     &or input files are not text files: "//trim(fileOne)//" and "//trim(fileTwo))
+       return
+    end if              
+case default ! Potentially add capability to produce a unified diff
+    ! tortoisemerge /createunifieddiff /origfile:"fileOne"  /modifiedfile:"fileTwo". /outfile:"unified_diff_file"
+    call message("Unknown value of CompareOpt:"//trim(compareOptLc)//" in F:FileCompare_External")
+    ok = -1
+    return
+end select
+
+end function FileCompare_External
+
+
 
  end module MUtilsLib_System
 !*****************************************************************************

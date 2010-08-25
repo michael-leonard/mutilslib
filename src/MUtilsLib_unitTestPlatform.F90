@@ -27,12 +27,13 @@ INTEGER(MIK)::numTests
 END TYPE unitTestModuleData
 
 TYPE unitTestResultsData
-   LOGICAL::ok,result_l
-   INTEGER(MIK)::result_i
-   CHARACTER(LEN=75)::name
-   CHARACTER(LEN=180)::metaDataTag
-   CHARACTER(LEN=360)::message
-   CHARACTER(LEN=4)::resultString
+   LOGICAL::ok=.false.
+   LOGICAL::result_l=.false.
+   INTEGER(MIK)::result_i=undefIN
+   CHARACTER(LEN=75)::name=undefCH
+   CHARACTER(LEN=180)::metaDataTag=undefCH
+   CHARACTER(LEN=360)::message=undefCH
+   CHARACTER(LEN=4)::resultString=undefCH
    
 END TYPE unitTestResultsData
 
@@ -197,58 +198,140 @@ SUBROUTINE myWriteMessage(unitID,myMessage,blankLine)
  
 END SUBROUTINE myWriteMessage
 !__________________________________________________________________________________________________________________
-!
-SUBROUTINE myFileCompare(unitOne,unitTwo,skip,myTestResult)
-   !
-   ! Compare two file
+!> Compares files and evalutes whether they are the same
+!! Comparison can be undertaken at various levels of detail, see compareLevel arg
+SUBROUTINE myFileCompare(unitOne,unitTwo,fileOne,fileTwo,CompareLevel,skip,myTestResult)
+   use mUtilsLib_System, only : fileCompare_External
+   use mUtilsLib_fileio, only : fileExist,findEOF
+   use mUtilsLib_StringFuncs, only: operator(//)
+   use MUtilsLib_VarFuncs, only : CheckPresent
+   
+   ! Compare two files
    IMPLICIT NONE
-   !
    ! Subroutine variables
-   INTEGER(MIK),INTENT(IN),OPTIONAL::unitOne,unitTwo,skip
-   LOGICAL,INTENT(OUT)::myTestResult
+   INTEGER(MIK),INTENT(IN),OPTIONAL::unitOne,UnitTwo !> Units for files - now deprecated
+   character(len=*), optional :: fileOne, fileTwo    !> Full path names for files to be compared
+   integer(mik), intent(in),optional :: CompareLevel !> Provides different levels of comparison
+                                                     !! 1 = LineCount
+                                                     !! 2 = 1 + Line by Line Comparison
+                                                     !! 3 = 2 + External File Compare(e.g. using tortoisemerge)
+   INTEGER(MIK),INTENT(IN),OPTIONAL:: skip           !> Number of lines to skip if doing line by line comparison
+   LOGICAL,INTENT(OUT)::myTestResult                 !> Result of file comparison   
 
-   !
-   ! General variables
-   INTEGER(MIK)::i,fileOneLineCount,fileTwoLineCount,endOfFile_i,endOfFile_ii
+      ! General variables
+   INTEGER(MIK)::i,fileOneLineCount,fileTwoLineCount,endOfFile_i,endOfFile_ii,unitOneLc,unitTwoLc,ok
    CHARACTER(LEN=1)::dummy 
-   CHARACTER(LEN=240)::standard,test
+   CHARACTER(LEN=len_vLongStr)::textone,texttwo
+   character(len=len_vLongStr) :: msg
+   integer(mik) :: CompareLevelLc
    !---
    !
-   INQUIRE(UNIT=unitOne,EXIST=myTestResult);IF(.not.myTestResult)RETURN
-   INQUIRE(UNIT=unitTwo,EXIST=myTestResult);IF(.not.myTestResult)RETURN
-  
-   REWIND(UNIT=unitOne);REWIND(UNIT=unitTwo)
-   fileOneLineCount=0_MIK;fileTwoLineCount=0_MIK
+   CompareLevelLc=checkPresent(Comparelevel,2) 
+   if (present(fileOne) .and. present(fileTwo)) then
+    
+     ! Check if files exist
+     if(.not.fileExist(fileToOpen=fileOne,msg=msg)) then; call message(trim(msg)//" in F: myFileCompare"); myTestResult=.false.; return; end if
+     if(.not.fileExist(fileToOpen=fileTwo,msg=msg)) then; call message(trim(msg)//" in F: myFileCompare"); myTestResult=.false.; return; end if
+     
+     ! Undertake line count
+     fileOneLineCount=findEof(filepath=fileOne,err=ok,msg=msg)
+     if (ok/=0) then; call message(trim(msg)//" in F: myFileCompare"); myTestResult=.false.; return; end if
+     fileTwoLineCount=findEof(filepath=fileTwo,err=ok,msg=msg)
+     if (ok/=0) then; call message(trim(msg)//" in F: myFileCompare"); myTestResult=.false.; return; end if
+          
+     ! Open files to unitOne and UnitTwo
+     unitOneLc=98765
+     unitTwoLc=45678
+     call myFileOpen(unitID=unitOneLc,fileNameandPath=fileOne,myResult=myTestResult)
+     if(.not.myTestResult) then
+        call message("Unable to open file:"//trim(fileOne)//" in F: myFileCompare"); return
+     end if
+     call myFileOpen(unitID=unitTwoLc,fileNameandPath=fileTwo,myResult=myTestResult)
+     if(.not.myTestResult) then
+        call message("Unable to open file:"//trim(fileTwo)//" in F: myFileCompare"); return
+     end if
+     
+     
+  else if (present(unitOne) .and. present(unitTwo)) then
+     ! Deprecated code section
+     call message(log_warn,"UnitOne and UnitTwo are deprecated arguments in F:myFileCompare, &
+                            please use FileOne and FileTwo instead and will be deleted by Dec. 2010")
+     INQUIRE(UNIT=unitOne,EXIST=myTestResult);
+     IF(.not.myTestResult) then; call message("Unable to find unit "//unitOne//" in myFileCompare"); myTestresult=.false.; return; endif
+     INQUIRE(UNIT=unitTwo,EXIST=myTestResult)
+     IF(.not.myTestResult) then; call message("Unable to find unit "//unitTwo//" in myFileCompare"); myTestresult=.false. ;return; endif
+     unitOneLc=UnitOne
+     unitTwoLc=UnitTwo
+     
+     REWIND(UNIT=unitOneLc);REWIND(UNIT=unitTwolc)
+     fileOneLineCount=0_MIK;fileTwoLineCount=0_MIK
 
-   DO
-      READ(unitOne,*,IOSTAT=endOfFile_i)dummy
+     DO
+      READ(unitOneLc,*,IOSTAT=endOfFile_i)dummy
       IF(endOfFile_i/=0)THEN;EXIT;ELSE;fileOneLineCount=fileOneLineCount+1;END IF
-   END DO
+     END DO
 
-   DO
-      READ(unitTwo,*,IOSTAT=endOfFile_ii)dummy
+     DO
+      READ(unitTwolc,*,IOSTAT=endOfFile_ii)dummy
       IF(endOfFile_ii/=0)THEN;EXIT;ELSE;fileTwoLineCount=fileTwoLineCount+1;END IF
-   END DO
-   
-   IF((fileOneLineCount-fileTwoLineCount)/=0)THEN;myTestResult=.FALSE.;RETURN;ELSE;myTestResult=.TRUE.;END IF
+     END DO
+  else
+     call message("Incorrect combination of optional arguments: unitOne, UnitTwo, FileOne, FileTwo in myFileCompare") 
+     myTestResult=.false.
+     return
+  end if
+    
+  ! Compare file count
+  if (ComparelevelLc>0) then
+   REWIND(UNIT=unitOneLc);REWIND(UNIT=unitTwolc)
+   IF((fileOneLineCount-fileTwoLineCount)/=0)THEN;
+    myTestResult=.FALSE.
+    CLOSE(UNIT=unitOneLc);CLOSE(UNIT=unitTwolc)
+    if(compareLevelLc>2) call call_FileCompare_External()
+    RETURN
+   ELSE; myTestResult=.TRUE.;END IF
+  end if 
 
-   REWIND(UNIT=unitOne);REWIND(UNIT=unitTwo)
-   
+  
+  ! Compare line-by-line
+  if (CompareLevelLc>1) then 
+   REWIND(UNIT=unitOneLc);REWIND(UNIT=unitTwolc)
    IF(PRESENT(skip))THEN
-      DO i=1,skip;READ(unitOne,"(a)",IOSTAT=endOfFile_i)standard;READ(unitTwo,"(a)",IOSTAT=endOfFile_ii)test;END DO
+      DO i=1,skip;READ(unitOneLc,"(a)",IOSTAT=endOfFile_i) textone;READ(unitTwolc,"(a)",IOSTAT=endOfFile_ii)texttwo;END DO
    END IF
    
    DO
-   standard='';test=''
-   READ(unitOne,"(a)",IOSTAT=endOfFile_i)standard;READ(unitTwo,"(a)",IOSTAT=endOfFile_ii)test
-   IF((endOfFile_i/=0).and.(endOfFile_ii/=0))THEN;myTestResult=.TRUE.;EXIT;ELSE;myTestResult=.FALSE.;END IF
-   IF(test(1:LEN_TRIM(test))/=standard(1:LEN_TRIM(standard)))THEN
-   myTestResult=.FALSE.
-   EXIT
-   END IF
+      textone='';texttwo=''
+      READ(unitOneLc,"(a)",IOSTAT=endOfFile_i)textone;READ(unitTwolc,"(a)",IOSTAT=endOfFile_ii)texttwo
+      IF((endOfFile_i==(-1)).and.(endOfFile_ii==(-1)))THEN;
+       myTestResult=.TRUE.;EXIT;
+      ELSE IF ((endOfFile_i==0) .and. (endOfFile_ii==0)) then
+       IF(textone(1:LEN_TRIM(texttwo))/=texttwo(1:LEN_TRIM(texttwo)))THEN
+        myTestResult=.FALSE.
+        CLOSE(UNIT=unitOneLc);CLOSE(UNIT=unitTwolc)
+        if(compareLevelLc>2) call call_FileCompare_External()
+        return    
+       end if
+      END IF
    END DO
+  end if
    
-   REWIND(UNIT=unitOne);REWIND(UNIT=unitTwo)
+   
+  CLOSE(UNIT=unitOneLc);CLOSE(UNIT=unitTwoLc)
+   
+contains 
+
+ subroutine Call_FileCompare_External
+     
+    if (present(fileOne) .and. present(fileTwo)) then 
+       close(unitOneLc,iostat=ok)
+       close(unitTwoLc,iostat=ok)
+       ok=FileCompare_External(fileOne=fileOne,fileTwo=FileTwo)
+       if (ok/=0) call message("Unable to compare files using external viewer:"//trim(fileone)//" and"//trim(filetwo)//" in f:myFileCompare")
+       return
+    end if
+ 
+end subroutine Call_FileCompare_External
    
 END SUBROUTINE myFileCompare
 !__________________________________________________________________________________________________________________
