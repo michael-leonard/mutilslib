@@ -1,5 +1,7 @@
 !<license>
 module MUtilsLib_stringfuncs
+
+  USE MUtilsLib_System,ONLY:findcurrentdir
   ! Provides an overloaded interface for the // operator to mix numbers or logicals with strings
   ! Whereas // uses several defaults, str() function provides control over the number converstion
   ! The .pad. operator is for all those times you want to concatenate but have a space (or comma or something) between
