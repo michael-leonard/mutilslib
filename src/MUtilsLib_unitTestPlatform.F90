@@ -614,6 +614,34 @@ SUBROUTINE myGlobalTestPlatformLog(action)
 END SUBROUTINE myGlobalTestPlatformLog
 !___________________________________________________________________________________________________________________
 !
+!> Creates a full file name and path string [relative  or absolute] from and input file name
+!! and or path.
+FUNCTION fullPath(fileName,filePath) RESULT(fullPathStr)
+!
+use MUtilsLib_System,ONLY:findcurrentdir
+use MUtilsLib_StringFuncs
+IMPLICIT NONE
+CHARACTER(LEN=*),INTENT(IN),OPTIONAL::fileName   !> File name including extension eg testData.txt
+CHARACTER(LEN=*),INTENT(IN),OPTIONAL::filePath   !> File path [relative or absolute] eg C:\devel\
+CHARACTER(LEN=LEN(filePath))::fullPathStr        !> File name and path [relative or absolute] eg C:\devel\testData.txt
+!
+! Local variables
+CHARACTER(LEN=360)::currentDir,name,path
+ !---
+ !
+ ! DEFINE FULL NAME AND PATH STRING
+ IF((PRESENT(fileName)).AND.(.NOT.PRESENT(filePath)))THEN
+    name=remove_startslash(fileName)
+    currentDir=findcurrentdir()
+    fullPathStr=currentDir(1:LEN_TRIM(currentDir))//name(1:LEN_TRIM(name))
+    
+ ELSE IF((PRESENT(fileName)).AND.(PRESENT(filePath)))THEN
+    name=remove_startslash(fileName)
+    path=add_endslash(filePath)
+    fullPathStr=path(1:LEN_TRIM(path))//name(1:LEN_TRIM(name))
+ END IF
+
+END FUNCTION
 
 END MODULE MUtilsLib_unitTestPlatform
 
