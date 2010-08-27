@@ -1,7 +1,6 @@
 !<license>
 module MUtilsLib_stringfuncs
 
-  USE MUtilsLib_System,ONLY:findcurrentdir
   ! Provides an overloaded interface for the // operator to mix numbers or logicals with strings
   ! Whereas // uses several defaults, str() function provides control over the number converstion
   ! The .pad. operator is for all those times you want to concatenate but have a space (or comma or something) between
@@ -40,7 +39,6 @@ module MUtilsLib_stringfuncs
             index, &               ! finds the index of a character vector that corresponds to a string input
             insertString,&
             cL,&                   ! converts a string to a common length (cl)
-            fullPath, &            ! convert a <filename> and <filepath> into a full file name and path
             trimL, &               ! extracts the right hand side of a string following a specified delimeter
             trimR, &               ! extracts the left hand side of a string following a specified delimeter
             charCount, &           ! count the number of times a certain character occurs in a string
@@ -1162,34 +1160,6 @@ module MUtilsLib_stringfuncs
       END DO
 
     END FUNCTION stripBlanks
-    !_____________________________________________________________________________________________
-    !
-    !> Creates a full file name and path string [relative  or absolute] from and input file name
-    !! and or path.
-    FUNCTION fullPath(fileName,filePath) RESULT(fullPathStr)
-    !
-    IMPLICIT NONE
-    CHARACTER(LEN=*),INTENT(IN),OPTIONAL::fileName   !> File name including extension eg testData.txt
-    CHARACTER(LEN=*),INTENT(IN),OPTIONAL::filePath   !> File path [relative or absolute] eg C:\devel\
-    CHARACTER(LEN=LEN(filePath))::fullPathStr        !> File name and path [relative or absolute] eg C:\devel\testData.txt
-    !
-    ! Local variables
-    CHARACTER(LEN=360)::currentDir,name,path
-       !---
-       !
-       ! DEFINE FULL NAME AND PATH STRING
-       IF((PRESENT(fileName)).AND.(.NOT.PRESENT(filePath)))THEN
-          name=remove_startslash(fileName)
-          currentDir=findcurrentdir()
-          fullPathStr=currentDir(1:LEN_TRIM(currentDir))//name(1:LEN_TRIM(name))
-          
-       ELSE IF((PRESENT(fileName)).AND.(PRESENT(filePath)))THEN
-          name=remove_startslash(fileName)
-          path=add_endslash(filePath)
-          fullPathStr=path(1:LEN_TRIM(path))//name(1:LEN_TRIM(name))
-       END IF
-
-    END FUNCTION
     !_____________________________________________________________________________________________
     !
     function changeChar(strIn,charIn,CharOut) result (strOut)
