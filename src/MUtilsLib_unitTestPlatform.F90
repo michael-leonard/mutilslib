@@ -24,7 +24,7 @@ IMPLICIT NONE
 SAVE
 
 TYPE unitTestModuleData
-   INTEGER(MIK)::testIndx,numTests,sumryUnit
+   INTEGER(MIK)::testIndx=undefIN,numTests=undefIN,sumryUnit=undefIN
    INTEGER(MIK),ALLOCATABLE,DIMENSION(:)::inputUnit,stndsUnit,rsltsUnit
    CHARACTER(LEN=180)::name
    CHARACTER(LEN=360)::sumryFile
@@ -62,7 +62,7 @@ CONTAINS
 !! This is the first routine called in the creation of a unit test module
 SUBROUTINE myInit_UnitTest(name,nTests,nInputFiles,nRsltsFiles,nStndsFiles,err,&
                            testNames,sumryFile,inputFiles,rsltsFiles,stndsFiles,testMetaData,&
-                           dontOpen_input,dontOpen_rslts,dontOpen_stnds)
+                           open_input,open_rslts,open_stnds)
    IMPLICIT NONE    
    !
    ! Subroutine variables   
@@ -77,9 +77,9 @@ SUBROUTINE myInit_UnitTest(name,nTests,nInputFiles,nRsltsFiles,nStndsFiles,err,&
    CHARACTER(LEN=*),INTENT(IN),DIMENSION(:),OPTIONAL::inputFiles     !> inputFiles     = [optional] Array of input files (full name and path - relative or absolute)   - If not present the default name "InputFiles\unitTest_input_file_[fileNumber].txt" is assigned 
    CHARACTER(LEN=*),INTENT(IN),DIMENSION(:),OPTIONAL::rsltsFiles     !> rsltsFiles     = [optional] Array of results files (full name and path - relative or absolute) - If not present the default name "Results\unitTest_results_file_[fileNumber].txt" is assigned 
    CHARACTER(LEN=*),INTENT(IN),DIMENSION(:),OPTIONAL::stndsFiles     !> stndsFiles     = [optional] Array of standardfiles (full name and path - relative or absolute) - If not present the default name "Standards\unitTest_standard_file_[fileNumber].txt" is assigned
-   LOGICAL,INTENT(IN),OPTIONAL::dontOpen_input                       !> dontOpen_input = [optional] Development agrument that prevent unit test files from being opened by the initilisation 
-   LOGICAL,INTENT(IN),OPTIONAL::dontOpen_rslts                       !> dontOpen_rslts = [optional] Development agrument that prevent unit test files from being opened by the initilisation
-   LOGICAL,INTENT(IN),OPTIONAL::dontOpen_stnds                       !> dontOpen_stnds = [optional] Development agrument that prevent unit test files from being opened by the initilisation
+   LOGICAL,INTENT(IN),OPTIONAL::open_input                           !> open_input = [optional] Development agrument that prevent unit test files from being opened by the initilisation 
+   LOGICAL,INTENT(IN),OPTIONAL::open_rslts                           !> open_rslts = [optional] Development agrument that prevent unit test files from being opened by the initilisation
+   LOGICAL,INTENT(IN),OPTIONAL::open_stnds                           !> open_stnds = [optional] Development agrument that prevent unit test files from being opened by the initilisation
    INTEGER(MIK),INTENT(OUT)::err                                     !> err            = Error flag
    !
    ! Local variables
@@ -107,6 +107,9 @@ SUBROUTINE myInit_UnitTest(name,nTests,nInputFiles,nRsltsFiles,nStndsFiles,err,&
    IF(nInputFiles>0)THEN
       ALLOCATE(unitTestMod%inputFiles(nInputFiles))
       ALLOCATE(unitTestMod%inputUnit(nInputFiles))
+      unitTestMod%inputFiles = undefCH
+      unitTestMod%inputUnit  = undefIN
+            
       DO i=1,nInputFiles
          IF(PRESENT(inputFiles))THEN
             unitTestMod%inputFiles=inputFiles
@@ -114,17 +117,11 @@ SUBROUTINE myInit_UnitTest(name,nTests,nInputFiles,nRsltsFiles,nStndsFiles,err,&
             unitTestMod%inputFiles(i)='InputFiles\unitTest_input_file_'//i//'.txt'
          END IF
          
-         IF(PRESENT(dontOpen_input))THEN
-            !
-            ! Just get file unit and dont open - useful in the development stage of building a test module
-            CALL getspareunit(unitTestMod%inputUnit(i),err,msg)
-            IF(err/=0)THEN;CALL message('E-could not assign input file unit');RETURN;END IF  
-         ELSE
-            !
-            ! Open file - MyFileOpen includes a call to getSpareUnit
-            CALL myFileOpen(fileNameAndPath=unitTestMod%inputFiles(i),unitID=unitTestMod%inputUnit(i),err=err)
-            IF(err/=0)RETURN     
-         END IF
+         CALL getspareunit(unitTestMod%inputUnit(i),err,msg)
+         IF(err/=0)THEN;CALL message('E-could not assign input file unit');RETURN;END IF 
+         CALL myFileOpen(fileNameAndPath=unitTestMod%inputFiles(i),unitID=unitTestMod%inputUnit(i),err=err)
+         IF(err/=0)RETURN  
+         
       END DO
    END IF
    
@@ -133,6 +130,9 @@ SUBROUTINE myInit_UnitTest(name,nTests,nInputFiles,nRsltsFiles,nStndsFiles,err,&
    IF(nrsltsFiles>0)THEN
       ALLOCATE(unitTestMod%rsltsFiles(nrsltsFiles))
       ALLOCATE(unitTestMod%rsltsUnit(nrsltsFiles))
+      unitTestMod%rsltsFiles = undefCH
+      unitTestMod%rsltsUnit  = undefIN      
+      
       DO i=1,nRsltsFiles
          IF(PRESENT(rsltsFiles))THEN
             unitTestMod%rsltsFiles=rsltsFiles
@@ -140,17 +140,10 @@ SUBROUTINE myInit_UnitTest(name,nTests,nInputFiles,nRsltsFiles,nStndsFiles,err,&
             unitTestMod%rsltsFiles(i)='rsltsFiles\unitTest_rslts_file_'//i//'.txt'
          END IF
 
-         IF(PRESENT(dontOpen_rslts))THEN
-            !
-            ! Just get file unit and dont open - useful in the development stage of building a test module
-            CALL getspareunit(unitTestMod%rsltsUnit(i),err,msg)
-            IF(err/=0)THEN;CALL message('E-could not assign input file unit');RETURN;END IF  
-         ELSE
-            !
-            ! Open file - MyFileOpen includes a call to getSpareUnit
-            CALL myFileOpen(fileNameAndPath=unitTestMod%rsltsFiles(i),unitID=unitTestMod%rsltsUnit(i),err=err)
-            IF(err/=0)RETURN     
-         END IF
+         CALL getspareunit(unitTestMod%rsltsUnit(i),err,msg)
+         IF(err/=0)THEN;CALL message('E-could not assign input file unit');RETURN;END IF  
+         CALL myFileOpen(fileNameAndPath=unitTestMod%rsltsFiles(i),unitID=unitTestMod%rsltsUnit(i),err=err)
+         IF(err/=0)RETURN 
 
       END DO
    END IF   
@@ -160,6 +153,8 @@ SUBROUTINE myInit_UnitTest(name,nTests,nInputFiles,nRsltsFiles,nStndsFiles,err,&
    IF(nStndsFiles>0)THEN
       ALLOCATE(unitTestMod%stndsFiles(nstndsFiles))
       ALLOCATE(unitTestMod%stndsUnit(nstndsFiles))
+      unitTestMod%stndsFiles = undefCH
+      unitTestMod%stndsUnit  = undefIN  
       DO i=1,nstndsFiles
          IF(PRESENT(stndsFiles))THEN
             unitTestMod%stndsFiles=stndsFiles
@@ -167,17 +162,10 @@ SUBROUTINE myInit_UnitTest(name,nTests,nInputFiles,nRsltsFiles,nStndsFiles,err,&
             unitTestMod%stndsFiles(i)='stndsFiles\unitTest_stnds_file_'//i//'.txt'
          END IF
  
-         IF(PRESENT(dontOpen_rslts))THEN
-             !
-             ! Just get file unit and dont open - useful in the development stage of building a test module
-             CALL getspareunit(unitTestMod%stndsUnit(i),err,msg)
-             IF(err/=0)THEN;CALL message('E-could not assign input file unit');RETURN;END IF  
-          ELSE
-             !
-             ! Open file - MyFileOpen includes a call to getSpareUnit
-             CALL myFileOpen(fileNameAndPath=unitTestMod%stndsFiles(i),unitID=unitTestMod%stndsUnit(i),err=err)
-             IF(err/=0)RETURN     
-          END IF
+         CALL getspareunit(unitTestMod%stndsUnit(i),err,msg)
+         IF(err/=0)THEN;CALL message('E-could not assign input file unit');RETURN;END IF 
+         CALL myFileOpen(fileNameAndPath=unitTestMod%stndsFiles(i),unitID=unitTestMod%stndsUnit(i),err=err)
+         IF(err/=0)RETURN                
       END DO
    END IF      
    !
@@ -188,7 +176,10 @@ SUBROUTINE myInit_UnitTest(name,nTests,nInputFiles,nRsltsFiles,nStndsFiles,err,&
    CALL myFileOpen(fileNameAndPath=unitTestMod%sumryFile,unitID=unitTestMod%sumryUnit,err=err)
 
    CALL myWriteHeader(err=err);IF(err/=0)RETURN
-   
+
+   IF(.NOT.PRESENT(open_input))THEN;DO i=1,nInputFiles;CLOSE(unitTestMod%inputUnit(i));END DO;END IF
+   IF(.NOT.PRESENT(open_rslts))THEN;DO i=1,nRsltsFiles;CLOSE(unitTestMod%rsltsUnit(i));END DO;END IF
+   IF(.NOT.PRESENT(open_stnds))THEN;DO i=1,nStndsFiles;CLOSE(unitTestMod%stndsUnit(i));END DO;END IF
 
 END SUBROUTINE myInit_UnitTest
 !___________________________________________________________________________________________________________________
@@ -225,7 +216,7 @@ SUBROUTINE myFileOpen(fileNameAndPath,unitID,err,status)
    IMPLICIT NONE
    ! Subroutine
    CHARACTER(LEN=*),INTENT(IN)::fileNameAndPath   !> Full file name and path [relative or absolute]
-   INTEGER(MIK),INTENT(OUT)::unitID               !> Return unit ID
+   INTEGER(MIK),INTENT(INOUT)::unitID             !> Return unit ID
    INTEGER(MIK),INTENT(OUT)::err                  !> Return value of file inquire, 0 = OK 
    CHARACTER(LEN=*),INTENT(IN),OPTIONAL::status   !> Open status of file - Default = "UNKNOWN"
    ! 
@@ -237,11 +228,7 @@ SUBROUTINE myFileOpen(fileNameAndPath,unitID,err,status)
    err=0
    
    IF(PRESENT(status))THEN;fileStatus=status;ELSE;fileStatus='UNKNOWN';END IF
-   IF(Ucase(fileStatus(1:3))=="OLD")THEN
-   CALL myFileInquire(fileNameAndPath(1:LEN_TRIM(fileNameAndPath)),err);IF(err/=0)RETURN
-   END IF
-   CALL getspareunit(unitID,err,msg)
-   IF(err/=0)THEN;CALL message('E-could not assign file unit for '//fileNameAndPath(1:LEN_TRIM(fileNameAndPath)));RETURN;END IF
+   IF(Ucase(fileStatus(1:3))=="OLD")CALL myFileInquire(fileNameAndPath(1:LEN_TRIM(fileNameAndPath)),err);IF(err/=0)RETURN
    !    
    ! CHECK FILE
    OPEN(UNIT=unitID,FILE=fileNameAndPath(1:LEN_TRIM(fileNameAndPath)),IOSTAT=err,STATUS=fileStatus)
@@ -250,10 +237,12 @@ SUBROUTINE myFileOpen(fileNameAndPath,unitID,err,status)
 END SUBROUTINE myFileOpen
 !___________________________________________________________________________________________________________________
 !
+!> Write a file header to the output summary file
+!! 
 SUBROUTINE myWriteHeader(err)
    IMPLICIT NONE
    ! Subroutine
-   INTEGER(MIK),INTENT(OUT)::err     
+   INTEGER(MIK),INTENT(OUT)::err     !> Return error
    ! Local
    INTEGER(MIK)::i,unitID
    !---
@@ -307,6 +296,8 @@ SUBROUTINE myWriteHeader(err)
 END SUBROUTINE myWriteHeader
 !___________________________________________________________________________________________________________________
 !
+!> Write a message to a file 
+!! the default file is the results summary file 
 SUBROUTINE myWriteMessage(unitID,myMessage,blankLine)
    IMPLICIT NONE
    ! Subroutine
@@ -389,7 +380,7 @@ SUBROUTINE myFileCompare(fileOne,fileTwo,CompareLevel,skip,outputUnit,testName,t
     myTestResult=.FALSE.
     CLOSE(UNIT=unitOneLc);CLOSE(UNIT=unitTwolc)
     if(compareLevelLc>2) call call_FileCompare_External()
-    RETURN
+!    RETURN
    ELSE; myTestResult=.TRUE.;END IF
   end if 
 
@@ -411,7 +402,7 @@ SUBROUTINE myFileCompare(fileOne,fileTwo,CompareLevel,skip,outputUnit,testName,t
         myTestResult=.FALSE.
         CLOSE(UNIT=unitOneLc);CLOSE(UNIT=unitTwolc)
         if(compareLevelLc>2) call call_FileCompare_External()
-        return    
+        EXIT
        end if
       END IF
    END DO
@@ -432,7 +423,7 @@ SUBROUTINE myFileCompare(fileOne,fileTwo,CompareLevel,skip,outputUnit,testName,t
   !
   ! Increment internal test index
   unitTestMod%testIndx=unitTestMod%testIndx+1   
-
+  continue
 contains 
 
  subroutine Call_FileCompare_External
@@ -450,6 +441,8 @@ end subroutine Call_FileCompare_External
 END SUBROUTINE myFileCompare
 !__________________________________________________________________________________________________________________
 !
+!> Test if real variable is within a specified tollerence of a known value
+!! Accessed via the common interface testMyResul(...,...,)
 SUBROUTINE testMyResult_Real(testVal,val_true,tol,err,outputUnit,testName)
    IMPLICIT NONE
    ! Subroutine
@@ -514,6 +507,7 @@ SUBROUTINE testMyResult_Integer(testVal,err,val_true,val_false,outputUnit,testNa
    !
    ! Increment internal test index
    unitTestMod%testIndx=unitTestMod%testIndx+1
+   continue
    
 END SUBROUTINE testMyResult_Integer
 !__________________________________________________________________________________________________________________
