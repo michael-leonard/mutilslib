@@ -237,6 +237,50 @@ SUBROUTINE myFileOpen(fileNameAndPath,unitID,err,status)
    IF(err/=0)CALL message(log_error,"Could not open the file "//fileNameAndPath(1:LEN_TRIM(fileNameAndPath)))
 
 END SUBROUTINE myFileOpen
+
+
+
+
+
+!___________________________________________________________________________________________________________________
+!
+!> File open wraper
+!!
+SUBROUTINE myFileOpen_unitTest(fileType,fileID,unitID,err,status)
+   IMPLICIT NONE
+   ! Subroutine
+   CHARACTER(LEN=5),INTENT(IN)::fileType          !> Unit test file type specifyer "input","rslts","stnds"
+   INTEGER(MIK),INTENT(IN)::fileID                !> Unit test file specifyer
+   INTEGER(MIK),INTENT(OUT)::err                  !> Return value of file inquire, 0 = OK 
+   INTEGER(MIK),INTENT(OUT)::unitID               !> Return unit ID
+   CHARACTER(LEN=*),INTENT(IN),OPTIONAL::status   !> Open status of file - Default = "UNKNOWN"
+   ! 
+   ! Local
+   INTEGER(MIK)::localUnitID
+   CHARACTER(LEN=7)::fileStatus
+   CHARACTER(LEN=180)::msg
+   !---
+   !
+   err=0   
+   IF(PRESENT(status))THEN;fileStatus=status;ELSE;fileStatus='UNKNOWN';END IF
+   IF(Ucase(fileStatus(1:3))=="OLD")CALL myFileInquire(fileNameAndPath(1:LEN_TRIM(fileNameAndPath)),err);IF(err/=0)RETURN
+   
+   SELECT CASE(Ucase(fileType))
+       CASE("INPUT")
+          IF(PRESENT(unitID))THEN;localUnitID=unitID;ELSE;localUnitID=unitTest(fileID)%inputUnit;END IF
+          OPEN(UNIT=localUnitID,FILE=TRIM(unitTestMod%inputfiles(fileID)),IOSTAT=err,STATUS=fileStatus)       
+       CASE("RSLTS")
+          IF(PRESENT(unitID))THEN;localUnitID=unitID;ELSE;localUnitID=unitTest(fileID)%rsltsUnit;END IF
+          OPEN(UNIT=localUnitID,FILE=TRIM(unitTestMod%rsltsfiles(fileID)),IOSTAT=err,STATUS=fileStatus)
+       CASE("STNDS")
+          IF(PRESENT(unitID))THEN;localUnitID=unitID;ELSE;localUnitID=unitTest(fileID)%stndsUnit;END IF
+          OPEN(UNIT=localUnitID,FILE=TRIM(unitTestMod%stndsfiles(fileID)),IOSTAT=err,STATUS=fileStatus)
+   END SELECT
+
+   IF(err/=0)CALL message(log_error,"Could not open the file "//fileNameAndPath(1:LEN_TRIM(fileNameAndPath)))
+
+END SUBROUTINE myFileOpen_unitTest
+
 !___________________________________________________________________________________________________________________
 !
 !> Write a file header to the output summary file
