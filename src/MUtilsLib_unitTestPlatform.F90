@@ -31,7 +31,7 @@ TYPE unitTestResultsData
    LOGICAL::ok=.false.
    LOGICAL::result_l=.false.
    REAL(MRK)::result_r
-   INTEGER(MIK)::result_i=undefIN
+   INTEGER(MIK)::rslt_i=undefIN
    CHARACTER(LEN=75)::name=undefCH
    CHARACTER(LEN=180)::metaDataTag=undefCH
    CHARACTER(LEN=360)::message=undefCH
@@ -252,17 +252,17 @@ SUBROUTINE unitTest_fileOpenDirect(fileType,fileID,unitID,err)
    
    SELECT CASE(Ucase(fileType))
        CASE("INPUT")
-          UnitID=unitTest(fileID)%inputUnit
-          OPEN(UNIT=localUnitID,FILE=TRIM(unitTestMod%inputfiles(fileID)),IOSTAT=err,STATUS=fileStatus)       
+          UnitID=unitTestMod%inputUnit(fileID)
+          OPEN(UNIT=UnitID,FILE=TRIM(unitTestMod%inputfiles(fileID)),IOSTAT=err,STATUS="UNKNOWN")       
        CASE("RSLTS")
-          UnitID=unitTest(fileID)%rsltsUnit
-          OPEN(UNIT=localUnitID,FILE=TRIM(unitTestMod%rsltsfiles(fileID)),IOSTAT=err,STATUS=fileStatus)
+          UnitID=unitTestMod%rsltsUnit(fileID)
+          OPEN(UNIT=UnitID,FILE=TRIM(unitTestMod%rsltsfiles(fileID)),IOSTAT=err,STATUS="UNKNOWN")
        CASE("STNDS")
-          UnitID=unitTest(fileID)%stndsUnit
-          OPEN(UNIT=localUnitID,FILE=TRIM(unitTestMod%stndsfiles(fileID)),IOSTAT=err,STATUS=fileStatus)
+          UnitID=unitTestMod%stndsUnit(fileID)
+          OPEN(UNIT=UnitID,FILE=TRIM(unitTestMod%stndsfiles(fileID)),IOSTAT=err,STATUS="UNKNOWN")
    END SELECT
 
-   IF(err/=0)CALL message(log_error,"Could not open the file "//fileNameAndPath(1:LEN_TRIM(fileNameAndPath)))
+   IF(err/=0)CALL message(log_error,"Could not open the file "//TRIM(unitTestMod%inputfiles(fileID)))
 
 END SUBROUTINE unitTest_fileOpenDirect
 !___________________________________________________________________________________________________________________
@@ -328,16 +328,20 @@ END SUBROUTINE unitTest_writeHeader
 !
 !> Write a message to a file 
 !! the default file is the results summary file 
-SUBROUTINE unitTest_writeMsg(unitID,myMessage,blankLine)
+SUBROUTINE unitTest_writeMsg(myMessage,unitID,addLine_before,addLine_after)
    IMPLICIT NONE
-   ! Subroutine
-   INTEGER(MIK),INTENT(IN)::unitID   
+   ! Subroutine variables
    CHARACTER(LEN=*),INTENT(IN)::myMessage
-   LOGICAL,OPTIONAL::blankLine
+   INTEGER(MIK),INTENT(IN),OPTIONAL::unitID,addLine_before,addLine_after
+   !
+   ! Local varaibles
+   INTEGER(MIK)::i,localUnitID
    !---
    !
-   WRITE(unitID,"(a)",err=101)myMessage(1:LEN_TRIM(myMessage))
-   IF(PRESENT(blankLine))WRITE(unitID,*,err=101)""
+   IF(PRESENT(unitID))THEN;localUnitID=unitID;ELSE;localUnitID=unitTestMod%sumryUnit;END IF
+   IF(PRESENT(addLine_before))THEN;DO i=1,addLine_before;WRITE(localUnitID,*,err=101)"";END DO;END IF
+   WRITE(localUnitID,"(a)",err=101)myMessage(1:LEN_TRIM(myMessage))
+   IF(PRESENT(addLine_after))THEN;DO i=1,addLine_after;WRITE(localUnitID,*,err=101)"";END DO;END IF
    RETURN
    
 101 CONTINUE
@@ -488,7 +492,7 @@ SUBROUTINE unitTest_realTest(testVal,val_true,tol,err,message,outputUnit,testNam
    !---
    !
    indx=unitTestMod%testIndx
-   unitTest(indx)%result_i=testVal
+   unitTest(indx)%rslt_i=testVal
    IF(PRESENT(testName))unitTest(indx)%name=testName
    IF(PRESENT(message))unitTest(indx)%message=message
       
@@ -523,7 +527,7 @@ SUBROUTINE unitTest_intTest(testVal,err,val_true,val_false,message,outputUnit,te
    !---
    !
    indx=unitTestMod%testIndx
-   unitTest(indx)%result_i=testVal
+   unitTest(indx)%rslt_i=testVal
    IF(PRESENT(testName))unitTest(indx)%name=testName
    IF(PRESENT(message))unitTest(indx)%message=message
 
