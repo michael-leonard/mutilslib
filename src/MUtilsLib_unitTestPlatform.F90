@@ -8,10 +8,6 @@
 !*                created depending on the users requirments                         *!
 !*                                                                                   *!                                             
 !*  VERSION:      1.0                                                                *!
-!*  CONTAINS:     myFileInquire,myFileOpen,myWriteHeader,myIntegerTestResult         *!
-!*                myWriteTestResult                                                  *!
-!*                                                                                   *!
-!*  LAST MODIFIED: 27/068/2010 MJH                                                   *!
 !*                                                                                   *!
 !*************************************************************************************! 
 MODULE MUtilsLib_unitTestPlatform
@@ -47,23 +43,25 @@ END TYPE unitTestResultsData
 TYPE(unitTestModuleData)::unitTestMod
 TYPE(unitTestResultsData),ALLOCATABLE,DIMENSION(:)::unitTest
 
-PUBLIC::myInit_UnitTest,myFileInquire,myFileOpen,myWriteHeader,testMyResult,myWriteTestResult,myFileCompare,fullPath
+PUBLIC::unitTest_init,unitTest_fileInquire,unitTest_fileOpen,unitTest_chkResult,unitTest_writeResult,fullPath
 !---
 !
-INTERFACE testMyResult
-MODULE PROCEDURE testMyResult_Integer,testMyResult_Logical,testMyResult_Real
+INTERFACE unitTest_chkResult
+   MODULE PROCEDURE unitTest_intTest,unitTest_logicalTest,unitTest_realTest,unitTest_fileCompare
 END INTERFACE
 
-!"$(URBANCYCLE_STATICLIB)\$(ConfigurationName)"
-!"$(URBANCYCLE_STATICLIB)\$(ConfigurationName)\urbanCycle_StaticLib.lib"
+INTERFACE unitTest_fileOpen
+   MODULE PROCEDURE unitTest_fileOpenStd,unitTest_fileOpenDirect
+END INTERFACE
+
 CONTAINS
 !___________________________________________________________________________________________________________________
 !
 !> Unit test framework initalisation routine
 !! This is the first routine called in the creation of a unit test module
-SUBROUTINE myInit_UnitTest(name,nTests,nInputFiles,nRsltsFiles,nStndsFiles,err,&
-                           testNames,sumryFile,inputFiles,rsltsFiles,stndsFiles,testMetaData,&
-                           open_input,open_rslts,open_stnds)
+SUBROUTINE unitTest_init(name,nTests,nInputFiles,nRsltsFiles,nStndsFiles,err,&
+                         testNames,sumryFile,inputFiles,rsltsFiles,stndsFiles,testMetaData,&
+                         open_input,open_rslts,open_stnds)
    IMPLICIT NONE    
    !
    ! Subroutine variables   
@@ -121,7 +119,7 @@ SUBROUTINE myInit_UnitTest(name,nTests,nInputFiles,nRsltsFiles,nStndsFiles,err,&
          
          CALL getspareunit(unitTestMod%inputUnit(i),err,msg)
          IF(err/=0)THEN;CALL message('E-could not assign input file unit');RETURN;END IF 
-         CALL myFileOpen(fileNameAndPath=unitTestMod%inputFiles(i),unitID=unitTestMod%inputUnit(i),err=err)
+         CALL unitTest_fileOpen(fileNameAndPath=unitTestMod%inputFiles(i),unitID=unitTestMod%inputUnit(i),err=err)
          IF(err/=0)RETURN  
          
       END DO
@@ -144,7 +142,7 @@ SUBROUTINE myInit_UnitTest(name,nTests,nInputFiles,nRsltsFiles,nStndsFiles,err,&
 
          CALL getspareunit(unitTestMod%rsltsUnit(i),err,msg)
          IF(err/=0)THEN;CALL message('E-could not assign input file unit');RETURN;END IF  
-         CALL myFileOpen(fileNameAndPath=unitTestMod%rsltsFiles(i),unitID=unitTestMod%rsltsUnit(i),err=err)
+         CALL unitTest_fileOpen(fileNameAndPath=unitTestMod%rsltsFiles(i),unitID=unitTestMod%rsltsUnit(i),err=err)
          IF(err/=0)RETURN 
 
       END DO
@@ -166,7 +164,7 @@ SUBROUTINE myInit_UnitTest(name,nTests,nInputFiles,nRsltsFiles,nStndsFiles,err,&
  
          CALL getspareunit(unitTestMod%stndsUnit(i),err,msg)
          IF(err/=0)THEN;CALL message('E-could not assign input file unit');RETURN;END IF 
-         CALL myFileOpen(fileNameAndPath=unitTestMod%stndsFiles(i),unitID=unitTestMod%stndsUnit(i),err=err)
+         CALL unitTest_fileOpen(fileNameAndPath=unitTestMod%stndsFiles(i),unitID=unitTestMod%stndsUnit(i),err=err)
          IF(err/=0)RETURN                
       END DO
    END IF      
@@ -175,20 +173,20 @@ SUBROUTINE myInit_UnitTest(name,nTests,nInputFiles,nRsltsFiles,nStndsFiles,err,&
    CALL getspareunit(unitTestMod%sumryUnit,err,msg)
    IF(err/=0)THEN;myResult=.FALSE.;CALL message('E-could not assign summary file unit');RETURN;END IF
    IF(PRESENT(sumryFile))THEN;unitTestMod%sumryFile=sumryFile;ELSE;unitTestMod%sumryFile="Results\results_summary.txt";END IF
-   CALL myFileOpen(fileNameAndPath=unitTestMod%sumryFile,unitID=unitTestMod%sumryUnit,err=err)
+   CALL unitTest_fileOpen(fileNameAndPath=unitTestMod%sumryFile,unitID=unitTestMod%sumryUnit,err=err)
 
-   CALL myWriteHeader(err=err);IF(err/=0)RETURN
+   CALL unitTest_writeHeader(err=err);IF(err/=0)RETURN
 
    IF(.NOT.PRESENT(open_input))THEN;DO i=1,nInputFiles;CLOSE(unitTestMod%inputUnit(i));END DO;END IF
    IF(.NOT.PRESENT(open_rslts))THEN;DO i=1,nRsltsFiles;CLOSE(unitTestMod%rsltsUnit(i));END DO;END IF
    IF(.NOT.PRESENT(open_stnds))THEN;DO i=1,nStndsFiles;CLOSE(unitTestMod%stndsUnit(i));END DO;END IF
 
-END SUBROUTINE myInit_UnitTest
+END SUBROUTINE unitTest_init
 !___________________________________________________________________________________________________________________
 !
 !> File inquire wraper 
 ! 
-SUBROUTINE myFileInquire(fileNameAndPath,err)
+SUBROUTINE unitTest_fileInquire(fileNameAndPath,err)
    IMPLICIT NONE
    ! Subroutine
    INTEGER,INTENT(OUT)::err                       !> Return value of file inquire, 0 = OK 
@@ -209,12 +207,12 @@ SUBROUTINE myFileInquire(fileNameAndPath,err)
       CALL message(log_error,"E-Could not find the file "//test_fileNameAndPath(1:LEN_TRIM(test_fileNameAndPath)))
    END IF   
 
-END SUBROUTINE myFileInquire
+END SUBROUTINE unitTest_fileInquire
 !___________________________________________________________________________________________________________________
 !
 !> File open wraper
 !!
-SUBROUTINE myFileOpen(fileNameAndPath,unitID,err,status)
+SUBROUTINE unitTest_fileOpenStd(fileNameAndPath,unitID,err,status)
    IMPLICIT NONE
    ! Subroutine
    CHARACTER(LEN=*),INTENT(IN)::fileNameAndPath   !> Full file name and path [relative or absolute]
@@ -230,62 +228,48 @@ SUBROUTINE myFileOpen(fileNameAndPath,unitID,err,status)
    err=0
    
    IF(PRESENT(status))THEN;fileStatus=status;ELSE;fileStatus='UNKNOWN';END IF
-   IF(Ucase(fileStatus(1:3))=="OLD")CALL myFileInquire(fileNameAndPath(1:LEN_TRIM(fileNameAndPath)),err);IF(err/=0)RETURN
+   IF(Ucase(fileStatus(1:3))=="OLD")CALL unitTest_fileInquire(fileNameAndPath(1:LEN_TRIM(fileNameAndPath)),err);IF(err/=0)RETURN
    !    
    ! CHECK FILE
    OPEN(UNIT=unitID,FILE=fileNameAndPath(1:LEN_TRIM(fileNameAndPath)),IOSTAT=err,STATUS=fileStatus)
    IF(err/=0)CALL message(log_error,"Could not open the file "//fileNameAndPath(1:LEN_TRIM(fileNameAndPath)))
 
-END SUBROUTINE myFileOpen
-
-
-
-
-
+END SUBROUTINE 
 !___________________________________________________________________________________________________________________
 !
 !> File open wraper
 !!
-SUBROUTINE myFileOpen_unitTest(fileType,fileID,unitID,err,status)
+SUBROUTINE unitTest_fileOpenDirect(fileType,fileID,unitID,err)
    IMPLICIT NONE
    ! Subroutine
    CHARACTER(LEN=5),INTENT(IN)::fileType          !> Unit test file type specifyer "input","rslts","stnds"
    INTEGER(MIK),INTENT(IN)::fileID                !> Unit test file specifyer
-   INTEGER(MIK),INTENT(OUT)::err                  !> Return value of file inquire, 0 = OK 
    INTEGER(MIK),INTENT(OUT)::unitID               !> Return unit ID
-   CHARACTER(LEN=*),INTENT(IN),OPTIONAL::status   !> Open status of file - Default = "UNKNOWN"
-   ! 
-   ! Local
-   INTEGER(MIK)::localUnitID
-   CHARACTER(LEN=7)::fileStatus
-   CHARACTER(LEN=180)::msg
+   INTEGER(MIK),INTENT(OUT)::err                  !> Return value of file inquire, 0 = OK 
    !---
    !
    err=0   
-   IF(PRESENT(status))THEN;fileStatus=status;ELSE;fileStatus='UNKNOWN';END IF
-   IF(Ucase(fileStatus(1:3))=="OLD")CALL myFileInquire(fileNameAndPath(1:LEN_TRIM(fileNameAndPath)),err);IF(err/=0)RETURN
    
    SELECT CASE(Ucase(fileType))
        CASE("INPUT")
-          IF(PRESENT(unitID))THEN;localUnitID=unitID;ELSE;localUnitID=unitTest(fileID)%inputUnit;END IF
+          UnitID=unitTest(fileID)%inputUnit
           OPEN(UNIT=localUnitID,FILE=TRIM(unitTestMod%inputfiles(fileID)),IOSTAT=err,STATUS=fileStatus)       
        CASE("RSLTS")
-          IF(PRESENT(unitID))THEN;localUnitID=unitID;ELSE;localUnitID=unitTest(fileID)%rsltsUnit;END IF
+          UnitID=unitTest(fileID)%rsltsUnit
           OPEN(UNIT=localUnitID,FILE=TRIM(unitTestMod%rsltsfiles(fileID)),IOSTAT=err,STATUS=fileStatus)
        CASE("STNDS")
-          IF(PRESENT(unitID))THEN;localUnitID=unitID;ELSE;localUnitID=unitTest(fileID)%stndsUnit;END IF
+          UnitID=unitTest(fileID)%stndsUnit
           OPEN(UNIT=localUnitID,FILE=TRIM(unitTestMod%stndsfiles(fileID)),IOSTAT=err,STATUS=fileStatus)
    END SELECT
 
    IF(err/=0)CALL message(log_error,"Could not open the file "//fileNameAndPath(1:LEN_TRIM(fileNameAndPath)))
 
-END SUBROUTINE myFileOpen_unitTest
-
+END SUBROUTINE unitTest_fileOpenDirect
 !___________________________________________________________________________________________________________________
 !
 !> Write a file header to the output summary file
 !! 
-SUBROUTINE myWriteHeader(err)
+SUBROUTINE unitTest_writeHeader(err)
    IMPLICIT NONE
    ! Subroutine
    INTEGER(MIK),INTENT(OUT)::err     !> Return error
@@ -339,12 +323,12 @@ SUBROUTINE myWriteHeader(err)
    err=-1
    CALL message(log_error,"Error writing header for results summary file")
  
-END SUBROUTINE myWriteHeader
+END SUBROUTINE unitTest_writeHeader
 !___________________________________________________________________________________________________________________
 !
 !> Write a message to a file 
 !! the default file is the results summary file 
-SUBROUTINE myWriteMessage(unitID,myMessage,blankLine)
+SUBROUTINE unitTest_writeMsg(unitID,myMessage,blankLine)
    IMPLICIT NONE
    ! Subroutine
    INTEGER(MIK),INTENT(IN)::unitID   
@@ -359,11 +343,11 @@ SUBROUTINE myWriteMessage(unitID,myMessage,blankLine)
 101 CONTINUE
    CALL message(log_error,"Error writing message to unit test module summary file")
  
-END SUBROUTINE myWriteMessage
+END SUBROUTINE unitTest_writeMsg
 !__________________________________________________________________________________________________________________
 !> Compares files and evalutes whether they are the same
 !! Comparison can be undertaken at various levels of detail, see compareLevel arg
-SUBROUTINE myFileCompare(fileOne,fileTwo,CompareLevel,skip,outputUnit,testName,testResult)
+SUBROUTINE unitTest_fileCompare(fileOne,fileTwo,CompareLevel,skip,outputUnit,testName,testResult)
    use mUtilsLib_System, only : fileCompare_External
    use mUtilsLib_fileio, only : fileExist,findEOF
    use mUtilsLib_StringFuncs, only: operator(//)
@@ -397,25 +381,25 @@ SUBROUTINE myFileCompare(fileOne,fileTwo,CompareLevel,skip,outputUnit,testName,t
    CompareLevelLc=checkPresent(Comparelevel,2) 
   
    ! Check if files exist
-   if(.not.fileExist(fileToOpen=fileOne,msg=msg)) then; call message(trim(msg)//" in F: myFileCompare"); myTestResult=.false.; return; end if
-   if(.not.fileExist(fileToOpen=fileTwo,msg=msg)) then; call message(trim(msg)//" in F: myFileCompare"); myTestResult=.false.; return; end if
+   if(.not.fileExist(fileToOpen=fileOne,msg=msg)) then; call message(trim(msg)//" in F: unitTest_fileCompare"); myTestResult=.false.; return; end if
+   if(.not.fileExist(fileToOpen=fileTwo,msg=msg)) then; call message(trim(msg)//" in F: unitTest_fileCompare"); myTestResult=.false.; return; end if
    
    ! Undertake line count
    fileOneLineCount=findEof(filepath=fileOne,err=ok,msg=msg)
-   if (ok/=0) then; call message(trim(msg)//" in F: myFileCompare"); myTestResult=.false.; return; end if
+   if (ok/=0) then; call message(trim(msg)//" in F: unitTest_fileCompare"); myTestResult=.false.; return; end if
    fileTwoLineCount=findEof(filepath=fileTwo,err=ok,msg=msg)
-   if (ok/=0) then; call message(trim(msg)//" in F: myFileCompare"); myTestResult=.false.; return; end if
+   if (ok/=0) then; call message(trim(msg)//" in F: unitTest_fileCompare"); myTestResult=.false.; return; end if
         
    ! Open files to unitOne and UnitTwo
-   call myFileOpen(fileNameAndPath=fileOne,unitID=unitOneLc,err=err,status="OLD")
+   call unitTest_fileOpen(fileNameAndPath=fileOne,unitID=unitOneLc,err=err,status="OLD")
    if(err/=0) then
       myTestResult=.FALSE.
-      call message("Unable to open file:"//trim(fileOne)//" in F: myFileCompare"); return
+      call message("Unable to open file:"//trim(fileOne)//" in F: unitTest_fileCompare"); return
    end if
-   call myFileOpen(fileNameAndPath=fileTwo,unitID=unitTwoLc,err=err,status="OLD")
+   call unitTest_fileOpen(fileNameAndPath=fileTwo,unitID=unitTwoLc,err=err,status="OLD")
    if(err/=0) then
       myTestResult=.FALSE.
-      call message("Unable to open file:"//trim(fileTwo)//" in F: myFileCompare"); return
+      call message("Unable to open file:"//trim(fileTwo)//" in F: unitTest_fileCompare"); return
    end if
        
     
@@ -465,7 +449,7 @@ SUBROUTINE Call_FileCompare_External()
     CLOSE(unitOneLc,iostat=ok)
     CLOSE(unitTwoLc,iostat=ok)
     ok=FileCompare_External(fileOne=fileOne,fileTwo=FileTwo)
-    IF (ok/=0) CALL message("Unable to compare files using external viewer:"//trim(fileone)//" and"//trim(filetwo)//" in f:myFileCompare")
+    IF (ok/=0) CALL message("Unable to compare files using external viewer:"//trim(fileone)//" and"//trim(filetwo)//" in f:unitTest_fileCompare")
     RETURN
 
 END SUBROUTINE Call_FileCompare_External
@@ -476,9 +460,9 @@ SUBROUTINE manageResult()
   unitTest(indx)%ok=myTestResult
    
   IF(PRESENT(outputUnit))THEN
-     CALL myWriteTestResult(testName=unitTest(indx)%name,testResult=unitTest(indx)%ok,failMessage=unitTest(indx)%message,unitID=outputUnit,err=err)
+     CALL unitTest_writeResult(testName=unitTest(indx)%name,testResult=unitTest(indx)%ok,failMessage=unitTest(indx)%message,unitID=outputUnit,err=err)
   ELSE
-     CALL myWriteTestResult(testName=unitTest(indx)%name,testResult=unitTest(indx)%ok,failMessage=unitTest(indx)%message,unitID=unitTestMod%sumryUnit,err=err)
+     CALL unitTest_writeResult(testName=unitTest(indx)%name,testResult=unitTest(indx)%ok,failMessage=unitTest(indx)%message,unitID=unitTestMod%sumryUnit,err=err)
   END IF
   !
   ! Increment internal test index
@@ -486,15 +470,12 @@ SUBROUTINE manageResult()
 
 END SUBROUTINE manageResult
    
-   
-   
-   
-END SUBROUTINE myFileCompare
+END SUBROUTINE unitTest_fileCompare
 !__________________________________________________________________________________________________________________
 !
 !> Test if real variable is within a specified tollerence of a known value
 !! Accessed via the common interface testMyResul(...,...,)
-SUBROUTINE testMyResult_Real(testVal,val_true,tol,err,message,outputUnit,testName)
+SUBROUTINE unitTest_realTest(testVal,val_true,tol,err,message,outputUnit,testName)
    IMPLICIT NONE
    ! Subroutine
    REAL(MRK),INTENT(IN)::testVal,val_true,tol
@@ -518,18 +499,18 @@ SUBROUTINE testMyResult_Real(testVal,val_true,tol,err,message,outputUnit,testNam
    END IF
 
    IF(PRESENT(outputUnit))THEN
-      CALL myWriteTestResult(testName=unitTest(indx)%name,testResult=unitTest(indx)%ok,failMessage=unitTest(indx)%message,unitID=outputUnit,err=err)
+      CALL unitTest_writeResult(testName=unitTest(indx)%name,testResult=unitTest(indx)%ok,failMessage=unitTest(indx)%message,unitID=outputUnit,err=err)
    ELSE
-      CALL myWriteTestResult(testName=unitTest(indx)%name,testResult=unitTest(indx)%ok,failMessage=unitTest(indx)%message,unitID=unitTestMod%sumryUnit,err=err)
+      CALL unitTest_writeResult(testName=unitTest(indx)%name,testResult=unitTest(indx)%ok,failMessage=unitTest(indx)%message,unitID=unitTestMod%sumryUnit,err=err)
    END IF
    !
    ! Increment internal test index
    unitTestMod%testIndx=unitTestMod%testIndx+1
    
-END SUBROUTINE testMyResult_Real
+END SUBROUTINE unitTest_realTest
 !__________________________________________________________________________________________________________________
 !
-SUBROUTINE testMyResult_Integer(testVal,err,val_true,val_false,message,outputUnit,testName)
+SUBROUTINE unitTest_intTest(testVal,err,val_true,val_false,message,outputUnit,testName)
    IMPLICIT NONE
    ! Subroutine
    INTEGER(MIK),INTENT(IN)::testVal
@@ -553,19 +534,19 @@ SUBROUTINE testMyResult_Integer(testVal,err,val_true,val_false,message,outputUni
    END IF
 
    IF(PRESENT(outputUnit))THEN
-      CALL myWriteTestResult(testName=unitTest(indx)%name,testResult=unitTest(indx)%ok,failMessage=unitTest(indx)%message,unitID=outputUnit,err=err)
+      CALL unitTest_writeResult(testName=unitTest(indx)%name,testResult=unitTest(indx)%ok,failMessage=unitTest(indx)%message,unitID=outputUnit,err=err)
    ELSE
-      CALL myWriteTestResult(testName=unitTest(indx)%name,testResult=unitTest(indx)%ok,failMessage=unitTest(indx)%message,unitID=unitTestMod%sumryUnit,err=err)
+      CALL unitTest_writeResult(testName=unitTest(indx)%name,testResult=unitTest(indx)%ok,failMessage=unitTest(indx)%message,unitID=unitTestMod%sumryUnit,err=err)
    END IF
    !
    ! Increment internal test index
    unitTestMod%testIndx=unitTestMod%testIndx+1
    continue
    
-END SUBROUTINE testMyResult_Integer
+END SUBROUTINE unitTest_intTest
 !__________________________________________________________________________________________________________________
 !
-SUBROUTINE testMyResult_Logical(testVal,err,val_true,val_false,message,outputUnit,testName)
+SUBROUTINE unitTest_logicalTest(testVal,err,val_true,val_false,message,outputUnit,testName)
    IMPLICIT NONE
    LOGICAL,INTENT(IN)::testVal
    LOGICAL,INTENT(IN),OPTIONAL::val_true,val_false
@@ -592,18 +573,18 @@ SUBROUTINE testMyResult_Logical(testVal,err,val_true,val_false,message,outputUni
    END IF
 
    IF(PRESENT(outputUnit))THEN
-      CALL myWriteTestResult(testName=unitTest(indx)%name,testResult=unitTest(indx)%ok,failMessage=unitTest(indx)%message,unitID=outputUnit,err=err)
+      CALL unitTest_writeResult(testName=unitTest(indx)%name,testResult=unitTest(indx)%ok,failMessage=unitTest(indx)%message,unitID=outputUnit,err=err)
    ELSE
-      CALL myWriteTestResult(testName=unitTest(indx)%name,testResult=unitTest(indx)%ok,failMessage=unitTest(indx)%message,unitID=unitTestMod%sumryUnit,err=err)
+      CALL unitTest_writeResult(testName=unitTest(indx)%name,testResult=unitTest(indx)%ok,failMessage=unitTest(indx)%message,unitID=unitTestMod%sumryUnit,err=err)
    END IF
    !
    ! Increment internal test index
    unitTestMod%testIndx=unitTestMod%testIndx+1
       
-END SUBROUTINE testMyResult_Logical
+END SUBROUTINE unitTest_logicalTest
 !__________________________________________________________________________________________________________________
 !
-SUBROUTINE myWriteTestResult(testName,testResult,failMessage,unitID,err)
+SUBROUTINE unitTest_writeResult(testName,testResult,failMessage,unitID,err)
    IMPLICIT NONE
    ! Subroutine
    INTEGER(MIK),INTENT(IN)::unitID
@@ -635,10 +616,10 @@ SUBROUTINE myWriteTestResult(testName,testResult,failMessage,unitID,err)
    err=-1
    CALL message(log_error,"Error writing test results for "//testName(1:LEN_TRIM(testName)))
  
- END SUBROUTINE myWriteTestResult
+ END SUBROUTINE unitTest_writeResult
 !___________________________________________________________________________________________________________________
 !
-SUBROUTINE myGlobalTestPlatformLog(action)
+SUBROUTINE unitTest_initGlobalErrLog(action)
    IMPLICIT NONE
    ! Subroutine
    CHARACTER(LEN=*),INTENT(IN)::action
@@ -653,7 +634,7 @@ SUBROUTINE myGlobalTestPlatformLog(action)
          CALL close_log()
    END SELECT
  
-END SUBROUTINE myGlobalTestPlatformLog
+END SUBROUTINE unitTest_initGlobalErrLog
 !___________________________________________________________________________________________________________________
 !
 !> Creates a full file name and path string [relative  or absolute] from and input file name
