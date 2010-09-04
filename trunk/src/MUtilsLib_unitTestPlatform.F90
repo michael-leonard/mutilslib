@@ -647,10 +647,11 @@ FUNCTION fullPath(fileName,filePath) RESULT(fullPathStr)
 !
 use MUtilsLib_System,ONLY:findcurrentdir
 use MUtilsLib_StringFuncs
+use kinds_dmsl_kit, only: len_vLongStr
 IMPLICIT NONE
 CHARACTER(LEN=*),INTENT(IN),OPTIONAL::fileName   !> File name including extension eg testData.txt
 CHARACTER(LEN=*),INTENT(IN),OPTIONAL::filePath   !> File path [relative or absolute] eg C:\devel\
-CHARACTER(LEN=LEN(filePath))::fullPathStr        !> File name and path [relative or absolute] eg C:\devel\testData.txt
+CHARACTER(LEN=len_vLongStr)::fullPathStr        !> File name and path [relative or absolute] eg C:\devel\testData.txt
 !
 ! Local variables
 CHARACTER(LEN=360)::currentDir,name,path
