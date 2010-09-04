@@ -47,7 +47,8 @@ module MUtilsLib_stringfuncs
             hasSubStr, &           ! tests is a substring exists within another string
             subStr, &              ! returns index of starting position of a string within another string
             addStr, &              ! add a string onto the end of a pointer array
-            isSameStr              ! compare two strings to see if they are the same
+            isSameStr, &           ! compare two strings to see if they are the same
+            split                  ! split a string in two according to some delimeter
 
 
   interface index
@@ -1281,6 +1282,36 @@ module MUtilsLib_stringfuncs
         StrOut=trim(strIn)
 
     end function
+
+!____________________________________________________________________
+    elemental subroutine split(str,ch,strA,strB,back)
+      ! Description: split a string according to first find of some delimeter.
+      ! not case sensitive
+      implicit none
+      character(len=*), intent(in) :: str ! string to be stripped
+      character(len=len(str)), intent(inout) :: strA ! output string
+      character(len=len(str)), intent(inout) :: strB ! output string
+      character(len=*), intent(in) :: ch  ! delimiting character(s)
+      logical, optional, intent(in) :: back
+      integer  :: i  ! index of starting position to strip
+      integer  :: l  ! length of string
+
+      l = len(str)
+      if(present(back)) then
+        i = index(LCase(str),LCase(trim(ch)),back=back)
+      else
+        i = index(LCase(str),LCase(trim(ch)))
+      end if
+      if(i>0.and.i<l) then
+        strA = str(1:i-1)
+        strB = str(i+len(ch):)
+      else
+        ! the delimeter does not appear
+        strA = str
+        strB = ""
+      end if
+    end subroutine split
+
 !____________________________________________________________________
     elemental function trimL(str,ch,back) result(strOut)
       ! Description: strip a string to the left according to some delimeter.
@@ -1305,7 +1336,7 @@ module MUtilsLib_stringfuncs
         ! the delimeter does not appear
         strOut = str
       end if
-    end function
+    end function trimL
 !____________________________________________________________________
     elemental function trimR(str,ch,back) result(strOut)
       ! Description: strip a string to the right according to some delimeter.
@@ -1330,7 +1361,7 @@ module MUtilsLib_stringfuncs
         ! the delimeter does not appear
         strOut = str
       end if
-    end function
+    end function trimR
 
     function findReplace(str,fnd,rpl) result(strOut)
       ! Description: find and replace 'fnd' with 'rpl' in base
