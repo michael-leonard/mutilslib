@@ -37,7 +37,6 @@ end interface calcProblim
 ! Procedural Availability
 private
 public :: problimType,CalcProblim,hpsort,stanResidualsProb,pValResidualsProb
-public :: hpsortInd, isSameR4, isSameR8
 public :: hpsortInd
 contains
 !****************************************************************************
