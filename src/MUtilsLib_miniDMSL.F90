@@ -194,6 +194,18 @@ average=sum(nv1)/real(n,mrk)
 ! End procedure here
 endfunction average
 !----------------------------------------------------
+
+subroutine getspareunit(unit,err,msg)
+  ! Dummy routine to fix a broken compile from revision 85, ML 04/09/2010
+  implicit none
+  integer :: unit, err
+  character(100) :: msg
+
+  unit = 6
+  err = -1
+  msg = "getspareunit() missing from build. This is a dummy routine"
+end subroutine
+
 end module utilities_dmsl_kit
 !---------------------------------------
 module numerix_dmsl_kit
