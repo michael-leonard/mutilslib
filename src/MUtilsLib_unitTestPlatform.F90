@@ -413,11 +413,11 @@ SUBROUTINE unitTest_fileCompare(fileOne,fileTwo,CompareLevel,skip,outputUnit,tes
    IF((fileOneLineCount-fileTwoLineCount)/=0)THEN;
     myTestResult=.FALSE.
     CLOSE(UNIT=unitOneLc);CLOSE(UNIT=unitTwolc)
-    if(compareLevelLc>2) call call_FileCompare_External()
+    IF(compareLevelLc>2) call call_FileCompare_External()
     CALL manageResult()
     RETURN
    ELSE; myTestResult=.TRUE.;END IF
-  end if 
+  END IF 
 
   
   ! Compare line-by-line
