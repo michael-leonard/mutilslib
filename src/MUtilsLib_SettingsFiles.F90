@@ -51,8 +51,7 @@ implicit none
 
 ! Dummies - Inputs
 integer(mik), intent(in) ::  unit                     ! Unit no for settings file
-character(len=len_vLongStr), intent(inout) ::  file   ! Settings file with path - can be relative 
-                                                      ! or absolute file paths, on exit it is the absolute filepath
+character(len=len_vLongStr), intent(inout) ::  file   ! Settings file with full path
 character(len=*), intent(in) :: checkVersion          ! Used to check whether setttings file has the same version number 
                                                       ! - ensures compatibility
 ! Function - Outputs
@@ -61,7 +60,7 @@ integer(mik) :: ok                                    ! Error Flag (0 = No Error
 integer(mik) :: status                                ! 
 character(len=len_vLongStr) :: version                !
 ok=0  
-File=relPathtoAbsPath(file,findCurrentDir())
+!File=relPathtoAbsPath(file,findCurrentDir())
 do 
   open(unit=unit,file=trim(File),iostat=status,status="OLD")
   select case(status)
