@@ -1,7 +1,7 @@
 !<license>
-module MUtilsLib_messagelog
-! message_log - an error/message logging interface
-! description:  logs (error/warning/other) messages during runtime and can flush the msg_log to the screen, to a file or both
+
+!> message_log - an error/message logging interface
+!> description:  logs (error/warning/other) messages during runtime and can flush the msg_log to the screen, to a file or both
 !
 ! List of Routines
 ! ----------------
@@ -19,72 +19,71 @@ module MUtilsLib_messagelog
 !  WARNING()                  ! logical function to check whether any warnings have occurred
 !  ERROR()                    ! logical function to check whether any errors have occurred
 
-
-! Notes:
-! (1) This module does not support multiple logs - only one per program.
-!     That is, only one instance of this object is declared as a "global" msg_log in this module.
-! (2) A subroutine that calls one of the routines in this module cannot also be pure or elemental. This is because
-!     the msg_log object reads and writes to screen/file.
-! (3) This method of logging errors and warnings was selected so that the interface for each function
-!     did not get polluted. Also, it is quite easy to remove the references to the msg_log object at a later
-!     date, whereas it is messy to change the interface of a routine at a later date.
-! (4) A tag must be specified for every message that gets entered into the msg_log. Tags can be chosen from a
-!     predefined set for which a global enum is provided.
-! (5) msg_log is kept private, so as to avoid incorrect use and so that logging facilities can be easily removed
-!     from a project
-! (6) The msg_log class has several different options for outputting the data and for tracking errors and
-!     warnings. The warning() and error() routines can be used to provide error handling and check
-!     if a subroutine executed okay.
-!
-! Message Database Functionality
-!  - Users can supply a msg_id (and db_id) to the message subroutine and that is used to locate message
-!    in msg_db (given by db_id) which is appended to the message
-!
-! Notes:
-! (1) msg_db is read-in using init_msg_db which is called from init_log - need to supply db_id and msg_file to init_log
-! (2) msg_file needs to be in csv format, where first line is header and there are 4 columns (integer and 3 character), as follows
-!       ID,short description,long description,remedy
-!       1,"short db message id 1","long db message id 1","remedy id 1"
-!       2,"short db message id 2","long db message id 2","remedy id 2"
-!       -3,"short db message id -3","long db message id -3","remedy id -3"
-!    see samples\TestMsg_db.csv for more details
-!    Tips: A simple trick to get Excel to put quotes around text is to put a comma in the cell
-!
-!  (3) Multiplie message data-bases are supported, just need to call init_log again (with append=.true.)
-!      to ensure messages are added to the same log file
-!
-
+!> Notes:
+!> (1) This module does not support multiple logs - only one per program.
+!>     That is, only one instance of this object is declared as a "global" msg_log in this module.
+!> (2) A subroutine that calls one of the routines in this module cannot also be pure or elemental. This is because
+!>     the msg_log object reads and writes to screen/file.
+!> (3) This method of logging errors and warnings was selected so that the interface for each function
+!>     did not get polluted. Also, it is quite easy to remove the references to the msg_log object at a later
+!>     date, whereas it is messy to change the interface of a routine at a later date.
+!> (4) A tag must be specified for every message that gets entered into the msg_log. Tags can be chosen from a
+!>     predefined set for which a global enum is provided.
+!> (5) msg_log is kept private, so as to avoid incorrect use and so that logging facilities can be easily removed
+!>     from a project
+!> (6) The msg_log class has several different options for outputting the data and for tracking errors and
+!>     warnings. The warning() and error() routines can be used to provide error handling and check
+!>     if a subroutine executed okay.
+!>
+!> Message Database Functionality
+!>  - Users can supply a msg_id (and db_id) to the message subroutine and that is used to locate message
+!>    in msg_db (given by db_id) which is appended to the message
+!>
+!> Notes:
+!> (1) msg_db is read-in using init_msg_db which is called from init_log - need to supply db_id and msg_file to init_log
+!> (2) msg_file needs to be in csv format, where first line is header and there are 4 columns (integer and 3 character), as follows
+!>       ID,short description,long description,remedy
+!>       1,"short db message id 1","long db message id 1","remedy id 1"
+!>       2,"short db message id 2","long db message id 2","remedy id 2"
+!>       -3,"short db message id -3","long db message id -3","remedy id -3"
+!>    see samples\TestMsg_db.csv for more details
+!>    Tips: A simple trick to get Excel to put quotes around text is to put a comma in the cell
+!>
+!>  (3) Multiplie message data-bases are supported, just need to call init_log again (with append=.true.)
+!>      to ensure messages are added to the same log file
+!>
+module MUtilsLib_messagelog
   use kinds_dmsl_kit
   implicit none
   save
 
   private ! All components are private unless declared otherwise
-  integer, parameter, public   ::  tag_len  = len_stdStrB   ! tag length
-  integer, parameter, public   ::  msg_len = len_vLongStr   ! some messages can contain strings of deep file directories
+  integer, parameter, public   ::  tag_len  = len_stdStrB   !< tag length
+  integer, parameter, public   ::  msg_len = len_vLongStr   !< some messages can contain strings of deep file directories
   integer, parameter, public   ::  msg_tag_len = msg_len+tag_len
-  character(len=1)  :: comchar = " "    ! a comment character
+  character(len=1)  :: comchar = " "    !< a comment character
 
   type obj_msg_log
     private
-    character(len = tag_len), pointer, dimension(:) ::  tag  => null() ! A tag to specify the type of message
-    character(len = msg_len), pointer, dimension(:) ::  message => null() ! Any descriptive text
-    integer  ::   err  = 0           ! Cumulative count of system errors
-    integer  ::   warn = 0           ! Cumulative count of system warnings
-    integer  ::   unit = 151         ! file ID unit, screen = 6, file = other
-    logical  ::   close  = .true.    ! determines if the msg_log file is to be opened and closed for each flush
-    logical  ::   append = .false.   ! Whether a new msg_log should be appended on to existing msg_log
-    logical  ::   active = .true.    ! Allows msg_log to be activated / deactivated
-    logical  ::   echo   = .true.   ! Whether msg_log should be written to screen and to file
-    logical  ::   ignore_warn  = .false.           ! Whether warnings should be ignored
-    logical  ::   ignore_error = .false.           ! Whether errors should be ignored
-    logical  ::   auto_flush   = .true.            ! Automatically flush each entry after it is made
-    logical  ::   debug   = .true.                 ! Should debug messages be written to the msg_log
-    logical  ::   time_stamp   = .false.           ! Prefix the message with a timestamp
+    character(len = tag_len), pointer, dimension(:) ::  tag  => null()    !< A tag to specify the type of message
+    character(len = msg_len), pointer, dimension(:) ::  message => null() !< Any descriptive text
+    integer  ::   err  = 0           !< Cumulative count of system errors
+    integer  ::   warn = 0           !< Cumulative count of system warnings
+    integer  ::   unit = 151         !< file ID unit, screen = 6, file = other
+    logical  ::   close  = .true.    !< determines if the msg_log file is to be opened and closed for each flush
+    logical  ::   append = .false.   !< Whether a new msg_log should be appended on to existing msg_log
+    logical  ::   active = .true.    !< Allows msg_log to be activated / deactivated
+    logical  ::   echo   = .true.    !< Whether msg_log should be written to screen and to file
+    logical  ::   ignore_warn  = .false.           !< Whether warnings should be ignored
+    logical  ::   ignore_error = .false.           !< Whether errors should be ignored
+    logical  ::   auto_flush   = .true.            !< Automatically flush each entry after it is made
+    logical  ::   debug   = .true.                 !< Should debug messages be written to the msg_log
+    logical  ::   time_stamp   = .false.           !< Prefix the message with a timestamp
     character(len = len_vLongStr)  ::   file = 'message.log' ! file name if msg_log is written to file
   end type obj_msg_log
 
 
-  ! Enumeration for different tag types (public)
+  !> Enumeration for different tag types (public)
   integer, parameter, public  ::   log_error   = 1, &
                                    log_warn    = 2, &
                                    log_write   = 4, &
@@ -111,21 +110,23 @@ module MUtilsLib_messagelog
                                                        "           ", &
                                                        "FatalError:" /)
 
-  type msg_db_msg_type                                 ! Type for messages in message database
-    integer(mik):: id                                   ! id for messages in message database
-    character(len=len_LongStr) :: desc                  ! message description
-    character(len=len_vLongStr) :: remedy               ! possible remedies if message is for an error
+  !> Type for messages in message database
+  type msg_db_msg_type                                 
+    integer(mik):: id                                   !< id for messages in message database
+    character(len=len_LongStr) :: desc                  !< message description
+    character(len=len_vLongStr) :: remedy               !< possible remedies if message is for an error
   end type msg_db_msg_type
 
-  type msg_db_type                                      ! Type for message database
-    character(len=len_stdStrD) :: id                    ! id message database
-    integer(mik) ::n_msg                                ! number of message in message database
-    type(msg_db_msg_type),allocatable :: msg(:)         ! message in message database
+  !> Type for message database
+  type msg_db_type                                      
+    character(len=len_stdStrD) :: id                    !< id message database
+    integer(mik) ::n_msg                                !< number of message in message database
+    type(msg_db_msg_type),allocatable :: msg(:)         !< message in message database
   end type
 
-  type (msg_db_type), allocatable :: msg_db(:)          ! Message database(s)
+  type (msg_db_type), allocatable :: msg_db(:)          !< Message database(s)
 
-  type(obj_msg_log)  :: msg_log                           ! a private system message log
+  type(obj_msg_log)  :: msg_log                         !< a private system message log
 
   ! public interface
   public :: init_log, message, flush_messages, warning, error,get_messages,close_log
@@ -137,25 +138,25 @@ module MUtilsLib_messagelog
 !************************************************************************************************
   contains
 !************************************************************************************************
+    !> Set the parameters for the log file. Not necessary to be called if you are happy with defaults.
     subroutine init_log(unit,close,append,active,echo,file, ignore_warn, ignore_error,auto_flush,debug,db_id,msg_file,append_always,time_stamp)
-      ! description:  Set the parameters for the log file. Not necessary to be called if you are happy with defaults.
+      
       implicit none
-      integer, intent(IN), optional  ::   unit          ! file ID unit, screen = 6, file = other
-      logical, intent(IN), optional  ::   close         ! determines if the log file is to be opened and closed for each flush
-      logical, intent(IN), optional  ::   append        ! Whether log should be appended on to existing log
-      logical, intent(IN), optional  ::   append_always ! Whether all log messages in program should be appended to the log_file
-                                                        ! that is to be opened
-      logical, intent(IN), optional  ::   active        ! Allows log to be activated / deactivated
-      logical, intent(IN), optional  ::   echo          ! Whether log should be written to screen and to file
-      logical, intent(IN), optional  ::   ignore_warn   ! Whether warnings should be ignored
-      logical, intent(IN), optional  ::   ignore_error  ! Whether errors should be ignored
-      logical, intent(IN), optional  ::   auto_flush    ! Whether the log should be automatically flushed each time
-      logical, intent(IN), optional  ::   debug         ! Whether debug comments should be ignored
-      logical, intent(IN), optional  ::   time_stamp    ! Whether to prefix the message with a timestamp
+      integer, intent(IN), optional  ::   unit          !< file ID unit, screen = 6, file = other
+      logical, intent(IN), optional  ::   close         !< determines if the log file is to be opened and closed for each flush
+      logical, intent(IN), optional  ::   append        !< Whether log should be appended on to existing log
+      logical, intent(IN), optional  ::   append_always !< Whether all log messages in program should be appended to the log_file that is to be opened
+      logical, intent(IN), optional  ::   active        !< Allows log to be activated / deactivated
+      logical, intent(IN), optional  ::   echo          !< Whether log should be written to screen and to file
+      logical, intent(IN), optional  ::   ignore_warn   !< Whether warnings should be ignored
+      logical, intent(IN), optional  ::   ignore_error  !< Whether errors should be ignored
+      logical, intent(IN), optional  ::   auto_flush    !< Whether the log should be automatically flushed each time
+      logical, intent(IN), optional  ::   debug         !< Whether debug comments should be ignored
+      logical, intent(IN), optional  ::   time_stamp    !< Whether to prefix the message with a timestamp
 
-      character(len = *), intent(IN), optional :: file ! file name if log is written to file
-      character(len = *), intent(IN), optional :: db_id ! ID of the message database
-      character(len = *), intent(IN), optional :: msg_file ! file name of the msg file for message database
+      character(len = *), intent(IN), optional :: file  !< file name if log is written to file
+      character(len = *), intent(IN), optional :: db_id !< ID of the message database
+      character(len = *), intent(IN), optional :: msg_file !< file name of the msg file for message database
       integer :: ok
 
       ! Transfer input variables into log object
@@ -202,10 +203,11 @@ module MUtilsLib_messagelog
 
     end subroutine init_log
 !************************************************************************************************
+    !> A wrapper to simplify recording error messages -default tag is log_error
     subroutine add_log_no_tag(message,msg_id,db_id)
-      ! A wrapper to simplify recording error messages -default tag is log_error
+      
       implicit none
-      character(len = *), intent(IN) ::  message  ! Any descriptive message
+      character(len = *), intent(IN) ::  message  !< Any descriptive message
       character(len = *), intent(IN),optional ::  db_id
       integer(mik),intent(in), optional :: msg_id
 
@@ -213,15 +215,16 @@ module MUtilsLib_messagelog
 
     end subroutine
 !************************************************************************************************
+   !> Adds a single message to the msg_log object
+   !> All arguments non-optional
     subroutine add_log_msg_tag(msg_type,message,msg_id,db_id)
-     ! Adds a single message to the msg_log object
-     ! All arguments non-optional
+
       use MUtilsLib_StringFuncs, only : insertString,operator(//)
       implicit none
-      integer, intent(IN)  ::  msg_type         ! Index of type of tag
-      character(len = *), intent(IN) ::  message  ! Any descriptive message
-      character(len = *), intent(IN),optional ::  db_id ! id of the message db
-      integer(mik),intent(in), optional :: msg_id ! message id
+      integer, intent(IN)  ::  msg_type                 !< Index of type of tag
+      character(len = *), intent(IN) ::  message        !< Any descriptive message
+      character(len = *), intent(IN),optional ::  db_id !< id of the message db
+      integer(mik),intent(in), optional :: msg_id       !< message id
       character(8) :: dt
       character(10) :: tm
 
@@ -301,10 +304,9 @@ module MUtilsLib_messagelog
 
     end subroutine add_log_msg_tag
 !************************************************************************************************
+    !> writes out the msg_log object
+    !> and deletes all entries
     subroutine flush_messages()
-      ! writes out the msg_log object
-      ! and deletes all entries
-
       implicit none
        ! Locals
       integer :: i ! loop counter
@@ -370,8 +372,9 @@ module MUtilsLib_messagelog
 
     end subroutine flush_messages
 !************************************************************************************************
+    !> reads the msg_log file and returns the lastmessage or allmessages depending which is present
     subroutine get_messages(allmessages,lastmessage)
-      ! reads the msg_log file and returns the lastmessage or allmessages depending which is present
+
       use MUtilsLib_fileIO, only : findEOF
       implicit none
       ! Outputs
@@ -426,6 +429,7 @@ module MUtilsLib_messagelog
 
     end subroutine get_messages
 !************************************************************************************************
+    !> detects if warnings have occurred
     elemental function warning() result(bool)
       ! description:
       implicit none
@@ -438,8 +442,9 @@ module MUtilsLib_messagelog
       end if
     end function warning
 !************************************************************************************************
+    !> detects if errors have occurred
     elemental function error() result(bool)
-      ! description:
+      
       implicit none
       logical  ::   bool !
 
@@ -450,15 +455,17 @@ module MUtilsLib_messagelog
       end if
     end function error
 !************************************************************************************************
+    !> update the comment character
     subroutine change_comchar(ch)
-       ! update the comment character
+       
        implicit none
        character(1), intent(in) :: ch
        comchar = ch
      end subroutine
 !************************************************************************************************
+    !> Initiliases a message file db and read's in a msg file into the database
     function init_msg_db(db_id,msg_file) result(ok)
-     ! description:  Initiliases a message file db and read's in a msg file into the database
+     
       use MUtilsLib_fileIO, only : findEof
       use MUtilslib_stringfuncs, only : operator(//)
       implicit none
@@ -516,12 +523,13 @@ module MUtilsLib_messagelog
 
   end function init_msg_db
 !************************************************************************************************
+    !> Gets a message from the message db
     function get_msg_from_db(msg_id,db_id) result(msg)
-     ! description:  Gets a message from the message db
+     
       use MUtilslib_stringfuncs, only : operator(//)
       implicit none
-      character(len = *), intent(IN) :: db_id ! id of the message db
-      integer(mik), intent(IN) :: msg_id ! message id
+      character(len = *), intent(IN) :: db_id !< id of the message db
+      integer(mik), intent(IN) :: msg_id      !< message id
 
       integer(mik) :: i
       integer(mik) :: msg_db_num,msg_num
@@ -553,8 +561,8 @@ module MUtilsLib_messagelog
 
   end function get_msg_from_db
 !************************************************************************************************
+!> Tidies up message log and msg_db
 subroutine close_log()
-! *** Tidies up message log and msg_db
 
 integer(mik) :: i
 
@@ -569,30 +577,33 @@ end subroutine close_log
 !************************************************************************************************
 end module MUtilsLib_messagelog
 !************************************************************************************************
+
+!> For backwards compaitbility
 module message_log
-! For backwards compaitbility
-use MUtilsLib_messagelog
+  use MUtilsLib_messagelog
 end module message_log
 !************************************************************************************************
-MODULE errorMOD
-! Purpose: Prints error messages
-! Provides a wrapper for message msg_log
-IMPLICIT NONE
-CONTAINS
-!***************************************************************************************
-SUBROUTINE fatal_error(mess)
-USE MESSAGE_LOG
-! Purpose: Write error message to screen then stops
-IMPLICIT NONE
 
-   ! Dummy Arguments
-    CHARACTER(LEN=*), INTENT(IN) :: mess
-! Wrapper Routine to print to GK's alert dialog
-!    CALL alertDialog("ERROR: "//mess)
-! Wrapper Routine to print to screen
+!> Purpose: Prints error messages
+!> Provides a wrapper for message msg_log
+module errorMod
+  implicit none
+  contains
+  
+  !> Write error message to screen then stops
+  subroutine fatal_error(mess)
+    use message_log
+  
+    implicit none
+    ! Dummy Arguments
+    character(len=*), intent(in) :: mess
+    
+    ! Wrapper Routine to print to GK's alert dialog
+    !    CALL alertDialog("ERROR: "//mess)
+    ! Wrapper Routine to print to screen
     !PRINT *,"ERROR: "//mess; READ (*,*)
     call message(log_FATAL,trim(mess))
-! Wrapper Routine to ML's message logging system
-!  call message(log_fatal,msg)
-END SUBROUTINE fatal_error
-end module errorMOD
+    ! Wrapper Routine to ML's message logging system
+    !  call message(log_fatal,msg)
+  end subroutine fatal_error
+end module errorMod
