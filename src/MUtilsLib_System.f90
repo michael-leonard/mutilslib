@@ -1,10 +1,10 @@
+!> Generic system (windows) utilities
+!> Any subroutine that uses IVF/WINDOWS SPECIFIC routines
+!> e.g. 
+!> - calls to if/dfport module
+!> - IVF extensions to Fortran standard
+!> No other modules should have calls to the dos interface
 module MUtilsLib_System
-    ! Generic system (windows) utilities
-    ! Any subroutine that uses IVF/WINDOWS SPECIFIC routines
-    ! e.g. 
-    ! - calls to if/dfport module
-    ! - IVF extensions to Fortran standard
-    ! No other modules should have calls to the dos interface
     use kinds_dmsl_kit
     use MUtilsLib_MessageLog
     implicit none
@@ -24,11 +24,11 @@ module MUtilsLib_System
               FileCompare_External ! Compares two files using TortoiseMerge                
   contains
 !*************************************************************************************************************   
+   !> Terminates ALL copies of a current process based on its image name
+   !> uses command prompt + dos syntax
+   !> writes dos output to a temp file and then deletes
+   !> requisite dos functions: tasklist
    function Mutils_loc(imageName) result(ok)
-     ! Terminates ALL copies of a current process based on its image name
-     ! uses command prompt + dos syntax
-     ! writes dos output to a temp file and then deletes
-     ! requisite dos functions: tasklist
      use dfport,only: system
      implicit none
      character(len=*) :: imageName ! the name of the task to be killed
@@ -40,11 +40,11 @@ module MUtilsLib_System
    end function
 !************************************************************************************************************* 
 !*************************************************************************************************************   
+   !> Terminates ALL copies of a current process based on its image name
+   !> uses command prompt + dos syntax
+   !> writes dos output to a temp file and then deletes
+   !> requisite dos functions: tasklist
    function taskkill(imageName) result(ok)
-     ! Terminates ALL copies of a current process based on its image name
-     ! uses command prompt + dos syntax
-     ! writes dos output to a temp file and then deletes
-     ! requisite dos functions: tasklist
      use dfport,only: system
      implicit none
      character(len=*) :: imageName ! the name of the task to be killed
@@ -55,12 +55,12 @@ module MUtilsLib_System
 
    end function
 !*************************************************************************************************************   
+   !> expand a dos environment variable
+   !> uses command prompt + dos syntax
+   !> writes dos output to a temp file and then deletes
+   !> requisite dos functions: ECHO, ev path variable must already 
+   !> be declared in the system and implicit rule for expanding: %EnvVar%
    function expand(ev) result(str)
-     ! expand a dos environment variable
-     ! uses command prompt + dos syntax
-     ! writes dos output to a temp file and then deletes
-     ! requisite dos functions: ECHO, ev path variable must already 
-     ! be declared in the system and implicit rule for expanding: %EnvVar%
      use dfport,only: system
      implicit none
      character(len=*) :: ev ! environment variable, specified as per a .bat file - must have %% symbols , e.g. %PATH%
@@ -88,11 +88,11 @@ module MUtilsLib_System
      end if
    end function
 !*************************************************************************************************************   
+   !> determines the location of the current working directory
+   !> uses command prompt + dos syntax
+   !> writes dos output to a temp file and then deletes
+   !> requisite dos functions: chdir
    function findcurrentdir(noslash) result(dir)
-      ! determines the location of the current working directory
-      ! uses command prompt + dos syntax
-      ! writes dos output to a temp file and then deletes
-      ! requisite dos functions: chdir
       use dfport, only : system
       use stringfuncs, only: fwdslash
       implicit none
@@ -113,11 +113,11 @@ module MUtilsLib_System
       end if
     end function findcurrentdir
 !*************************************************************************************************************   
+   !> Determine if a given process exists
+   !> uses command prompt + dos syntax
+   !> writes dos output to a temp file and then deletes
+   !> requisite dos functions: tasklist
    function processExist(imageName) result(test)
-      ! Determine if a given process exists
-      ! uses command prompt + dos syntax
-      ! writes dos output to a temp file and then deletes
-      ! requisite dos functions: tasklist
       use dfport,only: system
       use stringfuncs, only: lcase
       implicit none
@@ -160,17 +160,17 @@ module MUtilsLib_System
       end do
       close(123,status="delete")
 
-
     end function processExist
 !*************************************************************************************************************   
+     !> Generates a list of files with a given extension in a given path 
+     !> uses command prompt + dos syntax
+     !> writes dos output to a temp file and then deletes
+     !> requisite dos functions: dir
+     !> Author:
+     !> Originally Written by Michael Leonard as Generate_RscriptList
+     !> Generalised to Generate_FileList by Mark Thyer, May 2009
     function Generate_FileList(path, ext, filelist) result (ok)
-     ! Generates a list of files with a given extension in a given path 
-     ! uses command prompt + dos syntax
-     ! writes dos output to a temp file and then deletes
-     ! requisite dos functions: dir
-     ! Author:
-     ! Originally Written by Michael Leonard as Generate_RscriptList
-     ! Generalised to Generate_FileList by Mark Thyer, May 2009
+
      use MUtilsLib_messagelog
      implicit none
      ! Dummies - Inputs
@@ -189,25 +189,27 @@ module MUtilsLib_System
      
     end function Generate_FileList
 !*************************************************************************************************************   
+    !> Generates a list of files with a given extension in a given path 
+    !> uses command prompt + dos syntax
+    !> writes dos output to a temp file and then deletes
+    !> requisite dos functions: dir
+    !> Author:
+    !> Originally Written by Michael Leonard as Generate_RscriptList
+    !> Generalised to Generate_FileList by Mark Thyer, May 2009
     function Generate_SystemList(path, ext, list,listtype) result (ok)
-     ! Generates a list of files with a given extension in a given path 
-     ! uses command prompt + dos syntax
-     ! writes dos output to a temp file and then deletes
-     ! requisite dos functions: dir
-     ! Author:
-     ! Originally Written by Michael Leonard as Generate_RscriptList
-     ! Generalised to Generate_FileList by Mark Thyer, May 2009
      use MUtilsLib_messagelog
      use dfport,only: system
      implicit none
      ! Dummies - Inputs
-     character(len=*) :: path ! the path to the files are located
-     character(len=*) :: listtype ! the type of list needed, options include
-                             ! "FILE"    - list of files
-                             ! "DIRECTORY" - list of directories
-     character(len=*),optional :: ext ! the extension of the files that need to be returned, 
-                             ! for files with one letter extentions (e.g, *.r), 
-                             ! it is important to use a space, e.g. ext="*.r " to distinguish from .r** extensions
+     character(len=*) :: path     !< the path to the files are located
+                                  !> the type of list needed, options include
+                                  !> "FILE"    - list of files
+                                  !> "DIRECTORY" - list of directories
+     character(len=*) :: listtype 
+                                      !> the extension of the files that need to be returned, 
+                                      !> for files with one letter extentions (e.g, *.r), 
+                                      !> it is important to use a space, e.g. ext="*.r " to distinguish from .r** extensions
+     character(len=*),optional :: ext 
                              
                              
      ! Dummies - Outputs
@@ -306,7 +308,7 @@ module MUtilsLib_System
 
     subroutine OSCall(iWaitMS,Command,Args,iRet)
 
-      ! use iflib
+       ! use iflib
        use dfwin, only: T_STARTUPINFO,T_PROCESS_INFORMATION,NULL,STARTF_USESHOWWINDOW,SW_HIDE,& 
                         NULL_CHARACTER,NULL_SECURITY_ATTRIBUTES,CREATEPROCESS,WAITFORSINGLEOBJECT,CLOSEHANDLE
        !USE DFWINTY !!use ifwin, only:
@@ -323,14 +325,11 @@ module MUtilsLib_System
        type (T_StartupInfo)         :: StartInfo      !CreatProcess parms
        type (T_Process_Information) :: ProcInfo       !CreatProcess parms (created process info)
         
-    !
-    ! Initialize return code
-    !
+       ! Initialize return code
        iRet = 0
        !NULL_CHARACTER=>NULL(0)
-    !
-    ! Insure console window is suppressed
-    !
+ 
+       ! Insure console window is suppressed
        StartInfo%cb               = 68
        StartInfo%lpReserved       = 0
        StartInfo%lpDesktop        = NULL
@@ -346,29 +345,26 @@ module MUtilsLib_System
        StartInfo%wShowWindow      = SW_HIDE
        StartInfo%cbReserved2      = 0
        StartInfo%lpReserved2      = NULL
-    !
-    ! Prepare the command line string and arguments
-    !
+       !
+       ! Prepare the command line string and arguments
        cmdLine = '"' // trim(command) // '" ' // trim(args) // char(0)
-    !
-    ! Initiate process
-    !
-!  This version will not work with IVF10.1.3440.2008 if compiler option (/check:pointer) is set
-!    via Project Properties|Fortran|Run-time|Check for null pointers and allocatable array references
-!   iCRC = CreateProcess(NULL_CHARACTER, &
-!              cmdLine, &
-!              null_Security_Attributes, &
-!              null_Security_Attributes, &
-!              .false., &
-!              Null, &
-!              Null, &
-!              Null_Character, &
-!              StartInfo, &
-!              ProcInfo)
-
-!! This version may not work with CVF6.6a, 
-! but works with IVF Project Properties|Fortran|Run-time|Check for null pointers and allocatable array references set
-!
+       !
+       ! Initiate process
+       !
+       !  This version will not work with IVF10.1.3440.2008 if compiler option (/check:pointer) is set
+       !    via Project Properties|Fortran|Run-time|Check for null pointers and allocatable array references
+       !   iCRC = CreateProcess(NULL_CHARACTER, &
+       !              cmdLine, &
+       !              null_Security_Attributes, &
+       !              null_Security_Attributes, &
+       !              .false., &
+       !              Null, &
+       !              Null, &
+       !              Null_Character, &
+       !              StartInfo, &
+       !              ProcInfo)
+       !! This version may not work with CVF6.6a, 
+       ! but works with IVF Project Properties|Fortran|Run-time|Check for null pointers and allocatable array references set
        iCRC = CreateProcess(null, &
               cmdLine, &
               null, &
@@ -380,177 +376,169 @@ module MUtilsLib_System
               StartInfo, &
               ProcInfo)
 
-    !
-    ! Check return code from CreateProcess
-    !
+       ! Check return code from CreateProcess
        if (iCRC .eq. 0) then !Nonzero means success (i.e. the process id)
           iRet = -1
           return
        end if
-    !
-    ! If user specified to wait
-    !
+       ! If user specified to wait
        if (iWaitMS .ne. 0) then
           iRet = WaitForSingleObject(ProcInfo%hProcess,iWaitMS) !Wait for completion
        end if
      
        return
-
     end subroutine
-
 !*************************************************************************************************************
+
+!>  FUNCTION:      curntDateTime
+!>  DESCRIPTION:   Returns the current system time and date as a text string                                                  
+!>  DEVELOPED BY:  Matthew Hardy
+!>  VERSION:       1.0                                                                                                                                                                                   
+!>  Last Modified: 08/06/2010 MJH 
 FUNCTION systemDateTime() RESULT(dateTimeString)
-!*                                                                                                                        
-!*  FUNCTION:      curntDateTime
-!*  DESCRIPTION:   Returns the current system time and date as a text string                                                  
-!*  DEVELOPED BY:  Matthew Hardy
-!*  VERSION:       1.0                                                                                                                                                                                   
-!*  Last Modified: 08/06/2010 MJH 
-!
-USE kinds_dmsl_kit
-IMPLICIT NONE
-INTEGER(MIK),DIMENSION(8)::vals
-CHARACTER(LEN=16)::dateTimeString
-!---
-!
-dateTimeString=""
+  USE kinds_dmsl_kit
+  IMPLICIT NONE
+  INTEGER(MIK),DIMENSION(8)::vals
+  CHARACTER(LEN=16)::dateTimeString
+  !---
+  !
+  dateTimeString=""
 
-CALL DATE_AND_TIME(VALUES=vals)
+  CALL DATE_AND_TIME(VALUES=vals)
 
-SELECT CASE(vals(5))
-  CASE(0:9);WRITE(dateTimeString(1:3),'(a1,i1,a1)')'0',vals(5),':'
-  CASE(10:);WRITE(dateTimeString(1:3),'(i2,a1)')vals(5),':'
-END SELECT
+  SELECT CASE(vals(5))
+    CASE(0:9);WRITE(dateTimeString(1:3),'(a1,i1,a1)')'0',vals(5),':'
+    CASE(10:);WRITE(dateTimeString(1:3),'(i2,a1)')vals(5),':'
+  END SELECT
 
-SELECT CASE(vals(6))
-  CASE(0:9);WRITE(dateTimeString(4:6),'(a1,i1,a1)')'0',vals(6),'-'
-  CASE(10:);WRITE(dateTimeString(4:6),'(i2,a1)')vals(6),'-'
-END SELECT
+  SELECT CASE(vals(6))
+    CASE(0:9);WRITE(dateTimeString(4:6),'(a1,i1,a1)')'0',vals(6),'-'
+    CASE(10:);WRITE(dateTimeString(4:6),'(i2,a1)')vals(6),'-'
+  END SELECT
 
-SELECT CASE(vals(3))
-  CASE(0:9);WRITE(dateTimeString(7:9),'(a1,i1,a1)')'0',vals(3),'/'
-  CASE(10:);WRITE(dateTimeString(7:9),'(i2,a1)')vals(3),'/'
-END SELECT
+  SELECT CASE(vals(3))
+    CASE(0:9);WRITE(dateTimeString(7:9),'(a1,i1,a1)')'0',vals(3),'/'
+    CASE(10:);WRITE(dateTimeString(7:9),'(i2,a1)')vals(3),'/'
+  END SELECT
 
-SELECT CASE(vals(2))
-  CASE(0:9);WRITE(dateTimeString(10:12),'(a1,i1,a1)')'0',vals(2),'/'
-  CASE(10:);WRITE(dateTimeString(10:12),'(i2,a1)')vals(2),'/'
-END SELECT
+  SELECT CASE(vals(2))
+    CASE(0:9);WRITE(dateTimeString(10:12),'(a1,i1,a1)')'0',vals(2),'/'
+    CASE(10:);WRITE(dateTimeString(10:12),'(i2,a1)')vals(2),'/'
+  END SELECT
 
-WRITE(dateTimeString(13:16),'(i4)')vals(1)
+  WRITE(dateTimeString(13:16),'(i4)')vals(1)
 
 END FUNCTION systemDateTime
 !*************************************************************************************************************
+
+!>  FUNCTION:      curntDateTime
+!>  DESCRIPTION:   Returns the current system time and date as a text string                                                  
+!>  DEVELOPED BY:  Matthew Hardy
+!>  VERSION:       1.0                                                                                                                                                                                   
+!>  Last Modified: 08/06/2010 MJH 
 SUBROUTINE viewTxtFile(fileToOpen)
-!*                                                                                                                        
-!*  FUNCTION:      curntDateTime
-!*  DESCRIPTION:   Returns the current system time and date as a text string                                                  
-!*  DEVELOPED BY:  Matthew Hardy
-!*  VERSION:       1.0                                                                                                                                                                                   
-!*  Last Modified: 08/06/2010 MJH 
-USE dfwin,ONLY:GetSystemDirectory,null0 => null       
-USE dflib,only: RUNQQ,SYSTEMQQ
-IMPLICIT NONE
-!
-! Dummy variables
-CHARACTER(LEN=*),INTENT(IN)::fileToOpen      
-!
-! Local variables
-INTEGER::sysDirOk,indx_i,indx_ii      
-CHARACTER(LEN=240)::sysDir,notePadExePath
-CHARACTER(LEN=360)::command
-LOGICAL::fileExist,launchOk     
-!---
-!   
-! Check output file is present
-INQUIRE(FILE=fileToOpen(1:LEN_TRIM(fileToOpen)),EXIST=fileExist)
-IF(.NOT.fileExist)THEN;CALL message('Can not find output: '//fileToOpen(1:LEN_TRIM(fileToOpen)));RETURN;END IF
-!
-! Check notepad.exe can be found    
-sysDirOk = GetSystemDirectory(sysDir,240)      
-notePadExePath=sysDir(1:sysDirOk)//'\notepad.exe'
+  USE dfwin,ONLY:GetSystemDirectory,null0 => null       
+  USE dflib,only: RUNQQ,SYSTEMQQ
+  IMPLICIT NONE
+  !
+  ! Dummy variables
+  CHARACTER(LEN=*),INTENT(IN)::fileToOpen      
+  !
+  ! Local variables
+  INTEGER::sysDirOk,indx_i,indx_ii      
+  CHARACTER(LEN=240)::sysDir,notePadExePath
+  CHARACTER(LEN=360)::command
+  LOGICAL::fileExist,launchOk     
+  !---
+  !   
+  ! Check output file is present
+  INQUIRE(FILE=fileToOpen(1:LEN_TRIM(fileToOpen)),EXIST=fileExist)
+  IF(.NOT.fileExist)THEN;CALL message('Can not find output: '//fileToOpen(1:LEN_TRIM(fileToOpen)));RETURN;END IF
+  !
+  ! Check notepad.exe can be found    
+  sysDirOk = GetSystemDirectory(sysDir,240)      
+  notePadExePath=sysDir(1:sysDirOk)//'\notepad.exe'
 
-INQUIRE(FILE=notePadExePath(1:LEN_TRIM(notePadExePath)),EXIST=fileExist)
+  INQUIRE(FILE=notePadExePath(1:LEN_TRIM(notePadExePath)),EXIST=fileExist)
 
-SELECT CASE(fileExist)
-   CASE(.FALSE.)
-         CALL message('Can not find the notepad text editor.& Output file created: '//fileToOpen(1:LEN_TRIM(fileToOpen)));RETURN
-   CASE(.TRUE.)
-      command=''
-      indx_i =1 
-      indx_ii=indx_i
-      WRITE(command(indx_i:indx_ii),'(a)',ERR=100)'"'
+  SELECT CASE(fileExist)
+     CASE(.FALSE.)
+           CALL message('Can not find the notepad text editor.& Output file created: '//fileToOpen(1:LEN_TRIM(fileToOpen)));RETURN
+     CASE(.TRUE.)
+        command=''
+        indx_i =1 
+        indx_ii=indx_i
+        WRITE(command(indx_i:indx_ii),'(a)',ERR=100)'"'
 
-      indx_i =indx_ii+1 
-      indx_ii=indx_i+LEN_TRIM(fileToOpen)
-      WRITE(command(indx_i:indx_ii),'(a)',ERR=100)fileToOpen(1:LEN_TRIM(fileToOpen))
+        indx_i =indx_ii+1 
+        indx_ii=indx_i+LEN_TRIM(fileToOpen)
+        WRITE(command(indx_i:indx_ii),'(a)',ERR=100)fileToOpen(1:LEN_TRIM(fileToOpen))
 
-      indx_i =indx_ii+1 
-      indx_ii=indx_i
-      WRITE(command(indx_i:indx_ii),'(a)',ERR=100)'"'
-      command=command(1:LEN_TRIM(command))//char(0)
+        indx_i =indx_ii+1 
+        indx_ii=indx_i
+        WRITE(command(indx_i:indx_ii),'(a)',ERR=100)'"'
+        command=command(1:LEN_TRIM(command))//char(0)
       
-      launchOk = RUNQQ(notePadExePath,command)
-END SELECT
+        launchOk = RUNQQ(notePadExePath,command)
+  END SELECT
 
-RETURN
-!
-! Error Handling
-100 CALL message('Error writing output file name string to command line call& Output file created: '//fileToOpen(1:LEN_TRIM(fileToOpen)))
-RETURN
-
+  RETURN
+  !
+  ! Error Handling
+  100 CALL message('Error writing output file name string to command line call& Output file created: '//fileToOpen(1:LEN_TRIM(fileToOpen)))
+  RETURN
 END SUBROUTINE viewTxtFile
 !*************************************************************************************************************  
 function FileCompare_External(fileOne,FileTwo,CompareOpt,unified_diff_file) result(ok)
 
-use MUtilsLib_varFuncs, only : checkPresent
-use MUtilsLib_StringFuncs, only : ucase
-use MUtilsLib_fileIo, only : fileExist
+  use MUtilsLib_varFuncs, only : checkPresent
+  use MUtilsLib_StringFuncs, only : ucase
+  use MUtilsLib_fileIo, only : fileExist
 
-implicit none
-! Dummies
-character(len=*),intent(in) :: fileOne                  ! Base File 
-character(len=*),intent(in) :: fileTwo                  ! File to be compared to baseFile 
-character(len=*),intent(in),optional :: CompareOpt      ! Options to determine how files are compared: 
-                                                        ! OPENTORTOISEMERGE:               
-character(len=*),intent(in),optional :: unified_diff_file
+  implicit none
+  ! Dummies
+  character(len=*),intent(in) :: fileOne                  ! Base File 
+  character(len=*),intent(in) :: fileTwo                  ! File to be compared to baseFile 
+  character(len=*),intent(in),optional :: CompareOpt      ! Options to determine how files are compared: 
+                                                          ! OPENTORTOISEMERGE:               
+  character(len=*),intent(in),optional :: unified_diff_file
 
-! Locals
-character(len=len_longStr) :: CompareOptLc
-character(len=len_vlongStr) :: msg
+  ! Locals
+  character(len=len_longStr) :: CompareOptLc
+  character(len=len_vlongStr) :: msg
 
-integer(mik) :: ok
+  integer(mik) :: ok
 
-! Perform Checks
-IF(.NOT.fileExist(fileOne,msg=msg)) then; call message(msg//"in F: FileCompare_External"); ok=-1; RETURN; endif
-IF(.NOT.fileExist(fileTwo,msg=msg)) then; call message(msg//"in F: FileCompare_External"); ok=-1; RETURN; endif 
+  ! Perform Checks
+  IF(.NOT.fileExist(fileOne,msg=msg)) then; call message(msg//"in F: FileCompare_External"); ok=-1; RETURN; endif
+  IF(.NOT.fileExist(fileTwo,msg=msg)) then; call message(msg//"in F: FileCompare_External"); ok=-1; RETURN; endif 
 
-compareOptLc=ucase(checkPresent(CompareOpt,"OPENTORTOISEMERGE"))
+  compareOptLc=ucase(checkPresent(CompareOpt,"OPENTORTOISEMERGE"))
 
-select case(trim(compareOptLc))
-case ("OPENTORTOISEMERGE")
-    call OScall(iwaitMs=0,command="TortoiseMerge",args=trim(fileOne)//" "//trim(fileTwo),iRet=ok)
-    if (ok/=0) then
-        call message("Error in using TortoiseMerge, it may not be installed &
-                     &or input files are not text files: "//trim(fileOne)//" and "//trim(fileTwo))
-       return
-    end if              
-case default ! Potentially add capability to produce a unified diff
-    ! tortoisemerge /createunifieddiff /origfile:"fileOne"  /modifiedfile:"fileTwo". /outfile:"unified_diff_file"
-    call message("Unknown value of CompareOpt:"//trim(compareOptLc)//" in F:FileCompare_External")
-    ok = -1
-    return
-end select
-
+  select case(trim(compareOptLc))
+  case ("OPENTORTOISEMERGE")
+      call OScall(iwaitMs=0,command="TortoiseMerge",args=trim(fileOne)//" "//trim(fileTwo),iRet=ok)
+      if (ok/=0) then
+          call message("Error in using TortoiseMerge, it may not be installed &
+                       &or input files are not text files: "//trim(fileOne)//" and "//trim(fileTwo))
+         return
+      end if              
+  case default ! Potentially add capability to produce a unified diff
+      ! tortoisemerge /createunifieddiff /origfile:"fileOne"  /modifiedfile:"fileTwo". /outfile:"unified_diff_file"
+      call message("Unknown value of CompareOpt:"//trim(compareOptLc)//" in F:FileCompare_External")
+      ok = -1
+      return
+  end select
 end function FileCompare_External
 
 
 
  end module MUtilsLib_System
 !*****************************************************************************
-! For backwards compatibility
+
+!> For backwards compatibility
 module utils_system
-use MUtilsLib_System
+  use MUtilsLib_System
 end module utils_system
 !*****************************************************************************
 
