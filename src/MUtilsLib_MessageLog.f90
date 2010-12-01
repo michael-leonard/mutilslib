@@ -160,17 +160,17 @@ module MUtilsLib_messagelog
       integer :: ok
 
       ! Transfer input variables into log object
-      if (present(unit))         msg_log%unit         = unit
-      if (present(file))         msg_log%file         = trim(file)
-      if (present(close))        msg_log%close        = close
-      if (present(append))       msg_log%append       = append
-      if (present(active))       msg_log%active       = active
-      if (present(echo))         msg_log%echo         = echo
-      if (present(ignore_warn))  msg_log%ignore_warn  = ignore_warn
-      if (present(ignore_error)) msg_log%ignore_error = ignore_error
-      if (present(auto_flush))   msg_log%auto_flush   = auto_flush
-      if (present(debug))        msg_log%debug        = debug
-      if (present(time_stamp))   msg_log%time_stamp   = time_stamp
+      if (present(unit))   msg_log%unit   = unit
+      if (present(active)) msg_log%active = active
+      if (present(append)) msg_log%append = append
+      if (present(file) .and. .NOT. msg_log%append)   msg_log%file   = trim(file) ! If msg_log is being appended then do not overwrite file ** quick-fix-needs to better thought through
+      if (present(close))  msg_log%close  = close
+      if (present(echo))   msg_log%echo   = echo
+      if (present(ignore_warn))  msg_log%ignore_warn    = ignore_warn
+      if (present(ignore_error)) msg_log%ignore_error   = ignore_error
+      if (present(auto_flush))   msg_log%auto_flush     = auto_flush
+      if (present(debug))   msg_log%debug     = debug
+
 
       ! Check for consistency/logic of log parameters
       if (msg_log%echo .AND. msg_log%unit == 6)   msg_log%unit   = 111     ! When echo-ing must have file ID other than 6
