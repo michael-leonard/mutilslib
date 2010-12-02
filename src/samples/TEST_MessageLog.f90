@@ -12,8 +12,8 @@
     character(len=100) msg
     integer :: i
     
-    call init_log(db_id="Testdb",msg_file="..\..\samples\TestMsg_db.csv") ! Initialise the log
-    call init_log(db_id="Testdb2",msg_file="..\..\samples\TestMsg_db2.csv") ! Initialise the log
+    call init_log(db_id="Testdb",msgdb_file="..\..\samples\TestMsg_db.csv") ! Initialise the log
+    call init_log(db_id="Testdb2",msgdb_file="..\..\samples\TestMsg_db2.csv") ! Initialise the log
     
     ! Generate some error messages
     call message("TEST MESSAGE: Default messages are errors")

@@ -40,8 +40,8 @@
 !>    in msg_db (given by db_id) which is appended to the message
 !>
 !> Notes:
-!> (1) msg_db is read-in using init_msg_db which is called from init_log - need to supply db_id and msg_file to init_log
-!> (2) msg_file needs to be in csv format, where first line is header and there are 4 columns (integer and 3 character), as follows
+!> (1) msg_db is read-in using init_msg_db which is called from init_log - need to supply db_id and msgdb_file to init_log
+!> (2) msgdb_file needs to be in csv format, where first line is header and there are 4 columns (integer and 3 character), as follows
 !>       ID,short description,long description,remedy
 !>       1,"short db message id 1","long db message id 1","remedy id 1"
 !>       2,"short db message id 2","long db message id 2","remedy id 2"
@@ -139,7 +139,7 @@ module MUtilsLib_messagelog
   contains
 !************************************************************************************************
     !> Set the parameters for the log file. Not necessary to be called if you are happy with defaults.
-    subroutine init_log(unit,close,append,active,echo,file, ignore_warn, ignore_error,auto_flush,debug,db_id,msg_file,append_always,time_stamp)
+    subroutine init_log(unit,close,append,active,echo,file, ignore_warn, ignore_error,auto_flush,debug,db_id,msgdb_file,append_always,time_stamp)
       
       implicit none
       integer, intent(IN), optional  ::   unit          !< file ID unit, screen = 6, file = other
@@ -156,7 +156,7 @@ module MUtilsLib_messagelog
 
       character(len = *), intent(IN), optional :: file  !< file name if log is written to file
       character(len = *), intent(IN), optional :: db_id !< ID of the message database
-      character(len = *), intent(IN), optional :: msg_file !< file name of the msg file for message database
+      character(len = *), intent(IN), optional :: msgdb_file !< file name of the msg file for message database
       integer :: ok
 
       ! Transfer input variables into log object
@@ -191,10 +191,10 @@ module MUtilsLib_messagelog
         end if
       end if
 
-      if (present(db_id) .and. present(msg_file)) then
-        ok=init_msg_db(db_id=db_id,msg_file=msg_file)
-        if (ok/=0) call message(log_error,"Unable to initalise msg_db for "//db_id//" with file "//msg_file)
-        call message(log_debug,"Using msg_db: "//trim(db_id)//", located at "//trim(msg_file))
+      if (present(db_id) .and. present(msgdb_file)) then
+        ok=init_msg_db(db_id=db_id,msgdb_file=msgdb_file)
+        if (ok/=0) call message(log_error,"Unable to initalise msg_db for "//db_id//" with file "//msgdb_file)
+        call message(log_debug,"Using msg_db: "//trim(db_id)//", located at "//trim(msgdb_file))
       end if
 
       ! Do this upon exit so that if it is called again it it will append to the one that is already opn
@@ -459,12 +459,12 @@ module MUtilsLib_messagelog
      end subroutine
 !************************************************************************************************
     !> Initiliases a message file db and read's in a msg file into the database
-    function init_msg_db(db_id,msg_file) result(ok)
+    function init_msg_db(db_id,msgdb_file) result(ok)
      
       use MUtilsLib_fileIO, only : findEof
       use MUtilslib_stringfuncs, only : operator(//)
       implicit none
-      character(len = *), intent(IN) :: msg_file ! file name of msg file
+      character(len = *), intent(IN) :: msgdb_file ! file name of msg file
       character(len = *), intent(IN) :: db_id ! id of the message db
 
       type (msg_db_type),allocatable ::new_msg_db(:)
@@ -497,17 +497,17 @@ module MUtilsLib_messagelog
       msg_db(msg_db_num)%id=db_id
 
       ! Read-in msg file
-      msg_db(msg_db_num)%n_msg=findEof(filepath=msg_file,err=ok,msg=msg)-1
+      msg_db(msg_db_num)%n_msg=findEof(filepath=msgdb_file,err=ok,msg=msg)-1
       if (ok/=0) then; call message(log_error,msg); return; end if
       allocate(msg_db(msg_db_num)%msg(msg_db(msg_db_num)%n_msg))
 
-      open(unit=10,file=msg_file,status="old",iostat=ok)
-      if (ok/=0)then; call message(log_error,"Unable to open "//msg_file//"in init_msg_db"); return; end if
+      open(unit=10,file=msgdb_file,status="old",iostat=ok)
+      if (ok/=0)then; call message(log_error,"Unable to open "//msgdb_file//"in init_msg_db"); return; end if
       read(10,*) ! Skip header
       do i=1,msg_db(msg_db_num)%n_msg
         read(10,*,iostat=ok) msg_db(msg_db_num)%msg(i)
         if (ok/=0) then;
-          call message(log_error,"Unable to read msg "//i//" in file: "//msg_file//" in init_msg_db");
+          call message(log_error,"Unable to read msg "//i//" in file: "//msgdb_file//" in init_msg_db");
         end if
         ! Remove comma's on end
         msg_db(msg_db_num)%msg(i)%desc=msg_db(msg_db_num)%msg(i)%desc(1:(len_trim(msg_db(msg_db_num)%msg(i)%desc)-1))
