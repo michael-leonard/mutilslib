@@ -1093,10 +1093,12 @@ module MUtilsLib_stringfuncs
      end do
      if (i>0) then
         abspath=folderup(CurrentDir,n=i)
+        abspath=add_endslash(trim(abspath))//remove_startslash(trim(copyrelPath))
      else
-        abspath=CurrentDir
+        abspath=copyRelPath
+        abspath=add_endslash(trim(abspath))
      end if
-     abspath=add_endslash(trim(abspath))//remove_startslash(trim(copyrelPath))
+  
    end function
 
   !> converts to lower case
