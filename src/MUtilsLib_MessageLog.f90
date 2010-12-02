@@ -181,9 +181,9 @@ module MUtilsLib_messagelog
       if (msg_log%active) then
         if (msg_log%unit /=6) then
           if (msg_log%append) then ! keep the existing msg_log file (if there is one)
-            open(unit = msg_log%unit, file = trim(msg_log%file), status = 'unknown', position = 'append')
+            open(unit = msg_log%unit, file = msg_log%file, status = 'unknown', position = 'append')
           else ! A new msg_log file
-            open(unit = msg_log%unit, file = trim(msg_log%file), status = 'replace')
+            open(unit = msg_log%unit, file = msg_log%file, status = 'replace')
             call message(log_debug,"All messages being written to log file (if no path &
                                    &- written to current executable directory): "//trim(msg_log%file))
           end if
@@ -230,27 +230,22 @@ module MUtilsLib_messagelog
 
       character(len=len_vLongStr):: messageLc
 
-      character(len = tag_len), pointer, dimension(:) ::   Tcopy =>null() ! Temporary storage
+      character(len = tag_len), pointer, dimension(:) ::  Tcopy =>null() ! Temporary storage
       character(len = msg_len), pointer, dimension(:) ::  Ncopy =>null() ! Temporary storage
       integer  ::   s ! size of message array
 
       if (present(db_id) .and. present(msg_id)) then
         messageLc="["//db_id//"] ID:"//msg_id//" "//trim(message)//trim(get_msg_from_db(msg_id,db_id))
       else if (present(db_id)) then
-        messageLc="["//db_id//"] "//trim(message)
-      else
-        if(msg_log%time_stamp) then
-          call date_and_time(date=dt,time=tm)
-          messageLc=dt(7:8)//"/"//dt(5:6)//"/"//dt(1:4)//" "//tm(1:2)//":"//tm(3:4)//":"//tm(5:6)//":"//tm(8:10)//" "//trim(message)
-        else
-          messageLc=trim(message)
-        end if
+        messageLc="["//db_id//"] "//message
+      else 
+        messageLc=message
       end if
-      !messageLc = trim(insertString(messageLc))
+      !messageLc = insertString(messageLc)
       s = 0
       if(associated(msg_log%message)) s = size(msg_log%message)
       if(s/=0) then
-        if((trim(msg_log%message(s))==trim(messageLc)).AND.(trim(tag(msg_type))==trim(msg_log%tag(s)))) then
+        if(msg_log%message(s)==messageLc.AND.tag(msg_type)==msg_log%tag(s)) then
           ! Avoid multiple identical concurrent entries
           ! I.e. The most recent entry was identical to the one being added, so there is no need to add it in
           ! It is however possible to have multiple entries ... provided they are not concurrent
@@ -281,14 +276,14 @@ module MUtilsLib_messagelog
           msg_log%tag(1:s) = Tcopy(1:s)
           msg_log%message(1:s) = Ncopy(1:s)
           msg_log%tag(s+1) = tag(msg_type)   ! append the new tag onto the end
-          msg_log%message(s+1) = trim(messageLc) ! append the new message onto the end
+          msg_log%message(s+1) = messageLc ! append the new message onto the end
           deallocate(Tcopy); nullify(Tcopy)
           deallocate(Ncopy); nullify(Ncopy)
         else
           ! add a single message into the msg_log
           allocate(msg_log%message(1))
           allocate(msg_log%tag(1))
-          msg_log%message(1) = trim(messageLc)   ! insert the message
+          msg_log%message(1) = messageLc   ! insert the message
           msg_log%tag(1) = tag(msg_type)  ! insert the tag
         end if
       end if
@@ -328,7 +323,7 @@ module MUtilsLib_messagelog
             end do
           else ! a file write is needed
             ! open the file if not already open
-            if (msg_log%close) open(unit = msg_log%unit, file = trim(msg_log%file), status = 'unknown', position = 'append')
+            if (msg_log%close) open(unit = msg_log%unit, file = msg_log%file, status = 'old', position = 'append')
 
               ! write all msg_log entries to file
               do i = 1, size(msg_log%message)
@@ -355,7 +350,7 @@ module MUtilsLib_messagelog
               end if
 
             ! close the file again if specified
-            !if (msg_log%close) open(unit = msg_log%unit, file = trim(msg_log%file), &
+            !if (msg_log%close) open(unit = msg_log%unit, file = msg_log%file, &
             !  status = 'old', position = 'append') ML's old line
             if (msg_log%close) close(unit=msg_log%unit) ! MT's new line
 
@@ -401,7 +396,7 @@ module MUtilsLib_messagelog
           lastmessage="Unable to extract last message from file:"//trim(msg_log%file)//" because "//trim(msg)
           return
         end if
-        open(unit = msg_log%unit, file = trim(msg_log%file), status = 'old')
+        open(unit = msg_log%unit, file = msg_log%file, status = 'old')
         do i=1,(nMess-1)
 !        read(msg_log%unit,'(a<test_len>)') dummy ! deprecated<> usage
           read(msg_log%unit,fmt) dummy
@@ -419,7 +414,7 @@ module MUtilsLib_messagelog
          return
         end if
         allocate(allmessages(nMess))
-        open(unit = msg_log%unit, file = trim(msg_log%file), status = 'old')
+        open(unit = msg_log%unit, file = msg_log%file, status = 'old')
         do i=1,(nMess)
 !          read(msg_log%unit,'(a<test_len>)') allmessages(i) ! deprecated<> usage
           read(msg_log%unit,fmt) allmessages(i) ! deprecated<> usage
@@ -483,7 +478,7 @@ module MUtilsLib_messagelog
       else
         msg_db_num=SIZE(msg_db)
         do i=1,msg_db_num
-            if(trim(msg_db(i)%id)==trim(db_id)) then
+            if(msg_db(i)%id==db_id) then
                 ! Already have same msg_db - no need to add it again!
                 return
             end if
@@ -537,7 +532,7 @@ module MUtilsLib_messagelog
 
       ! First find db
       do i=1,size(msg_db)
-        if (trim(msg_db(i)%id)==trim(db_id)) then; msg_db_num=i;exit;end if
+        if (msg_db(i)%id==db_id) then; msg_db_num=i;exit;end if
       end do
 
       if (i>size(msg_db)) then
@@ -554,7 +549,7 @@ module MUtilsLib_messagelog
            msg=" (Msg id: "//msg_id//" not found in "//db_id//" db)"
       else
         msg=" ("//trim(msg_db(msg_db_num)%msg(msg_num)%desc)//")"
-        if (trim(msg_db(msg_db_num)%msg(msg_num)%remedy)/="") then
+        if (msg_db(msg_db_num)%msg(msg_num)%remedy/=" ") then
           msg=trim(msg)//" Remedy: "//trim(msg_db(msg_db_num)%msg(msg_num)%remedy)
         end if
       end if
