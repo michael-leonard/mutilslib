@@ -169,6 +169,11 @@ real(mrk),parameter::zero=0._mrk,one=1._mrk,two=2._mrk,three=3._mrk,four=4._mrk,
 real(mrk),parameter::half=0.5_mrk,oneThird=one/three,twoThirds=two/three,oneQuarter=one/four
 complex(mck),parameter::zeroC=(0._mrk,0._mrk)
 
+interface getSpareUnit
+  module procedure getSpareUnit_v,getSpareUnit_1,getSpareUnit_2,&
+    getSpareUnit_3,getSpareUnit_4,getSpareUnit_5
+endinterface getSpareUnit
+
 contains
 !---------------------------------------
 !> Purpose: returns average of vector
@@ -187,17 +192,115 @@ average=sum(nv1)/real(n,mrk)
 ! End procedure here
 endfunction average
 !----------------------------------------------------
-!> Dummy routine to fix a broken compile from revision 85, ML 04/09/2010
-subroutine getspareunit(unit,err,msg)
-  
-  implicit none
-  integer :: unit, err
-  character(100) :: msg
-
-  unit = 6
-  err = -1
-  msg = "getspareunit() missing from build. This is a dummy routine"
-end subroutine
+subroutine getSpareUnit_v(unt,err,message)
+! Purpose: returns vector of unused units for file data transfer.
+! Unit will be in the range 7->2.2billion (see comment below).
+! Comment:
+! * Can not be pure as it contains the inquire function,tough life...
+! * In Fortran-95,available units range from 0 to 2,147,483,640.
+!   Preconnected units 5 (keyboard) and 6 (screen) can be re-connected
+!   to a different logical device but to avoid silly errors this is avoided
+!   in this procedure.
+implicit none
+! dummies
+integer(mik),dimension(:),intent(out)::unt
+integer(mik),intent(out)::err
+character(*),intent(out)::message
+! locals
+integer(mik)::i,j,n
+logical(mlk)::opened,xist
+integer(mik),parameter::minUnits=7,maxUnits=2147483639
+! Start procedure here
+n=size(unt); j=1
+do i=minUnits,maxUnits
+  inquire(unit=i,opened=opened,exist=xist) ! check unit status
+  if(.not.opened.and.xist)then ! un-opened existing unit found
+    unt(j)=i; err=0; message="getSpareUnit/ok"
+    j=j+1
+    if(j>n)exit
+  endif
+enddo
+if(i>maxUnits)then  ! all units in use
+  unt=-1; err=-10; message="getSpareUnit/allUnitsInUse&"//&
+      "&(all 2.2billion-u've goda b jokin')"
+endif
+! End procedure here
+endsubroutine getSpareUnit_v
+!---------------------------------------
+subroutine getSpareUnit_1(unt,err,message)
+! Purpose: overloaded for 1 unit
+implicit none
+! dummies
+integer(mik),intent(out)::unt
+integer(mik),intent(out)::err
+character(*),intent(out)::message
+! locals
+integer(mik)::untv(1)
+! Start procedure here
+call getSpareUnit_v(untv,err,message)
+unt=untv(1)
+! End procedure here
+endsubroutine getSpareUnit_1
+!---------------------------------------
+subroutine getSpareUnit_2(unt1,unt2,err,message)
+! Purpose: overloaded for 2 units
+implicit none
+! dummies
+integer(mik),intent(out)::unt1,unt2
+integer(mik),intent(out)::err
+character(*),intent(out)::message
+! locals
+integer(mik)::untv(2)
+! Start procedure here
+call getSpareUnit_v(untv,err,message)
+unt1=untv(1); unt2=untv(2)
+! End procedure here
+endsubroutine getSpareUnit_2
+!---------------------------------------
+subroutine getSpareUnit_3(unt1,unt2,unt3,err,message)
+! Purpose: overloaded for 3 units
+implicit none
+! dummies
+integer(mik),intent(out)::unt1,unt2,unt3
+integer(mik),intent(out)::err
+character(*),intent(out)::message
+! locals
+integer(mik)::untv(3)
+! Start procedure here
+call getSpareUnit_v(untv,err,message)
+unt1=untv(1); unt2=untv(2); unt3=untv(3)
+! End procedure here
+endsubroutine getSpareUnit_3
+!---------------------------------------
+subroutine getSpareUnit_4(unt1,unt2,unt3,unt4,err,message)
+! Purpose: overloaded for 4 units
+implicit none
+! dummies
+integer(mik),intent(out)::unt1,unt2,unt3,unt4
+integer(mik),intent(out)::err
+character(*),intent(out)::message
+! locals
+integer(mik)::untv(4)
+! Start procedure here
+call getSpareUnit_v(untv,err,message)
+unt1=untv(1); unt2=untv(2); unt3=untv(3); unt4=untv(4)
+! End procedure here
+endsubroutine getSpareUnit_4
+!---------------------------------------
+subroutine getSpareUnit_5(unt1,unt2,unt3,unt4,unt5,err,message)
+! Purpose: overloaded for 5 units
+implicit none
+! dummies
+integer(mik),intent(out)::unt1,unt2,unt3,unt4,unt5
+integer(mik),intent(out)::err
+character(*),intent(out)::message
+! locals
+integer(mik)::untv(5)
+! Start procedure here
+call getSpareUnit_v(untv,err,message)
+unt1=untv(1);unt2=untv(2);unt3=untv(3);unt4=untv(4);unt5=untv(5)
+! End procedure here
+endsubroutine getSpareUnit_5
 
 end module utilities_dmsl_kit
 
