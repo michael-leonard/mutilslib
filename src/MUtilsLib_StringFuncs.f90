@@ -20,12 +20,14 @@ module MUtilsLib_stringfuncs
   public :: str,    &              ! this is just to make it easier to build up string expressions for passing numbers into R
             operator(//), &        ! overloaded to allow concatenation of strings
             operator(.pad.), &     ! same as above but allows one padding space between concatenation
+            operator(.equ.), &        ! overloaded to allow string comparison
             c,            &        ! converts arrays to strings
             concat,       &        ! Concatenate strings arrays to a single string
             set_pad, &             ! change the padding character when using the .pad. operator
             fwdslash,backslash, &  ! convert a <filepath> string with back/fwd slashes to having forward/back slashes
             add_endslash,&         ! check there is a end slash on a string - useful for checking paths before added filenames
-            remove_startslash,&    ! check if there is start slash on a string, if so remove it, useful for checking relative paths before concatenating with absolute paths 
+            remove_startslash,&    ! check if there is start slash on a string, if so remove it,
+                                   !       useful for checking relative paths before concatenating with absolute paths 
             FolderUp, &            ! convert a <filepath> string by removing trailing folders
             Lcase, Ucase,&         ! convert string to lower/upper case (important for string comparisons)
             int,&                  ! Convert a string to integer
@@ -43,7 +45,8 @@ module MUtilsLib_stringfuncs
             trimR, &               ! extracts the left hand side of a string following a specified delimeter
             charCount, &           ! count the number of times a certain character occurs in a string
             findReplace, &         ! find string A within string B and replace A with string C
-            parseCount, &          ! like charCount, but ignores contiguous repeats, e.g. when space " " is a delimeter but there are multiple spaces "2   4"
+            parseCount, &          ! like charCount, but ignores contiguous repeats, e.g. when space " " is a delimeter 
+                                   !         but there are multiple spaces "2   4"
             hasSubStr, &           ! tests is a substring exists within another string
             subStr, &              ! returns index of starting position of a string within another string
             addStr, &              ! add a string onto the end of a pointer array
@@ -147,6 +150,10 @@ module MUtilsLib_stringfuncs
     module procedure r4_len
     module procedure r8_len
   end interface
+  
+  interface operator(.equ.)
+    module procedure str_compare
+  end interface
 
   contains
 !!!!!!!!!!! Number conversion / string handling conveniences for passing arguments into R
@@ -191,7 +198,8 @@ module MUtilsLib_stringfuncs
     implicit none
     integer, intent(in) :: i     !< the integer variable
     integer, intent(in) :: n     !< n the length of the return string
-    character(len = 1), optional, intent(in) :: pad !< should the leading fields be padded with zeroes, return string is padded with this character default blank
+    character(len = 1), optional, intent(in) :: pad !< should the leading fields be padded with zeroes, 
+                                                    !    return string is padded with this character default blank
     logical, optional, intent(in) :: rhs !< shift to right hand side
     character(len = n) :: ch     !< the string to be returned
     ! Locals    
@@ -244,7 +252,8 @@ module MUtilsLib_stringfuncs
     implicit none
     real(8), intent(in) :: r     !< the real variable
     integer, intent(in) :: n     !< n the length of the return string (number of significant digits)
-    character(len = 1), optional, intent(in) :: pad !< should the leading fields be padded with zeroes, return string is padded with this character default blank
+    character(len = 1), optional, intent(in) :: pad !< should the leading fields be padded with zeroes, 
+                                                    !return string is padded with this character default blank
     logical, optional, intent(in) :: rhs !< shift to right hand side
     character(len = n) :: ch     !< the string to be returned
     ! Locals    
@@ -1178,6 +1187,37 @@ module MUtilsLib_stringfuncs
         END DO
 
     END function removeChar
+!-------------------------------------------------------------------------
+    function str_compare(str1,str2) result (same)
+    
+
+        IMPLICIT NONE
+
+        ! Dummy Arguments
+        CHARACTER(LEN=*), INTENT(IN) :: str1
+        CHARACTER(LEN=*), INTENT(IN) :: str2
+
+        logical :: same
+
+        ! Local Variables
+        INTEGER :: i
+        ! Check Str lengths
+        if(len(str1)/=len(str2)) then; same=.false.;return;end if
+
+        ! Check individual chars
+        DO i=1,LEN_TRIM(str1)
+            IF(str1(i:i)/=str2(i:i)) THEN
+                same=.false.
+                return
+            END IF
+        END DO
+
+        ! Strings are same
+        same=.true.
+        
+    END function str_compare
+    !-------------------------------------------------------------------------
+    
     !_____________________________________________________________________________________________
     !
     FUNCTION stripBlanks(inString) RESULT (outString)

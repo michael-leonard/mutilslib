@@ -43,7 +43,8 @@ END TYPE unitTestResultsData
 TYPE(unitTestModuleData)::unitTestMod
 TYPE(unitTestResultsData),ALLOCATABLE,DIMENSION(:)::unitTest
 
-PUBLIC::unitTest_init,unitTest_fileInquire,unitTest_fileOpen,unitTest_chkResult,unitTest_writeResult,fullPath
+PUBLIC::unitTest_init,unitTest_fileInquire,unitTest_fileOpen,unitTest_chkResult,unitTest_writeResult,&
+       fullPath,unitTest_SummarizeResults
 !---
 !
 INTERFACE unitTest_chkResult
@@ -84,7 +85,7 @@ SUBROUTINE unitTest_init(name,nTests,nInputFiles,nRsltsFiles,nStndsFiles,err,&
    ! Local variables
    INTEGER::i
    CHARACTER(LEN=360)::msg     
-   LOGICAL::ok,myResult     
+   LOGICAL::myResult     
    !---
    !
    ! Initialise unit test module information and index
@@ -356,6 +357,7 @@ SUBROUTINE unitTest_fileCompare(fileOne,fileTwo,CompareLevel,skip,outputUnit,tes
    use mUtilsLib_fileio, only : fileExist,findEOF
    use mUtilsLib_StringFuncs, only: operator(//)
    use MUtilsLib_VarFuncs, only : CheckPresent
+   use mutilslib_messagelog, only : log_message=>message
    
    ! Compare two files
    IMPLICIT NONE
@@ -380,6 +382,8 @@ SUBROUTINE unitTest_fileCompare(fileOne,fileTwo,CompareLevel,skip,outputUnit,tes
    !---
    !
    indx=unitTestMod%testIndx
+   if (indx>SIZE(unitTest)) then ; call log_message("No. of unit tests has been exceeded");  return ;  end if
+   
    IF(PRESENT(testName))unitTest(indx)%name=testName     
    
    CompareLevelLc=checkPresent(Comparelevel,2) 
@@ -480,6 +484,7 @@ END SUBROUTINE unitTest_fileCompare
 !> Test if real variable is within a specified tollerence of a known value
 !! Accessed via the common interface testMyResul(...,...,)
 SUBROUTINE unitTest_realTest(testVal,val_true,tol,err,message,outputUnit,testName)
+   use mutilslib_messagelog, only : log_message=>message
    IMPLICIT NONE
    ! Subroutine
    REAL(MRK),INTENT(IN)::testVal,val_true,tol
@@ -492,6 +497,7 @@ SUBROUTINE unitTest_realTest(testVal,val_true,tol,err,message,outputUnit,testNam
    !---
    !
    indx=unitTestMod%testIndx
+   if (indx>SIZE(unitTest)) then ; call log_message("No. of unit tests has been exceeded");  return ;  end if
    unitTest(indx)%rslt_i=testVal
    IF(PRESENT(testName))unitTest(indx)%name=testName
    IF(PRESENT(message))unitTest(indx)%message=message
@@ -515,6 +521,7 @@ END SUBROUTINE unitTest_realTest
 !__________________________________________________________________________________________________________________
 !
 SUBROUTINE unitTest_intTest(testVal,err,val_true,val_false,message,outputUnit,testName)
+   use mutilslib_messagelog, only : log_message=>message
    IMPLICIT NONE
    ! Subroutine
    INTEGER(MIK),INTENT(IN)::testVal
@@ -527,6 +534,8 @@ SUBROUTINE unitTest_intTest(testVal,err,val_true,val_false,message,outputUnit,te
    !---
    !
    indx=unitTestMod%testIndx
+   if (indx>SIZE(unitTest)) then ; call log_message("No. of unit tests has been exceeded");  return ;  end if
+   
    unitTest(indx)%rslt_i=testVal
    IF(PRESENT(testName))unitTest(indx)%name=testName
    IF(PRESENT(message))unitTest(indx)%message=message
@@ -551,6 +560,7 @@ END SUBROUTINE unitTest_intTest
 !__________________________________________________________________________________________________________________
 !
 SUBROUTINE unitTest_logicalTest(testVal,err,val_true,val_false,message,outputUnit,testName)
+   use mutilslib_messagelog, only : log_message=>message
    IMPLICIT NONE
    LOGICAL,INTENT(IN)::testVal
    LOGICAL,INTENT(IN),OPTIONAL::val_true,val_false
@@ -562,6 +572,8 @@ SUBROUTINE unitTest_logicalTest(testVal,err,val_true,val_false,message,outputUni
    INTEGER(MIK)::indx
    !---
    indx=unitTestMod%testIndx
+   if (indx>SIZE(unitTest)) then ; call log_message("No. of unit tests has been exceeded");  return ;  end if
+   
    unitTest(indx)%result_l=testVal
    IF(PRESENT(testName))unitTest(indx)%name=testName
    IF(PRESENT(message))unitTest(indx)%message=message
@@ -621,6 +633,47 @@ SUBROUTINE unitTest_writeResult(testName,testResult,failMessage,unitID,err)
    CALL message(log_error,"Error writing test results for "//testName(1:LEN_TRIM(testName)))
  
  END SUBROUTINE unitTest_writeResult
+!__________________________________________________________________________________________________________________
+ 
+ SUBROUTINE unitTest_SummarizeResults(allTestsPass,failmessage)
+   ! Summarize all unit test results and add to file
+   use mutilslib_stringfuncs, only : operator(//)
+   IMPLICIT NONE
+   ! Subroutine
+   logical(mlk), intent(out),optional ::  allTestsPass 
+   character(len=*), intent(in),optional ::  failMessage
+   ! Local
+   CHARACTER(LEN=360)::outputString   
+   INTEGER(MIK)::ntests,nTestsFail,i
+   !---
+   !
+   outputString=""
+   WRITE(unitTestMod%sumryUnit,*)
+   
+   nTests=SIZE(unitTest)
+   nTestsFail=0
+   
+   do i=1,ntests
+    if(.not.unitTest(i)%ok) nTestsFail=nTestsFail+1
+   end do
+      
+   if (nTestsFail==0) then
+    if(present(allTestsPass)) allTestsPass =.true.   
+    outputString="All Tests passed"
+    WRITE(unitTestMod%sumryUnit,'(a)') "Summary of Test Results: "//trim(outputString)
+   else 
+    if(present(allTestsPass)) allTestsPass =.false.   
+    outputString=nTestsFail//" of "//nTests//" Tests failed"
+    WRITE(unitTestMod%sumryUnit,'(a)') "Summary of Test Results: "//trim(outputString)
+    WRITE(unitTestMod%sumryUnit,*) 
+    if (present(failmessage)) WRITE(unitTestMod%sumryUnit,"(a)") failMessage
+    
+ 
+   end if
+   
+   
+   
+ END SUBROUTINE unitTest_SummarizeResults
 !___________________________________________________________________________________________________________________
 !
 SUBROUTINE unitTest_initGlobalErrLog(action)
@@ -633,7 +686,7 @@ SUBROUTINE unitTest_initGlobalErrLog(action)
    !
    SELECT CASE(action(1:LEN_TRIM(action)))
       CASE("open","OPEN")
-         CALL init_log()
+         CALL init_log() ! Ensures that all log messages are appended to the same file
       CASE("close","CLOSE")
          CALL close_log()
    END SELECT
