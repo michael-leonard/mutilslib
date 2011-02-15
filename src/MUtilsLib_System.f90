@@ -74,16 +74,17 @@ module MUtilsLib_System
 
    end function
 !*************************************************************************************************************   
-   function getEnvVar(ev,val) result(ok) ! Wrapper for expand - with a more suitable name, env variable
+   function getEnvVar(ev,val,nologmsg) result(ok) ! Wrapper for expand - with a more suitable name, env variable
      
      character(len=*) :: ev ! environment variable, must have %% symbols , e.g. %PATH%
      character(len = len_vLongStr) :: val ! the value of the environmental variable
+	 logical, intent(in), optional :: nologmsg ! enables logging of error messages to be turned off
      integer(mik) :: ok
      ok=0
      val=expand(ev=ev)
      if (trim(val)==trim(ev)) then
       ok=-1;
-      call message(log_error,"Environment Variable: "//trim(ev)//" not found")
+      if (.not.nologmsg) call message(log_error,"Environment Variable: "//trim(ev)//" not found")
       val=undefCH
      end if
    end function
