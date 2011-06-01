@@ -5,7 +5,7 @@
 ::
 ::--------------------------------------------------------------
 @echo off
-set MAKE_NAME="MUtilsLib_makefile"
+set MAKE_NAME="../MUtilsLib_makefile"
 set DEBUG_PATH="./Dbg/"
 set RELEASE_PATH="./Rls/"
 
@@ -31,38 +31,47 @@ set RELEASE_PATH="./Rls/"
     if %x% NEQ 1 (goto endif1)
        @echo "compiling Debug ..."
        mkdir %DEBUG_PATH%
+       cd %DEBUG_PATH%
        make debug -f %MAKE_NAME%
+       cd ../
        goto eof
     :endif1
     if %x% NEQ 2 (goto endif2)
        @echo "compiling Release ..."
        mkdir %RELEASE_PATH%
+       cd %RELEASE_PATH%
        make release -f %MAKE_NAME%
+       cd ../       
        goto eof
     :endif2
     if %x% NEQ 3 (goto endif3)
        @echo "compiling Debug/Release ..."
        mkdir %DEBUG_PATH%
        mkdir %RELEASE_PATH%
-       make all -f %MAKE_NAME%
+       cd %DEBUG_PATH%
+       make debug -f %MAKE_NAME%
+       cd ../
+       cd %RELEASE_PATH%
+       make release -f %MAKE_NAME%
+       cd ../       
        goto eof
     :endif3
     if %x% NEQ 4 (goto endif4)
        @echo "deleting Debug ..."
-       rm -r %DEBUG_PATH%
+       rmdir /S/Q %DEBUG_PATH%
        @echo "done"
        goto eof
     :endif4
     if %x% NEQ 5 (goto endif5)
        @echo "deleting Release ..."
-       rm -r %RELEASE_PATH%
+       rmdir /S/Q %RELEASE_PATH%
        @echo "done"
        goto eof
     :endif5
     if %x% NEQ 6 (goto endif6)
        @echo "deleting Debug/Release ..."
-       rm -r %DEBUG_PATH%
-       rm -r %RELEASE_PATH%
+       rmdir /S/Q %DEBUG_PATH%
+       rmdir /S/Q %RELEASE_PATH%
        @echo "done"
        goto eof
     :endif6
