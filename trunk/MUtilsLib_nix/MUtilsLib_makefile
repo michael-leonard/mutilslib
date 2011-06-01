@@ -2,8 +2,6 @@
 .SUFFIXES: .f90 .o
 
 # Directory Variables
-DDIR = ./Dbg/
-RDIR = ./Rls/
 src =  ../../src/
 
 # Source Code
@@ -23,34 +21,30 @@ FC  =  g95
 AR  =  ar
 LIB = MUtilsLib_G95.a
 
-DFLAG = -O0 
-RFLAG = -O3 
+DFLAG = -O0  -ffree-line-length-huge -ftrace=full
+RFLAG = -O3  -ffree-line-length-huge -ftrace=full
 
 
 debug :
-	cd $(DDIR); $(FC) $(DFLAG) -c $(SRC)
-	cd $(DDIR); $(AR) -r $(LIB) *.o
-	cd $(DDIR); rm -f *.o 
+	$(FC) $(DFLAG) -c $(SRC)
+	$(AR) -r $(LIB) *.o
+	rm -f *.o 
 	@echo Debug Mode $(LIB) Successfully Compiled
 
 
 release :
-	cd $(RDIR); $(FC) $(RFLAG) -c $(SRC)
-	cd $(RDIR); $(AR) -r $(LIB) *.o
-	cd $(RDIR); rm -f *.o 
+	$(FC) $(RFLAG) -c $(SRC)
+	$(AR) -r $(LIB) *.o
+	rm -f *.o 
 	@echo Release Mode $(LIB) Successfully Compiled
-
-all :	debug release
 
 # Suffix rule
 .f90.o :
 	$(FC) $<
 
 # clean up files
-clean  : dclean rclean
-
 dclean :
-	cd $(DDIR); rm -f *.o *.a *.mod
+	rm -f *.o *.a *.mod
 
 rclean : 
-	cd $(RDIR); rm -f *.o *.a *.mod
+	rm -f *.o *.a *.mod

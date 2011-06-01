@@ -7,7 +7,7 @@
 #
 #--------------------------------------------------------------
 
-MAKE_NAME="makefile"
+MAKE_NAME="../MUtilsLib_makefile"
 DEBUG_PATH="./Dbg/"
 RELEASE_PATH="./Rls/"
 
@@ -55,16 +55,25 @@ do
   case $x in
     1) echo "compiling Debug ..."
        create_debug
+       cd $DEBUG_PATH
        make debug -f $MAKE_NAME
+       cd ../
        break ;;
     2) echo "compiling Release ..."
        create_release
+       cd $RELEASE_PATH
        make release -f $MAKE_NAME
+       cd ../ 
        break ;;
     3) echo "compiling Debug/Release ..."
        create_debug
        create_release
-       make all -f $MAKE_NAME
+       cd $DEBUG_PATH
+       make debug -f $MAKE_NAME
+       cd ../
+       cd $RELEASE_PATH
+       make release -f $MAKE_NAME
+       cd ../        
        break ;;
     4) echo "deleting Debug ..."
        remove_debug

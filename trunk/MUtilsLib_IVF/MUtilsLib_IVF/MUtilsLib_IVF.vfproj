@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VisualStudioProject ProjectType="typeStaticLibrary" ProjectCreator="Intel Fortran" Keyword="Static Library" Version="11.0" ProjectIdGuid="{56CDCF8C-E9FD-4E5A-A850-1F758FADFD55}">
+	<Platforms>
+		<Platform Name="Win32"/></Platforms>
+	<Configurations>
+		<Configuration Name="Debug|Win32" ConfigurationType="typeStaticLibrary">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" Interfaces="true" WarnInterfaces="true" Traceback="true" BoundsCheck="true" RuntimeLibrary="rtMultiThreadedDebug"/>
+				<Tool Name="VFLibrarianTool"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool"/></Configuration>
+		<Configuration Name="Release|Win32" ConfigurationType="typeStaticLibrary">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true"/>
+				<Tool Name="VFLibrarianTool"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool"/></Configuration></Configurations>
+	<Files>
+		<File RelativePath="..\..\src\MUtilsLib.f90"/>
+		<File RelativePath="..\..\src\MUtilsLib_fileIO.f90"/>
+		<File RelativePath="..\..\src\MUtilsLib_MessageLog.f90"/>
+		<File RelativePath="..\..\src\MUtilsLib_miniDMSL.F90"/>
+		<File RelativePath="..\..\src\MUtilsLib_ProbLim.f90"/>
+		<File RelativePath="..\..\src\MUtilsLib_SettingsFiles.F90"/>
+		<File RelativePath="..\..\src\MUtilsLib_StringFuncs.f90"/>
+		<File RelativePath="..\..\src\MUtilsLib_System.f90"/>
+		<File RelativePath="..\..\src\MUtilsLib_unitTestPlatform.F90"/>
+		<File RelativePath="..\..\src\MUtilsLib_VarFuncs.f90"/></Files>
+	<Globals/></VisualStudioProject>
