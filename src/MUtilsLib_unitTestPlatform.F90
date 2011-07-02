@@ -352,7 +352,7 @@ END SUBROUTINE unitTest_writeMsg
 !__________________________________________________________________________________________________________________
 !> Compares files and evalutes whether they are the same
 !! Comparison can be undertaken at various levels of detail, see compareLevel arg
-SUBROUTINE unitTest_fileCompare(fileOne,fileTwo,CompareLevel,skip,outputUnit,testName,testResult)
+SUBROUTINE unitTest_fileCompare(fileOne,fileTwo,CompareLevel,skip,outputUnit,testName,testResult,message)
    use mUtilsLib_System, only : fileCompare_External
    use mUtilsLib_fileio, only : fileExist,findEOF
    use mUtilsLib_StringFuncs, only: operator(//)
@@ -362,7 +362,7 @@ SUBROUTINE unitTest_fileCompare(fileOne,fileTwo,CompareLevel,skip,outputUnit,tes
    ! Compare two files
    IMPLICIT NONE
    ! Subroutine variables
-   character(len=*) :: fileOne, fileTwo              !> Full path names for files to be compared
+   character(len=*),intent(in) :: fileOne, fileTwo              !> Full path names for files to be compared
    integer(mik), intent(in),optional :: CompareLevel !> Provides different levels of comparison
                                                      !! 1 = LineCount
                                                      !! 2 = 1 + Line by Line Comparison
@@ -371,6 +371,7 @@ SUBROUTINE unitTest_fileCompare(fileOne,fileTwo,CompareLevel,skip,outputUnit,tes
    INTEGER(MIK),INTENT(IN),OPTIONAL::outputUnit      !> optional output unit number - Default id the summary file unit
    CHARACTER(LEN=*),INTENT(IN),OPTIONAL::testName    !> optional assinging of unit test name
    LOGICAL,INTENT(OUT),OPTIONAL::testResult          !> optional return of test value
+   CHARACTER(LEN=*),INTENT(IN),OPTIONAL::message
 
    ! General variables
    INTEGER(MIK)::i,indx,err,fileOneLineCount,fileTwoLineCount,endOfFile_i,endOfFile_ii,unitOneLc,unitTwoLc,ok
@@ -385,33 +386,34 @@ SUBROUTINE unitTest_fileCompare(fileOne,fileTwo,CompareLevel,skip,outputUnit,tes
    if (indx>SIZE(unitTest)) then ; call log_message("No. of unit tests has been exceeded");  return ;  end if
    
    IF(PRESENT(testName))unitTest(indx)%name=testName     
-   
+   IF(PRESENT(message))unitTest(indx)%message=message
+        
    CompareLevelLc=checkPresent(Comparelevel,2) 
   
    ! Check if files exist
-   if(.not.fileExist(fileToOpen=fileOne,msg=msg)) then; call message(trim(msg)//" in F: unitTest_fileCompare"); myTestResult=.false.; return; end if
-   if(.not.fileExist(fileToOpen=fileTwo,msg=msg)) then; call message(trim(msg)//" in F: unitTest_fileCompare"); myTestResult=.false.; return; end if
+   if(.not.fileExist(fileToOpen=fileOne,msg=msg)) then; call log_message(trim(msg)//" in F: unitTest_fileCompare"); myTestResult=.false.; return; end if
+   if(.not.fileExist(fileToOpen=fileTwo,msg=msg)) then; call log_message(trim(msg)//" in F: unitTest_fileCompare"); myTestResult=.false.; return; end if
    
    ! Undertake line count
    fileOneLineCount=findEof(filepath=fileOne,err=ok,msg=msg)
-   if (ok/=0) then; call message(trim(msg)//" in F: unitTest_fileCompare"); myTestResult=.false.; return; end if
+   if (ok/=0) then; call log_message(trim(msg)//" in F: unitTest_fileCompare"); myTestResult=.false.; return; end if
    fileTwoLineCount=findEof(filepath=fileTwo,err=ok,msg=msg)
-   if (ok/=0) then; call message(trim(msg)//" in F: unitTest_fileCompare"); myTestResult=.false.; return; end if
+   if (ok/=0) then; call log_message(trim(msg)//" in F: unitTest_fileCompare"); myTestResult=.false.; return; end if
         
    ! Open files to unitOne and UnitTwo
    call unitTest_fileOpen(fileNameAndPath=fileOne,unitID=unitOneLc,err=err,status="OLD")
    if(err/=0) then
       myTestResult=.FALSE.
-      call message("Unable to open file:"//trim(fileOne)//" in F: unitTest_fileCompare"); return
+      call log_message("Unable to open file:"//trim(fileOne)//" in F: unitTest_fileCompare"); return
    end if
    call unitTest_fileOpen(fileNameAndPath=fileTwo,unitID=unitTwoLc,err=err,status="OLD")
    if(err/=0) then
       myTestResult=.FALSE.
-      call message("Unable to open file:"//trim(fileTwo)//" in F: unitTest_fileCompare"); return
+      call log_message("Unable to open file:"//trim(fileTwo)//" in F: unitTest_fileCompare"); return
    end if
        
     
-  ! Compare file count
+  ! Compare file line numbers
   if (ComparelevelLc>0) then
    REWIND(UNIT=unitOneLc);REWIND(UNIT=unitTwolc)
    IF((fileOneLineCount-fileTwoLineCount)/=0)THEN;
@@ -420,7 +422,10 @@ SUBROUTINE unitTest_fileCompare(fileOne,fileTwo,CompareLevel,skip,outputUnit,tes
     IF(compareLevelLc>2) call call_FileCompare_External()
     CALL manageResult()
     RETURN
-   ELSE; myTestResult=.TRUE.;END IF
+   ELSE; 
+    myTestResult=.TRUE.
+    if(ComparelevelLc==1) CALL manageResult()
+   END IF
   END IF 
 
   
@@ -457,7 +462,7 @@ SUBROUTINE Call_FileCompare_External()
     CLOSE(unitOneLc,iostat=ok)
     CLOSE(unitTwoLc,iostat=ok)
     ok=FileCompare_External(fileOne=fileOne,fileTwo=FileTwo)
-    IF (ok/=0) CALL message("Unable to compare files using external viewer:"//trim(fileone)//" and"//trim(filetwo)//" in f:unitTest_fileCompare")
+    IF (ok/=0) CALL log_message("Unable to compare files using external viewer:"//trim(fileone)//" and"//trim(filetwo)//" in f:unitTest_fileCompare")
     RETURN
 
 END SUBROUTINE Call_FileCompare_External
@@ -572,7 +577,7 @@ SUBROUTINE unitTest_logicalTest(testVal,err,val_true,val_false,message,outputUni
    INTEGER(MIK)::indx
    !---
    indx=unitTestMod%testIndx
-   if (indx>SIZE(unitTest)) then ; call log_message("No. of unit tests has been exceeded");  return ;  end if
+   if (indx>SIZE(unitTest)) then ; call log_message("No. of unit tests has been exceeded");  err=-1; return ;  end if
    
    unitTest(indx)%result_l=testVal
    IF(PRESENT(testName))unitTest(indx)%name=testName

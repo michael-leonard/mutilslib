@@ -1085,15 +1085,20 @@ module MUtilsLib_stringfuncs
    end function
 
   !> Change a relative path to an absolute path, using current directory location
-  function relPathtoAbsPath(relPath,currentDir) result(absPath)
+  function relPathtoAbsPath(relPath,currentDir,incfile) result(absPath)
       
       implicit none
       character(len = *), intent(in) :: relPath    ! relative filepath
       character(len = *), intent(in) :: currentDir ! current Directory Location
+      logical, intent(in), optional :: incfile ! flag which specifies if relpath includes file, is so do not add end slash
       character(len = (len_trim(relPath)+len_trim(currentdir))) :: absPath   ! filepath
       !Locals
       integer :: i
       character(len = len(relpath)) :: CopyRelPath
+      logical:: incFileLc
+      
+      incFileLc=(present(incfile)); if (incFileLc) incFileLc=incFile
+      
       CopyRelPath=relPath
       i=0
       DO WHILE (copyRelPath(1:2)=="..")
@@ -1104,8 +1109,8 @@ module MUtilsLib_stringfuncs
         abspath=folderup(CurrentDir,n=i)
         abspath=add_endslash(trim(abspath))//remove_startslash(trim(copyrelPath))
      else
-        abspath=copyRelPath
-        abspath=add_endslash(trim(abspath))
+       abspath=copyRelPath
+       if (.not.incfileLc) abspath=add_endslash(trim(abspath))
      end if
   
    end function
