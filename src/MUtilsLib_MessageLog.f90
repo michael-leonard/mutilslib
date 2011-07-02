@@ -139,7 +139,7 @@ module MUtilsLib_messagelog
   contains
 !************************************************************************************************
     !> Set the parameters for the log file. Not necessary to be called if you are happy with defaults.
-    subroutine init_log(unit,close,append,active,echo,file, ignore_warn, ignore_error,auto_flush,debug,db_id,msgdb_file,append_always,time_stamp)
+    subroutine init_log(unit,close,append,active,echo,file, ignore_warn, ignore_error,auto_flush,debug,db_id,msgdb_file,append_always,time_stamp,errD,messageD)
       
       implicit none
       integer, intent(IN), optional  ::   unit          !< file ID unit, screen = 6, file = other
@@ -157,6 +157,11 @@ module MUtilsLib_messagelog
       character(len = *), intent(IN), optional :: file  !< file name if log is written to file
       character(len = *), intent(IN), optional :: db_id !< ID of the message database
       character(len = *), intent(IN), optional :: msgdb_file !< file name of the msg file for message database
+      
+      integer(mik),intent(out),optional::errD
+      character(*),intent(out),optional::messageD
+      
+      ! locals
       integer :: ok
 
       ! Transfer input variables into log object
@@ -171,6 +176,9 @@ module MUtilsLib_messagelog
       if (present(auto_flush))   msg_log%auto_flush     = auto_flush
       if (present(debug))   msg_log%debug     = debug
 
+      if(present(errD))then
+      	errD=0; messageD="init_log/ok"
+      endif
 
       ! Check for consistency/logic of log parameters
       if (msg_log%echo .AND. msg_log%unit == 6)   msg_log%unit   = 111     ! When echo-ing must have file ID other than 6
@@ -181,9 +189,21 @@ module MUtilsLib_messagelog
       if (msg_log%active) then
         if (msg_log%unit /=6) then
           if (msg_log%append) then ! keep the existing msg_log file (if there is one)
-            open(unit = msg_log%unit, file = msg_log%file, status = 'unknown', position = 'append')
+            open(unit = msg_log%unit, file = msg_log%file, status = 'unknown', position = 'append',iostat=ok)
+            if(present(errD))then
+              if (ok/=0) then
+                errD=100; messageD="f-init_log/Unable to open unknown log file ["//trim(msg_log%file)//"]"
+                return
+              endif
+            endif
           else ! A new msg_log file
-            open(unit = msg_log%unit, file = msg_log%file, status = 'replace')
+            open(unit = msg_log%unit, file = msg_log%file, status = 'replace',iostat=ok)
+            if(present(errD))then
+              if (ok/=0) then
+                errD=100; messageD="f-init_log/Unable to open existing log file ["//trim(msg_log%file)//"]"
+                return
+              endif
+            endif
             call message(log_debug,"All messages being written to log file (if no path &
                                    &- written to current executable directory): "//trim(msg_log%file))
           end if
@@ -193,7 +213,7 @@ module MUtilsLib_messagelog
 
       if (present(db_id) .and. present(msgdb_file)) then
         ok=init_msg_db(db_id=db_id,msgdb_file=msgdb_file)
-        if (ok/=0) call message(log_error,"Unable to initalise msg_db for "//db_id//" with file "//msgdb_file)
+        if (ok/=0) call message(log_error,"Unable to initalise msg_db for "//db_id//" with file "//trim(msgdb_file))
         call message(log_debug,"Using msg_db: "//trim(db_id)//", located at "//trim(msgdb_file))
       end if
 
