@@ -23,7 +23,7 @@ implicit none
 Private
 
 
-public :: ReadSetting,OpenSettingsFile
+public :: ReadSetting,OpenSettingsFile,readDirectorFile
 
 interface ReadSetting
    module procedure ReadSetting_0d_str
@@ -59,6 +59,8 @@ integer(mik) :: ok                                    ! Error Flag (0 = No Error
 ! Locals
 integer(mik) :: status                                ! 
 character(len=len_vLongStr) :: version                !
+
+
 ok=0  
 !File=relPathtoAbsPath(file,findCurrentDir())
 do 
@@ -90,6 +92,33 @@ if (trim(version)/=trim(checkVersion)) then
 end if
 
 end function openSettingsFile
+!#**********************************************************************
+function readDirectorFile(directorfile,filepath) result (ok)
+!#**********************************************************************
+!#* Purpose: Opens a director file which contains a filepath to be read-in
+!#**********************************************************************
+use kinds_dmsl_kit ! numeric kind definitions from DMSL
+use MutilsLib_MessageLog, only : message
+implicit none
+
+! Dummies - Inputs
+character(len=*), intent(inout) ::  directorfile   ! Direcktor file with full path
+
+! Dummies - Outputs
+character(len=*), intent(out) :: filepath   ! File path to be returned
+
+! Function - Outputs
+integer(mik) :: ok                                    ! Error Flag (0 = No Errors, >0 Error condition)
+ok=0  
+
+ok=openSettingsFile(file=directorfile,unit=20,checkVersion="1.0")
+if (ok/=0) then ;call message("Unable to open directorfile:"//trim(directorfile)); return; end if
+ok=ReadSetting(file=directorfile,unit=20,keyword="[Filepath]",val=filepath)
+if (ok/=0) then ;call message("Unable to find [Filepath] in directorfile:"//trim(directorfile)); return; end if
+close(unit=20)
+
+end function readDirectorFile
+
 !#**********************************************************************
 function findKeyWord(file,unit,keyword,nrow,ncol,rewindIn,msg_statusIn) result(ok)
 !#**********************************************************************
