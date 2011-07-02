@@ -23,26 +23,15 @@ SUBROUTINE unitTests_modOne(allTests,unitTestModOk)
 LOGICAL,INTENT(IN),OPTIONAL::allTests
 LOGICAL,INTENT(OUT),OPTIONAL::unitTestModOk
 !
-! Unit test module information
-TYPE(unitTestModuleData)::unitTestMod
-TYPE(unitTestResultsData),ALLOCATABLE,DIMENSION(:)::unitTest
-!
 ! Local results variables
-LOGICAL::ok
-!
-! General variables
-INTEGER(MIK)::i
+integer::ok,testResult
+logical :: testVal
 !---
 !
 ! Initalise optional master test platform subroutine variables
 IF(PRESENT(unitTestModOk))unitTestModOk=.FALSE.
 ! 
 ! Initialise Unit Test Module Information
-unitTestMod%numTests = 4
-unitTestMod%name = "Module One - Unit Test Module Results"
-IF(ALLOCATED(unitTest))DEALLOCATE(unitTest);ALLOCATE(unitTest(unitTestMod%numTests))
-!
-! Initialise unitTest paths
 SELECT CASE(PRESENT(allTests))
    CASE(.TRUE.)
       inputFilePath = "..\moduleOne_unitTests\InputFiles\"
@@ -53,107 +42,99 @@ SELECT CASE(PRESENT(allTests))
       standardsPath = "Standards\"
       resultsPath   = "Results\"
 END SELECT
-!
+
 ! Initialise unitTest files
-inputFiles(1)     = "moduleOne_Input.txt"
-standardsFiles(1) = "moduleOne_standard.txt"
-resultsFiles(1)   = "moduleOne_results.txt"
+!standardsFiles(1) = trim(standardsPath)//"moduleOne_standard.txt"
+!resultsFiles(1)   = trim(resultsPath)//"moduleOne_results.txt"
 
-inputFiles(2)     = "moduleOne_Input.txt"
-standardsFiles(2) = "moduleOne_standard.txt"
-resultsFiles(2)   = "moduleOne_results.txt"
+!standardsFiles(2) = trim(standardsPath)//"moduleOne_standard.txt"
+!resultsFiles(2)   = trim(resultsPath)//"moduleOne_results.txt"
 
-!
-inputFiles(3)     = "moduleOne_Input.txt"
-standardsFiles(3) = "moduleOne_standard.txt"
-resultsFiles(3)   = "moduleOne_results_wrong.txt"
+!standardsFiles(3) = trim(standardsPath)"moduleOne_standard.txt"
+!resultsFiles(3)   = trim(resultsPath)//"moduleOne_results_wrong.txt"
 
-inputFiles(4)     = "moduleOne_Input.txt"
-standardsFiles(4) = "moduleOne_standard.txt"
-resultsFiles(4)   = "moduleOne_results_wrong.txt"
+!standardsFiles(4) = trim(standardsPath)"moduleOne_standard.txt"
+!resultsFiles(4)   = trim(resultsPath)//"moduleOne_results_wrong.txt"
 
-! Initialise unitTest info
-unitTest%ok=.FALSE.
-unitTest%metaDataTag="" ! currently not used
+call unitTest_init(name="Module One - Unit Test Module Results", &
+                   nTests=6, &
+                   nInputFiles=0, &
+                   nRsltsFiles=0, &
+                   nStndsFiles=0, &
+                   err=ok)
+if (ok/=0) then ;call message("Unable to initialise UnitTests"); return; end if
+   
+!***TEST - Example Test One - Compare procedure result to a known value = test correct
+CALL dummyUnitTest_ArgResult(testresult,getCorrectResult=.true.)
+testVal=(testresult==10)
+CALL unitTest_chkResult(testVal=testVal,testName="Example test 1 - rslts from a proc. arg - correct",err=ok)
 
-unitTest(1)%name="Example test one"
-unitTest%message=""
-unitTest(2)%name="Example test two"
-unitTest(3)%name="Example test three"
-unitTest(4)%name="Example test four"
+!***TEST - Example Test Two - Compare procedure result to a known value - test incorrect
+CALL dummyUnitTest_ArgResult(testresult,getCorrectResult=.false.)
+testVal=(testresult==10)
+CALL unitTest_chkResult(testVal=testVal,testName="Example test 2 - rslts from a proc. arg - incorrect",err=ok,message="This test should fail")
 
+!***TEST - Example Test Three - Compare procedure results output in file to a standard file - results correct
+CALL dummyUnitTest_FileResult(resultsFile=trim(resultsPath)//"moduleOne_results.txt",getCorrectResult=.true.,err=ok)
+CALL unitTest_chkResult(fileOne=trim(standardsPath)//"moduleOne_standard.txt",fileTwo=trim(resultsPath)//"moduleOne_results.txt",& 
+                        testName="Example test 3 - rslts from proc. output file-correct",message="This test should pass")
 
-! Check that standards and input files are available
-DO i=1,SIZE(inputFiles);CALL myFileInquire(myResult=ok,fileName=inputFiles(i),filePath=inputFilePath);IF(.NOT.ok)RETURN;END DO
-DO i=1,SIZE(standardsFiles);CALL myFileInquire(myResult=ok,fileName=standardsFiles(i),filePath=standardsPath);IF(.NOT.ok)RETURN;END DO
-!
-! Open unit test module summary file and write header
-CALL myFileOpen(unitID=SUMMARYFILEUNIT,myResult=ok,fileName="results_summary.txt",filePath=resultsPath,status="UNKNOWN");IF(.NOT.ok)RETURN
-CALL myWriteHeader(unitID=SUMMARYFILEUNIT,myResult=ok,name=unitTestMod%name,inputFiles=inputFiles,&
-                   standardsFiles=standardsFiles,resultsFiles=resultsFiles);IF(.NOT.ok)RETURN
-!
-!***TEST - Example Test One
-CALL dummyUnitTest_one(testOneResult=unitTest(1)%result_i,message=unitTest(1)%message)
+!***TEST - Example Test Four - Compare procedure results output in file to a standard file - results incorrect, line number comparison
+CALL dummyUnitTest_FileResult(resultsFile=trim(resultsPath)//"moduleOne_results_wrong.txt",getCorrectResult=.false.,err=ok)
+CALL unitTest_chkResult(fileOne=trim(standardsPath)//"moduleOne_standard.txt",fileTwo=trim(resultsPath)//"moduleOne_results_wrong.txt",compareLevel=1, &
+                         testName="Example test 4 - rslts from proc. output file-incorrect (linecount comp)",message="This test should fail, but does not because only no of lines comparison is undertaken")
 
-CALL testMyResult(testValue=unitTest(1)%result_i,value_true=0,myTestResult=unitTest(1)%ok)
-CALL myWriteTestResult(testName=unitTest(1)%name,testResult=unitTest(1)%ok,failMessage=unitTest(1)%message,unitID=SUMMARYFILEUNIT)
-!
-!***TEST - Example Test Two
-CALL myFileOpen(unitID=STNDFILEUNIT,myResult=ok,fileName=standardsFiles(1),filePath=standardsPath,status='OLD');IF(.NOT.ok)RETURN
-CALL myFileOpen(unitID=TESTFILEUNIT,myResult=ok,fileName=resultsFiles(1),filePath=resultsPath,status='UNKNOWN');IF(.NOT.ok)RETURN
+!***TEST - Example Test Five - Compare procedure results output in file to a standard file - results incorrect, line by line comparison
+CALL dummyUnitTest_FileResult(resultsFile=trim(resultsPath)//"moduleOne_results_wrong.txt",getCorrectResult=.false.,err=ok)
+CALL unitTest_chkResult(fileOne=trim(standardsPath)//"moduleOne_standard.txt",fileTwo=trim(resultsPath)//"moduleOne_results_wrong.txt",compareLevel=2, &
+                        testName="Example test 5 - rslts from a proc output file-incorrect (line by line comp)",message="This test should fail")
 
-CALL myFileCompare(unitOne=TESTFILEUNIT,unitTwo=STNDFILEUNIT,myTestResult=unitTest(2)%ok)
-CALL myWriteTestResult(testName=unitTest(2)%name,testResult=unitTest(2)%ok,failMessage=unitTest(2)%message,unitID=SUMMARYFILEUNIT)
-
-!***TEST - Example Test Three
-CALL myFileCompare(fileOne=trim(standardsPath)//trim(standardsFiles(3)), &
-                   fileTwo=trim(resultsPath)//trim(resultsFiles(3)),myTestResult=unitTest(3)%ok)
-CALL myWriteTestResult(testName=unitTest(3)%name,testResult=unitTest(3)%ok,failMessage=unitTest(3)%message,unitID=SUMMARYFILEUNIT)
-
-!***TEST - Example Test Four - same as three but with external file comparison
-CALL myFileCompare(fileOne=trim(standardsPath)//trim(standardsFiles(3)), &
-                   fileTwo=trim(resultsPath)//trim(resultsFiles(3)),myTestResult=unitTest(3)%ok,Comparelevel=3)
-CALL myWriteTestResult(testName=unitTest(3)%name,testResult=unitTest(3)%ok,failMessage=unitTest(3)%message,unitID=SUMMARYFILEUNIT)
-
+!***TEST - Example Test Six - Compare procedure results output in file to a standard file, results incorrect, file comparison
+CALL dummyUnitTest_FileResult(resultsFile=trim(resultsPath)//"moduleOne_results_wrong.txt",getCorrectResult=.false.,err=ok)
+CALL unitTest_chkResult(fileOne=trim(standardsPath)//"moduleOne_standard.txt",fileTwo=trim(resultsPath)//"moduleOne_results_wrong.txt",compareLevel=3, &
+                        testName="Example test 6 - rslts from a proc. output file-incorrect (external file comp)",message="This test should fail")
 
 IF(PRESENT(unitTestModOk))THEN;IF(ALL(unitTest%ok))unitTestModOk=.TRUE.;END IF
 
 CONTAINS
    !______________
    !
-   SUBROUTINE dummyUnitTest_one(testOneResult,message)
+   SUBROUTINE dummyUnitTest_ArgResult(testResult,getCorrectResult)
       IMPLICIT NONE 
-      INTEGER,INTENT(OUT)::testOneResult
-      CHARACTER(LEN=120),INTENT(OUT)::message
-      !
-      ! Local variables
-      LOGICAL::openOk
-      CHARACTER(LEN=23)::dummyUnitTestString
+      INTEGER,INTENT(OUT)::testResult
+      logical,intent(in) :: getCorrectResult
       !---
-      !
-      ! Note myFileOpen is used for convienence only. MyFileInquire has already ensured that files are present
-      CALL myFileOpen(unitID=STNDFILEUNIT,myResult=openOk,fileName=standardsFiles(1),filePath=standardsPath,status='OLD')
-      REWIND(UNIT=STNDFILEUNIT)
-      READ(STNDFILEUNIT,'(a23)')dummyUnitTestString
-      CLOSE(UNIT=STNDFILEUNIT)
       
+      if (getCorrectResult) then
+        testResult=10
+      else
+        testResult=20
+      end if
       
-      CALL myFileOpen(unitID=TESTFILEUNIT,myResult=openOk,fileName=resultsFiles(1),filePath=resultsPath,status='UNKNOWN')      
-      REWIND(UNIT=TESTFILEUNIT)
-      WRITE(TESTFILEUNIT,'(a23)')dummyUnitTestString     
-      CLOSE(UNIT=TESTFILEUNIT)
-      
-      testOneResult=0
-      RETURN
-      
-100   CONTINUE
-      testOneResult=-1
-      message=''
-      message="Error running dummyUnitTest_one"
-      
-   END SUBROUTINE dummyUnitTest_one
+   END SUBROUTINE dummyUnitTest_ArgResult
    !______________
    !
+   SUBROUTINE dummyUnitTest_FileResult(resultsFile,getCorrectResult,err)
+      IMPLICIT NONE 
+      character(len=*) :: resultsFile
+      logical,intent(in) :: getCorrectResult
+      integer :: err
+      !---
+      open(unit=10,file=resultsFile,iostat=err)
+      if (err/=0) return
+      
+      write(10,'(a)') "Module One Example Output File"
+      if (getCorrectResult) then
+        write(10,'(a)') "Module One example test"
+      else
+        write(10,'(a)') "Module One example test - wrong"
+      end if
+      
+      close(unit=10)
+      if (err/=0) return
+      
+   END SUBROUTINE dummyUnitTest_FileResult
+   
 END SUBROUTINE unitTests_modOne
 
 END MODULE moduleOne_unitTests
