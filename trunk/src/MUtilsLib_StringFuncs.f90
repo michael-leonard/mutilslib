@@ -51,7 +51,8 @@ module MUtilsLib_stringfuncs
             subStr, &              ! returns index of starting position of a string within another string
             addStr, &              ! add a string onto the end of a pointer array
             isSameStr, &           ! compare two strings to see if they are the same
-            split                  ! split a string in two according to some delimeter
+            split, &               ! split a string in two according to some delimeter
+            stripExt               ! strip the extension of a filename, e.g. "abc.txt" returns "abc"
 
 
   !> finds the index of a character vector that corresponds to a string inpu
@@ -1148,6 +1149,26 @@ module MUtilsLib_stringfuncs
         if(k>=lb.and.k<=ub) strOut(i:i) = achar(k - 32) ! convert to upper case
       end do
    end function
+   
+   !> Strip the extension off a filename
+   elemental function stripExt(strIn) result(strOut)
+      
+      implicit none
+      character(len = *), intent(in) :: strIn
+      character(len = len(strIn)) :: strOut
+      integer :: k,lb,ub
+      integer :: i
+
+      do i = len_trim(strIn),1,-1
+        if(strIn(i:i)==".") then
+          strOut = strIn(1:(i-1))
+          return
+        elseif(i==1) then ! we have reached the start of the string
+          strOut = strIn ! copy the whole string
+        end if
+      end do
+   end function stripExt
+
 
   !> Overwrites a string on the end of string - don't concatenate
   function insertString_end(strIn,insert) result(strOut)
@@ -1482,6 +1503,7 @@ module MUtilsLib_stringfuncs
        character(len = *), intent(in)  ::   ch  !< character(s) to be recognized
        integer                         ::   i   !< no. of occurrences
        integer                         ::   j   ! index
+       integer                         ::   k   ! starting position of text
        logical                         :: insideTxt ! flag if we are inside a text block
        logical                         :: newEntry  ! flag if we have just begun a new entry
  
@@ -1495,20 +1517,22 @@ module MUtilsLib_stringfuncs
        i = 1
        do j = 1,len_trim(str) ! ignore trailing white space
          ! When we are inside text, ignore all characters
-         if (.not.insideTxt.and.(str(j:)=="'".or.str(j:)=='"')) then
+         if (.not.insideTxt.and.(str(j:j)=="'".or.str(j:j)=='"')) then
            insideTxt = .true.
            cycle
          end if
-         if (insideTxt.and.(str(j:)=="'".or.str(j:)=='"')) then
+         if (insideTxt.and.(str(j:j)=="'".or.str(j:j)=='"')) then
            insideTxt = .false.
+           newEntry = .false.
            cycle
          end if
          ! use index function since ch delimeter may be more than a single character
-         if (.not.insideTxt.and..not.newEntry.and.(index(LCase(str(j:)),LCase(trim(ch)))==1)) then
+         k = index(LCase(str(j:)),LCase(ch))
+         if (.not.insideTxt.and..not.newEntry.and.(k==1)) then
            i = i + 1
            newEntry = .true.
          end if
-         if (.not.insideTxt.and.newEntry.and.(index(LCase(str(j:)),LCase(trim(ch)))/=1)) then
+         if (.not.insideTxt.and.newEntry.and.(k/=1)) then
            newEntry = .false.
          end if
        end do ! i 
