@@ -75,7 +75,10 @@ testVal=(testresult==10)
 CALL unitTest_chkResult(testVal=testVal,testName="Example test 2 - rslts from a proc. arg - incorrect",err=ok,message="This test should fail")
 
 !***TEST - Example Test Three - Compare procedure results output in file to a standard file - results correct
+! This first procedure is a dummy example procedure that produces a test result
+! In real example this would be replaced by a call to the procedure to be tested
 CALL dummyUnitTest_FileResult(resultsFile=trim(resultsPath)//"moduleOne_results.txt",getCorrectResult=.true.,err=ok)
+! This first procedure checks the results of the unit test
 CALL unitTest_chkResult(fileOne=trim(standardsPath)//"moduleOne_standard.txt",fileTwo=trim(resultsPath)//"moduleOne_results.txt",& 
                         testName="Example test 3 - rslts from proc. output file-correct",message="This test should pass")
 
