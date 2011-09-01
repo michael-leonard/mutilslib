@@ -50,7 +50,7 @@ module MUtilsLib_stringfuncs
             hasSubStr, &           ! tests is a substring exists within another string
             subStr, &              ! returns index of starting position of a string within another string
             addStr, &              ! add a string onto the end of a pointer array
-            isSameStr, &           ! compare two strings to see if they are the same
+            isSame, &              ! compare two strings to see if they are the same
             split, &               ! split a string in two according to some delimeter
             stripExt               ! strip the extension of a filename, e.g. "abc.txt" returns "abc"
 
@@ -155,6 +155,10 @@ module MUtilsLib_stringfuncs
   interface operator(.equ.)
     module procedure str_compare
   end interface
+
+  interface isSame ! isSame inerface is common for all ML objects
+    module procedure isSameStr
+  end interface isSame
 
   contains
 !!!!!!!!!!! Number conversion / string handling conveniences for passing arguments into R
@@ -1116,8 +1120,8 @@ module MUtilsLib_stringfuncs
   
    end function
 
-  !> converts to lower case
-  elemental function Lcase(strIn) result(strOut)
+   !> converts to lower case
+   elemental function Lcase(strIn) result(strOut)
       
       implicit none
       character(len = *), intent(in) :: strIn
@@ -1133,8 +1137,8 @@ module MUtilsLib_stringfuncs
       end do
    end function
 
-  !> converts to upper case
-  elemental function Ucase(strIn) result(strOut)
+   !> converts to upper case
+   elemental function Ucase(strIn) result(strOut)
       
       implicit none
       character(len = *), intent(in) :: strIn
@@ -1214,6 +1218,9 @@ module MUtilsLib_stringfuncs
 
     END function removeChar
 !-------------------------------------------------------------------------
+! this subroutine seems bloated to me
+! perhaps it could be deleted
+! see isSameStr function for similar
     function str_compare(str1,str2) result (same)
     
 
@@ -1612,13 +1619,23 @@ module MUtilsLib_stringfuncs
 
     !> compare two strings to see if identical
     !> not case sensitive
-    elemental function isSameStr(str1,str2) result(ans)
+    function isSameStr(str1,str2,cS) result(ans)
       implicit none
       character(len = *), intent(in)  ::   str1  !< string to be searched
       character(len = *), intent(in)  ::   str2  !< character(s) to be recognized      
+      logical, optional :: cS                    !< whether or not to be case SeNsItIve
       logical                         ::   ans   !< the output true/false
+      ! Locals
+      logical :: caseSens
 
-      ans = (trim(LCase(str1))==trim(LCase(str2)))
+      caseSens=.false.
+      if(present(cS)) caseSens=cS
+
+      if(caseSens) then
+        ans = trim(str1)==trim(str2)
+      else
+        ans = trim(LCase(str1))==trim(LCase(str2))
+      end if
     end function isSameStr
 
 
