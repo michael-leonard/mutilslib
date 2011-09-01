@@ -129,7 +129,7 @@ module MUtilsLib_messagelog
   type(obj_msg_log)  :: msg_log                         !< a private system message log
 
   ! public interface
-  public :: init_log, message, flush_messages, warning, error,get_messages,close_log
+  public :: init_log, message, flush_messages, warning, error,get_messages,close_log, inquireLog
 
   interface message
     module procedure add_log_no_tag
@@ -449,6 +449,27 @@ module MUtilsLib_messagelog
       end if
 
     end subroutine get_messages
+!************************************************************************************************
+    !> gets properties of the log object
+    !> allow user to dump output directly to file
+    subroutine inquireLog(unit,status,file,echo)
+      ! description:
+      implicit none
+      integer, optional :: unit ! file handler
+      integer, optional :: status ! open=1,closed=0
+      character(*), optional :: file ! filename
+      logical, optional :: echo ! whether to echo to screen
+      
+      if(present(unit)) unit = msg_log%unit
+      if(present(status)) then
+        status=1 ! open, default
+        if(msg_log%close) status=0
+      end if
+      if(present(file)) file=msg_log%file
+      if(present(echo)) echo=msg_log%echo
+    end subroutine inquireLog
+
+
 !************************************************************************************************
     !> detects if warnings have occurred
     elemental function warning() result(bool)
