@@ -325,6 +325,7 @@ module MUtilsLib_messagelog
       implicit none
        ! Locals
       integer :: i ! loop counter
+      logical :: logExists ! checks if a new log file is needed
 
       ! Clear out the msg_log object if necessary
       if (associated(msg_log%message)) then
@@ -343,7 +344,12 @@ module MUtilsLib_messagelog
             end do
           else ! a file write is needed
             ! open the file if not already open
-            if (msg_log%close) open(unit = msg_log%unit, file = msg_log%file, status = 'old', position = 'append')
+            inquire(file=msg_log%file, exist=logExists) ! create file upon first time use if user did not call init_log
+            if(.not.logExists) then
+              open(unit = msg_log%unit, file = msg_log%file,status='new')
+            else
+              if (msg_log%close) open(unit = msg_log%unit, file = msg_log%file, status = 'old', position = 'append')
+            end if
 
               ! write all msg_log entries to file
               do i = 1, size(msg_log%message)
