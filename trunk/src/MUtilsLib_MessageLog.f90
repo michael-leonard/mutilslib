@@ -129,7 +129,7 @@ module MUtilsLib_messagelog
   type(obj_msg_log)  :: msg_log                         !< a private system message log
 
   ! public interface
-  public :: init_log, message, flush_messages, warning, error,get_messages,close_log, inquireLog
+  public :: init_log, message, flush_messages, warning, error,get_messages,close_log, inquireLog, getErrCount, getWarnCount
 
   interface message
     module procedure add_log_no_tag
@@ -496,6 +496,20 @@ module MUtilsLib_messagelog
         bool = .false.
       end if
     end function error
+    
+    !> get the no. of errors
+    function getErrCount() result(i)
+      implicit none
+      integer :: i !< returns the no. of errors
+      i=msg_log%err
+    end function getErrCount
+    
+    !> get the no. of errors
+    function getWarnCount() result(i)
+      implicit none
+      integer :: i !< returns the no. of errors
+      i=msg_log%warn
+    end function getWarnCount
 !************************************************************************************************
     !> update the comment character
     subroutine change_comchar(ch)
