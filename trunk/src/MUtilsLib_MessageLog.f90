@@ -387,7 +387,7 @@ module MUtilsLib_messagelog
           deallocate(msg_log%tag);  nullify(msg_log%tag)
 
         ! Reset the error and warning counters
-          msg_log%warn = 0; msg_log%err = 0
+          !msg_log%warn = 0; msg_log%err = 0 - These should accumulate over duration of program, us resetLogCounters() to reset errors
         end if
       end if
 
@@ -510,6 +510,13 @@ module MUtilsLib_messagelog
       integer :: i !< returns the no. of errors
       i=msg_log%warn
     end function getWarnCount
+    
+    !> reset the error counters
+    subroutine resetLogCounters()
+      implicit none
+      msg_log%err=0
+      msg_log%warn=0
+    end subroutine
 !************************************************************************************************
     !> update the comment character
     subroutine change_comchar(ch)
