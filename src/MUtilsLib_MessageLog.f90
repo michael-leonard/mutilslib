@@ -175,6 +175,7 @@ module MUtilsLib_messagelog
       if (present(ignore_error)) msg_log%ignore_error   = ignore_error
       if (present(auto_flush))   msg_log%auto_flush     = auto_flush
       if (present(debug))   msg_log%debug     = debug
+      if (present(time_stamp))   msg_log%time_stamp     = time_stamp
 
       if(present(errD))then
       	errD=0; messageD="init_log/ok"
@@ -259,7 +260,12 @@ module MUtilsLib_messagelog
       else if (present(db_id)) then
         messageLc="["//db_id//"] "//message
       else 
-        messageLc=message
+        if(msg_log%time_stamp) then
+          call date_and_time(date=dt,time=tm)
+          messageLc=dt(7:8)//"/"//dt(5:6)//"/"//dt(1:4)//" "//tm(1:2)//":"//tm(3:4)//":"//tm(5:6)//":"//tm(8:10)//" "//message
+        else
+          messageLc=message
+        end if
       end if
       !messageLc = insertString(messageLc)
       s = 0
