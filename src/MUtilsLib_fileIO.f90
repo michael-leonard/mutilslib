@@ -50,19 +50,29 @@ module MUtilsLib_fileIO
 
     !> Returns number of lines at EOF 
     !> Without opening/closing files (for speed)
-    function countlines(unit) result(nLines)
+    function countlines(unit,stripBlank) result(nLines)
       implicit none
       ! Dummies
       integer,intent(in) :: unit !< unit no. of open file
       integer(mik) :: nLines     !< no. lines in file
+      logical, intent(in), optional :: stripBlank !< ignore blank lines?
       ! Locals
       integer(mik) status
-    
+      character(20) :: ch ! test for non-blank lines, assume any character exists in first 20 cols
+      logical :: cutBlank ! local copy of optional stripBlank
+      integer :: temp
+      
+      cutBlank=.false.
+      if(present(stripBlank)) cutBlank=stripBlank
       nLines=0
       do 
-        read(unit,*,iostat=status)
+        read(unit,*,iostat=status) ch
         if(status==0) then
-          nLines=nLines+1
+          if(cutBlank) then
+            if(len_trim(ch)>0) nLines=nLines+1
+          else
+            nLines=nLines+1
+          end if
         else
           exit
         end if
