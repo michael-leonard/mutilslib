@@ -77,6 +77,9 @@ module MUtilsLib_stringfuncs
     module procedure str_i
     module procedure str_r4
     module procedure str_r8
+    module procedure str1D_i
+    module procedure str1D_r4
+    module procedure str1D_r8
   end interface str
 
   !> This overloads the concatenate operator to make it even easier to build up strings mixed in with variable expressions
@@ -197,6 +200,54 @@ module MUtilsLib_stringfuncs
 
   end function
 
+  !> repeat string operation on a whole array
+  function str1D_i(i,n,pad,rhs) result(ch)
+    implicit none
+    integer, intent(in) :: i(:)     !< the integer variable array
+    integer, intent(in) :: n     !< n the length of the return string
+    character(len = 1), optional, intent(in) :: pad !< should the leading fields be padded, e.g. "0", default blank
+    logical, optional, intent(in) :: rhs !< shift to right hand side
+    character(len = n) :: ch(size(i))    !< the string array to be returned
+    ! Locals
+    integer :: j ! loop counter
+
+    do j = 1,size(i)
+      ch(j) = str_i(i(j),n,pad,rhs)
+    end do
+  end function str1D_i
+
+  !> repeat string operation on a whole array
+  function str1D_r4(r,n,pad,rhs) result(ch)
+    implicit none
+    real(4), intent(in) :: r(:)     !< the integer variable array
+    integer, intent(in) :: n     !< n the length of the return string
+    character(len = 1), optional, intent(in) :: pad !< should the leading fields be padded, e.g. "0", default blank
+    logical, optional, intent(in) :: rhs !< shift to right hand side
+    character(len = n) :: ch(size(r))    !< the string array to be returned
+    ! Locals
+    integer :: j ! loop counter
+
+    do j = 1,size(r)
+      ch(j) = str_r4(r(j),n,pad,rhs)
+    end do
+  end function str1D_r4
+
+  !> repeat string operation on a whole array
+  function str1D_r8(r,n,pad,rhs) result(ch)
+    implicit none
+    real(8), intent(in) :: r(:)     !< the integer variable array
+    integer, intent(in) :: n     !< n the length of the return string
+    character(len = 1), optional, intent(in) :: pad !< should the leading fields be padded, e.g. "0", default blank
+    logical, optional, intent(in) :: rhs !< shift to right hand side
+    character(len = n) :: ch(size(r))    !< the string array to be returned
+    ! Locals
+    integer :: j ! loop counter
+
+    do j = 1,size(r)
+      ch(j) = str_r8(r(j),n,pad,rhs)
+    end do
+  end function str1D_r8
+
   !> Converts an integer to a string
   function str_i(i,n,pad,rhs) result(ch)
     
@@ -222,7 +273,7 @@ module MUtilsLib_stringfuncs
       end forall
     end if
 
-  end function
+  end function str_i
   
   !> Converts an real(4) to a string
   function str_r4(r,n,pad,rhs) result(ch)
@@ -249,7 +300,7 @@ module MUtilsLib_stringfuncs
       end forall
     end if
 
-  end function
+  end function str_r4
 
   !> Converts an real(8) to a string
   function str_r8(r,n,pad,rhs) result(ch)
@@ -276,7 +327,7 @@ module MUtilsLib_stringfuncs
       end forall
     end if
 
-  end function
+  end function str_r8
 
   !> Concatenate an logical and a string
   !> exact length
