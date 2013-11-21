@@ -119,6 +119,8 @@ module MUtilsLib_System
    !> writes dos output to a temp file and then deletes
    !> requisite dos functions: tasklist
    function processExist(imageName) result(test)
+      
+      use MUtilslib_messagelog, only: message,log_warn
       use dfport,only: system
       use stringfuncs, only: lcase
       implicit none
@@ -127,7 +129,7 @@ module MUtilsLib_System
       character(len=len_trim(imageName)) :: lcase_imageName
       logical :: test 
       ! Locals
-      integer(mik) :: ok,status
+      integer(mik) :: ok,status,success_count
       character(len=len_vLongStr) :: dummy
 
       ! This method uses a filter - but if the process does not exist then you get a message on the console
@@ -148,7 +150,11 @@ module MUtilsLib_System
       
       lcase_imagename = lcase(trim(imagename))
       test=.false. ! default
+      success_count=0
       ok = system('tasklist /fo "table" /nh >out.txt') ! issue a dos command
+      !call oscall(iWaitMS=0,command="tasklist", args=' /fo "table" /nh >out.txt',iRet=ok) ! Testing use of OScall, but did not seem to work, couldnot create 
+      if (ok/=0) then; call message(log_error,"Unable to produce tasklist in F:processExist"); test=.false.; return; end if
+       
       open(unit=123,file="out.txt")
       do 
         read(123,*,iostat=status) dummy
@@ -156,10 +162,15 @@ module MUtilsLib_System
         case(-1); 
             exit
         case(0); 
-            if(lcase(trim(dummy))==lcase_imagename) test=.true. ! compare as lower case
+            if(lcase(trim(dummy))==lcase_imagename) then ! compare as lower case
+            
+                test=.true. 
+                success_count=success_count+1
+             end if   
         end select
       end do
       close(123,status="delete")
+      if (success_count>1) call message(log_warn,"Multiple process called: "//trim(lcase_imagename)//" were identified in the tasklist.") 
 
     end function processExist
 !*************************************************************************************************************   
@@ -199,18 +210,19 @@ module MUtilsLib_System
     !> Generalised to Generate_FileList by Mark Thyer, May 2009
     function Generate_SystemList(path, ext, list,listtype) result (ok)
      use MUtilsLib_messagelog
+     use MUtilsLib_VarFuncs, only: checkPresent
      use dfport,only: system
      implicit none
      ! Dummies - Inputs
      character(len=*) :: path     !< the path to the files are located
                                   !> the type of list needed, options include
-                                  !> "FILE"    - list of files
+                                  
+     character(len=*) :: listtype !> "FILE"    - list of files
                                   !> "DIRECTORY" - list of directories
-     character(len=*) :: listtype 
-                                      !> the extension of the files that need to be returned, 
+                                     
+     character(len=*),optional :: ext  !> the extension of the files that need to be returned, 
                                       !> for files with one letter extentions (e.g, *.r), 
                                       !> it is important to use a space, e.g. ext="*.r " to distinguish from .r** extensions
-     character(len=*),optional :: ext 
                              
                              
      ! Dummies - Outputs
@@ -224,13 +236,15 @@ module MUtilsLib_System
      integer(mik) :: count ! the length of list
           integer(mik) :: i
      character :: slash
+     character(len=len_vlongStr) :: extLc 
      
      ok=0
 
      i = len_trim(path)
      slash="\"
      if(path(i:i)=="/".or.path(i:i)=="\") slash=" "
-
+     extLc=checkPresent(ext,"*.*")
+     
      ! generate the list in the directory
      select case(listtype)
      case("DIRECTORY")
@@ -238,6 +252,8 @@ module MUtilsLib_System
       errmsg="Unable to locate any directories in path: "//trim(path)
      CASE("FILE")
       ok=system('dir /B/L "' // trim(path) // trim(slash) //'*.*" >List.txt') ! use 
+      
+      !ok=system('dir /B/L "' // trim(path) // trim(slash) //trim(ext)//'" >List.txt') ! use 
                ! *.* to avoid an error message to the console when there are no .r files
       if (ok/=0) then
         errmsg="Unable to locate files with extension "//trim(ext)//" in path: "//trim(path)

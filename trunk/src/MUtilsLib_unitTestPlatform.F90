@@ -22,7 +22,7 @@ SAVE
 TYPE unitTestModuleData
    INTEGER(MIK)::testIndx=undefIN,numTests=undefIN,sumryUnit=undefIN
    INTEGER(MIK),ALLOCATABLE,DIMENSION(:)::inputUnit,stndsUnit,rsltsUnit
-   CHARACTER(LEN=180)::name
+   CHARACTER(LEN=250)::name
    CHARACTER(LEN=360)::sumryFile
    CHARACTER(LEN=360),ALLOCATABLE,DIMENSION(:)::inputFiles,stndsFiles,rsltsFiles
 END TYPE unitTestModuleData
@@ -32,10 +32,10 @@ TYPE unitTestResultsData
    LOGICAL::result_l=.false.
    REAL(MRK)::result_r
    INTEGER(MIK)::rslt_i=undefIN
-   CHARACTER(LEN=75)::name=undefCH
-   CHARACTER(LEN=180)::metaDataTag=undefCH
-   CHARACTER(LEN=360)::message=undefCH
-   CHARACTER(LEN=4)::resultString=undefCH
+   CHARACTER(LEN=len_stdStrL)::name=undefCH
+   CHARACTER(LEN=len_stdStrL)::metaDataTag=undefCH
+   CHARACTER(LEN=len_longStr)::message=undefCH
+   CHARACTER(LEN=len_vShortStr)::resultString=undefCH
    
 END TYPE unitTestResultsData
 !
@@ -389,6 +389,9 @@ SUBROUTINE unitTest_fileCompare(fileOne,fileTwo,CompareLevel,skip,outputUnit,tes
    IF(PRESENT(message))unitTest(indx)%message=message
         
    CompareLevelLc=checkPresent(Comparelevel,2) 
+   unitOneLc=9991  ! Need to add function to get New Unit, TODO
+   unitTwoLc=9992  ! Need to add function to get New Unit, TODO
+   
   
    ! Check if files exist
    if(.not.fileExist(fileToOpen=fileOne,msg=msg)) then; call log_message(trim(msg)//" in F: unitTest_fileCompare"); myTestResult=.false.; return; end if
@@ -615,18 +618,18 @@ SUBROUTINE unitTest_writeResult(testName,testResult,failMessage,unitID,err)
    INTEGER(MIK),INTENT(OUT)::err
    !
    ! Local
-   CHARACTER(LEN=360)::outputString   
+   CHARACTER(LEN=len_vLongStr)::outputString   
    !---
    !
    outputString=""
 
    SELECT CASE(testResult)
        CASE(.TRUE.) ; WRITE(outputString,*,err=102)testName(1:LEN_TRIM(testName))
-                      WRITE(outputString(80:84),"(a)",err=102)"PASS"
+                      WRITE(outputString((LEN(testName)+2):LEN(testName)+6),"(a)",err=102)"PASS"
                       WRITE(unitID,'(a)',err=102)outputString(1:LEN_TRIM(outputString))
        
        CASE(.FALSE.); WRITE(outputString,*,err=102)testName(1:LEN_TRIM(testName))
-                      WRITE(outputString(80:84),"(a)",err=102)"FAIL"
+                      WRITE(outputString((LEN(testName)+2):LEN(testName)+6),"(a)",err=102)"FAIL"
                       WRITE(unitID,'(a)',err=102)outputString(1:LEN_TRIM(outputString))
                       WRITE(unitID,'(a)',err=102)"                     "//failMessage(1:LEN_TRIM(failMessage))    
    END SELECT
@@ -640,13 +643,16 @@ SUBROUTINE unitTest_writeResult(testName,testResult,failMessage,unitID,err)
  END SUBROUTINE unitTest_writeResult
 !__________________________________________________________________________________________________________________
  
- SUBROUTINE unitTest_SummarizeResults(allTestsPass,failmessage)
+ SUBROUTINE unitTest_SummarizeResults(allTestsPass,failmessage,viewSummaryFile,viewFile_ifNotAllTestPass)
    ! Summarize all unit test results and add to file
    use mutilslib_stringfuncs, only : operator(//)
    IMPLICIT NONE
    ! Subroutine
    logical(mlk), intent(out),optional ::  allTestsPass 
+   logical(mlk), intent(in),optional ::  viewSummaryFile
    character(len=*), intent(in),optional ::  failMessage
+   character(len=*), intent(in),optional ::  viewFile_ifNotAllTestPass
+   
    ! Local
    CHARACTER(LEN=360)::outputString   
    INTEGER(MIK)::ntests,nTestsFail,i
@@ -673,9 +679,17 @@ SUBROUTINE unitTest_writeResult(testName,testResult,failMessage,unitID,err)
     WRITE(unitTestMod%sumryUnit,*) 
     if (present(failmessage)) WRITE(unitTestMod%sumryUnit,"(a)") failMessage
     
- 
    end if
    
+   ! Option to view Summary Results File
+   if (present(viewSummaryFile)) then 
+    if (viewSummaryFile) call viewtxtfile(unitTestMod%sumryFile)
+   end if
+   
+   ! Option to view a specific user specified file, if tests do not pass
+   if (present(viewFile_ifNotAllTestPass)) then 
+    if (.not.nTestsFail==0) call viewtxtfile(viewFile_ifNotAllTestPass)
+   end if
    
    
  END SUBROUTINE unitTest_SummarizeResults
