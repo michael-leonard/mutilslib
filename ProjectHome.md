@@ -1,0 +1,1 @@
+Makes life easier for Fortran 90/95 programmers
